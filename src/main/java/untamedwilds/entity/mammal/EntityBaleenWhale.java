@@ -1,7 +1,5 @@
 package untamedwilds.entity.mammal;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -22,6 +20,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.entity.PartEntity;
 import untamedwilds.entity.*;
@@ -49,7 +49,6 @@ public class EntityBaleenWhale extends ComplexMobAquatic implements ISpecies, IN
 
     public EntityBaleenWhale(EntityType<? extends ComplexMob> type, Level worldIn) {
         super(type, worldIn);
-        this.entityData.define(LONG_FINS, false);
         this.length = getMultiparts();
         this.whale_parts = new EntityWhalePart[this.length];
         for (int i = 0; i < this.length; i++) {
@@ -58,9 +57,10 @@ public class EntityBaleenWhale extends ComplexMobAquatic implements ISpecies, IN
         this.turn_speed = 0.03F;
     }
 
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(IS_EATING, false);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(IS_EATING, false);
+        builder.define(LONG_FINS, false);
     }
 
     private void setPartPosition(EntityWhalePart part, double offsetX, double offsetY, double offsetZ) {
@@ -101,8 +101,8 @@ public class EntityBaleenWhale extends ComplexMobAquatic implements ISpecies, IN
 
     public void aiStep() {
         super.aiStep();
-        if (!this.level.isClientSide) {
-            if (this.level.getGameTime() % 4000 == 0) {
+        if (!this.level().isClientSide()) {
+            if (this.level().getGameTime() % 4000 == 0) {
                 this.heal(1.0F);
             }
         }
@@ -159,9 +159,9 @@ public class EntityBaleenWhale extends ComplexMobAquatic implements ISpecies, IN
                 this.whale_parts[k].zOld = avector3d[k].z;
             }
         }
-        if (this.level.isClientSide && this.isFeeding() && this.gulpProgress < 50) {
+        if (this.level().isClientSide() && this.isFeeding() && this.gulpProgress < 50) {
             this.gulpProgress += 1;
-        } else if (this.level.isClientSide && !this.isFeeding() && this.gulpProgress > 0) {
+        } else if (this.level().isClientSide() && !this.isFeeding() && this.gulpProgress > 0) {
             this.gulpProgress -= 1;
         }
     }
@@ -194,7 +194,7 @@ public class EntityBaleenWhale extends ComplexMobAquatic implements ISpecies, IN
     public boolean wantsToBreed() {
         if (super.wantsToBreed()) {
             if (!this.isSleeping() && this.getAge() == 0 && EntityUtils.hasFullHealth(this)) {
-                List<EntityBaleenWhale> list = this.level.getEntitiesOfClass(EntityBaleenWhale.class, this.getBoundingBox().inflate(6.0D, 4.0D, 6.0D));
+                List<EntityBaleenWhale> list = this.level().getEntitiesOfClass(EntityBaleenWhale.class, this.getBoundingBox().inflate(6.0D, 4.0D, 6.0D));
                 list.removeIf(input -> EntityUtils.isInvalidPartner(this, input, false));
                 if (list.size() >= 1) {
                     this.setAge(this.getPregnancyTime());
@@ -209,14 +209,14 @@ public class EntityBaleenWhale extends ComplexMobAquatic implements ISpecies, IN
     public boolean hasLongFins(){ return (this.entityData.get(LONG_FINS)); }
     private void setLongFins(boolean long_fins){ this.entityData.set(LONG_FINS, long_fins); }
 
-    public void addAdditionalSaveData(CompoundTag compound){
+    public void addAdditionalSaveData(ValueOutput compound){
         super.addAdditionalSaveData(compound);
         compound.putBoolean("hasLongFins", this.hasLongFins());
     }
 
-    public void readAdditionalSaveData(CompoundTag compound){
+    public void readAdditionalSaveData(ValueInput compound){
         super.readAdditionalSaveData(compound);
-        this.setLongFins(compound.getBoolean("hasLongFins"));
+        this.setLongFins(compound.getBooleanOr("hasLongFins", false));
     }
 
 
@@ -236,17 +236,17 @@ public class EntityBaleenWhale extends ComplexMobAquatic implements ISpecies, IN
     @Nullable
     @Override
     public AgeableMob getBreedOffspring(ServerLevel serverWorld, AgeableMob ageableEntity) {
-        return create_offspring(new EntityBaleenWhale(ModEntity.BALEEN_WHALE.get(), this.level));
+        return create_offspring(new EntityBaleenWhale(ModEntity.BALEEN_WHALE.get(), this.level()));
     }
 
-    public boolean attackEntityPartFrom(EntityWhalePart whale_part, DamageSource source, float amount) {
-        return this.hurt(source, amount);
+    public boolean attackEntityPartFrom(ServerLevel level, EntityWhalePart whalePart, DamageSource source, float amount) {
+        return this.hurtServer(level, source, amount);
     }
 
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack itemstack = player.getItemInHand(InteractionHand.MAIN_HAND);
 
-        if (hand == InteractionHand.MAIN_HAND && !this.level.isClientSide()) {
+        if (hand == InteractionHand.MAIN_HAND && !this.level().isClientSide()) {
             if (itemstack.getItem() == Items.BLAZE_ROD) {
                 this.setFeeding(!this.isFeeding());
             }
@@ -280,7 +280,7 @@ public class EntityBaleenWhale extends ComplexMobAquatic implements ISpecies, IN
         }
 
         protected void collideWithNearbyEntities() {
-            List<Entity> entities = this.level.getEntities(this, this.getBoundingBox().inflate(0.20000000298023224D, 0.0D, 0.20000000298023224D));
+            List<Entity> entities = this.level().getEntities(this, this.getBoundingBox().inflate(0.20000000298023224D, 0.0D, 0.20000000298023224D));
             Entity parent = this.getParent();
             if (parent != null) {
                 entities.stream().filter(entity -> entity != parent && !(entity instanceof EntityWhalePart && ((EntityWhalePart) entity).getParent() == parent) && entity.isPushable()).forEach(entity -> entity.push(parent));
@@ -299,29 +299,27 @@ public class EntityBaleenWhale extends ComplexMobAquatic implements ISpecies, IN
             return true;
         }
 
-        public boolean hurt(DamageSource source, float amount) {
-            return !this.isInvulnerableTo(source) && this.getParent().attackEntityPartFrom(this, source, amount);
+        @Override
+        public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
+            return this.getParent().attackEntityPartFrom(level, this, source, amount);
         }
 
         @Override
-        protected void defineSynchedData() { }
+        protected void defineSynchedData(SynchedEntityData.Builder builder) { }
 
         @Override
-        protected void readAdditionalSaveData(CompoundTag compound) { }
+        protected void readAdditionalSaveData(ValueInput input) { }
 
         @Override
-        protected void addAdditionalSaveData(CompoundTag compound) { }
+        protected void addAdditionalSaveData(ValueOutput output) { }
 
 
         public boolean is(Entity entityIn) {
             return this == entityIn || this.getParent() == entityIn;
         }
 
-        public Packet<?> getAddEntityPacket() {
-            throw new UnsupportedOperationException();
-        }
-
-        public EntityDimensions getSize(Pose poseIn) {
+        @Override
+        public EntityDimensions getDimensions(Pose poseIn) {
             return this.size.scale(scale);
         }
     }

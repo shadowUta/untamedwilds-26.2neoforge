@@ -56,7 +56,7 @@ public interface ISpecies {
     }
 
     default String getSpeciesName(int i) {
-        return MutableComponent.create(new TranslatableContents("entity.untamedwilds." + ((ComplexMob)this).getType().builtInRegistryHolder().key().location().getPath() + "_" + getRawSpeciesName(i))).getString();
+        return MutableComponent.create(new TranslatableContents("entity.untamedwilds." + ((ComplexMob)this).getType().builtInRegistryHolder().key().identifier().getPath() + "_" + getRawSpeciesName(i))).getString();
     }
 
     default String getSpeciesName() {

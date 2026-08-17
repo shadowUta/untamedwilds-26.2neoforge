@@ -1,18 +1,28 @@
 package untamedwilds.entity.ai.unique;
 
-import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
+import net.minecraft.world.RandomizableContainer;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.component.Consumable;
+import net.minecraft.world.item.consume_effects.ConsumeEffect;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
 import untamedwilds.entity.mammal.EntityBear;
 
 import java.util.EnumSet;
@@ -24,6 +34,7 @@ public class BearRaidChestsGoal extends Goal {
     private final int executionChance;
     private int searchCooldown;
     private boolean continueTask;
+    private boolean containerOpen;
 
     public BearRaidChestsGoal(EntityBear entityIn, int chance) {
         this.taskOwner = entityIn;
@@ -33,182 +44,195 @@ public class BearRaidChestsGoal extends Goal {
         this.setFlags(EnumSet.of(Goal.Flag.MOVE));
     }
 
+    @Override
     public boolean canUse() {
-        if (this.taskOwner.isTame() || !this.taskOwner.isOnGround() || this.taskOwner.getHunger() > 60 || this.taskOwner.getRandom().nextInt(this.executionChance) != 0 || this.taskOwner.getTarget() != null) {
+        if (this.taskOwner.isTame() || !this.taskOwner.onGround() || this.taskOwner.getHunger() > 60
+                || this.taskOwner.getRandom().nextInt(this.executionChance) != 0 || this.taskOwner.getTarget() != null) {
             return false;
         }
-        BlockPos pos = this.taskOwner.blockPosition();
 
-        this.targetPos = getNearbyInventories(pos);
+        this.targetPos = this.getNearbyInventories(this.taskOwner.blockPosition());
         return this.targetPos != null;
     }
 
+    @Override
     public void start() {
-        this.taskOwner.getNavigation().moveTo((double)this.targetPos.getX() + 0.5D, this.targetPos.getY() + 1, (double)this.targetPos.getZ() + 0.5D, 1f);
-        super.start();
+        this.searchCooldown = 100;
+        this.continueTask = true;
+        this.containerOpen = false;
+        this.taskOwner.getNavigation().moveTo(
+                this.targetPos.getX() + 0.5D, this.targetPos.getY() + 1.0D, this.targetPos.getZ() + 0.5D, 1.0D);
     }
 
+    @Override
     public void stop() {
+        this.closeTargetContainer();
+        this.taskOwner.setSitting(false);
+        this.taskOwner.getNavigation().stop();
+        this.targetInventory = null;
+        this.targetPos = null;
     }
 
+    @Override
     public void tick() {
-        //double distance = this.taskOwner.getDistance(this.targetInventory.getX(), this.targetBlock.getY(), this.targetBlock.getZ());
-        if (this.targetPos != null && this.taskOwner.distanceToSqr(targetPos.getX(), targetPos.getY(), targetPos.getZ()) < 4) {
-            this.taskOwner.getLookControl().setLookAt(this.targetPos.getX(), this.targetPos.getY() + 1.5F, this.targetPos.getZ(), 10f, (float)this.taskOwner.getMaxHeadXRot());
+        if (this.targetPos != null && this.taskOwner.distanceToSqr(
+                this.targetPos.getX() + 0.5D, this.targetPos.getY() + 0.5D, this.targetPos.getZ() + 0.5D) < 4.0D) {
+            this.taskOwner.getLookControl().setLookAt(
+                    this.targetPos.getX() + 0.5D, this.targetPos.getY() + 1.5D, this.targetPos.getZ() + 0.5D,
+                    10.0F, this.taskOwner.getMaxHeadXRot());
             this.taskOwner.getNavigation().stop();
             this.taskOwner.setSitting(true);
-            this.searchCooldown--;
-            if (this.taskOwner.level.getBlockEntity(targetPos) instanceof ChestBlockEntity) {
-                ChestBlockEntity chest = (ChestBlockEntity) this.taskOwner.level.getBlockEntity(targetPos);
-                this.taskOwner.level.blockEvent(this.targetPos, chest.getBlockState().getBlock(), 1, 1);
-            }
-            if (this.searchCooldown == 0) {
+            this.openTargetContainer();
+
+            if (--this.searchCooldown <= 0) {
                 this.searchCooldown = 100;
-                this.continueTask = stealItem();
+                this.continueTask = this.stealItem();
             }
         }
-        super.tick();
     }
 
+    @Override
     public boolean canContinueToUse() {
-        if (this.taskOwner.getHunger() >= 60 || this.targetInventory.isEmpty()) {
-            this.taskOwner.setSitting(false);
-            if (this.taskOwner.level.getBlockEntity(targetPos) instanceof ChestBlockEntity) {
-                ChestBlockEntity chest = (ChestBlockEntity) this.taskOwner.level.getBlockEntity(targetPos);
-                this.taskOwner.level.blockEvent(this.targetPos, chest.getBlockState().getBlock(), 1, 0);
-            }
+        if (!this.continueTask || this.taskOwner.getHunger() >= 60 || this.targetPos == null) {
             return false;
         }
-        return this.continueTask;
+
+        this.targetInventory = getInventoryAtPosition(this.taskOwner.level(), this.targetPos);
+        return this.targetInventory != null && !isInventoryEmpty(this.targetInventory, Direction.UP);
     }
 
     private boolean stealItem() {
-        if (this.targetInventory != null) {
-            Direction enumfacing = Direction.DOWN;
+        if (this.targetPos == null) {
+            return false;
+        }
 
-            if (isInventoryEmpty(this.targetInventory, enumfacing)) {
-                return false;
-            }
-            if (this.targetInventory instanceof WorldlyContainer) {
-                WorldlyContainer isidedinventory = (WorldlyContainer) this.targetInventory;
-                int[] aint = isidedinventory.getSlotsForFace(enumfacing);
+        this.targetInventory = getInventoryAtPosition(this.taskOwner.level(), this.targetPos);
+        if (this.targetInventory == null || isInventoryEmpty(this.targetInventory, Direction.DOWN)) {
+            return false;
+        }
 
-                for (int i : aint) {
-                    ItemStack itemstack = this.targetInventory.getItem(i);
-
-                    if (!itemstack.isEmpty() && canExtractItemFromSlot(this.targetInventory, itemstack, i, enumfacing))
-                    {
-                        ItemStack itemstack1 = itemstack.copy();
-                        this.targetInventory.setItem(i, ItemStack.EMPTY);
-                        if (itemstack1.getItem().isEdible()) {
-                            this.taskOwner.playSound(SoundEvents.PLAYER_BURP, 1, 1);
-                            this.taskOwner.addHunger((itemstack1.getItem().getFoodProperties().getNutrition() * 10 * itemstack1.getCount()));
-                            for(Pair<MobEffectInstance, Float> pair : itemstack1.getItem().getFoodProperties().getEffects()) {
-                                if (pair.getFirst() != null && this.taskOwner.level.random.nextFloat() < pair.getSecond()) {
-                                    this.taskOwner.addEffect(new MobEffectInstance(pair.getFirst()));
-                                }
-                            }
-                            return false;
-                        }
-                        if (!PotionUtils.getMobEffects(itemstack1).isEmpty()) {
-                            this.taskOwner.playSound(SoundEvents.PLAYER_BURP, 1, 1);
-                            this.taskOwner.addHunger(10);
-                            for(MobEffectInstance effectinstance : PotionUtils.getMobEffects(itemstack1)) {
-                                if (effectinstance.getEffect().isInstantenous()) {
-                                    effectinstance.getEffect().applyInstantenousEffect(this.taskOwner, this.taskOwner, this.taskOwner, effectinstance.getAmplifier(), 1.0D);
-                                } else {
-                                    this.taskOwner.addEffect(new MobEffectInstance(effectinstance));
-                                }
-                            }
-                            return false;
-                        }
-                        this.taskOwner.spawnAtLocation(itemstack, 0.2f);
-                        return true;
-                    }
+        Direction extractionSide = Direction.DOWN;
+        if (this.targetInventory instanceof WorldlyContainer sidedInventory) {
+            for (int slot : sidedInventory.getSlotsForFace(extractionSide)) {
+                if (this.stealFromSlot(slot, extractionSide)) {
+                    return true;
                 }
-            } else {
-                int j = this.targetInventory.getContainerSize();
-
-                for (int k = 0; k < j; ++k) {
-                    ItemStack itemstack = this.targetInventory.getItem(k);
-
-                    if (!itemstack.isEmpty() && canExtractItemFromSlot(this.targetInventory, itemstack, k, enumfacing))
-                    {
-                        ItemStack itemstack1 = itemstack.copy();
-                        this.targetInventory.setItem(k, ItemStack.EMPTY);
-                        this.taskOwner.setAnimation(EntityBear.ATTACK_SWIPE);
-                        if (itemstack1.getItem().isEdible()) {
-                            this.taskOwner.playSound(SoundEvents.PLAYER_BURP, 1, 1);
-                            this.taskOwner.addHunger((itemstack1.getItem().getFoodProperties().getNutrition() * 10 * itemstack1.getCount()));
-                            for(Pair<MobEffectInstance, Float> pair : itemstack1.getItem().getFoodProperties().getEffects()) {
-                                if (pair.getFirst() != null && this.taskOwner.level.random.nextFloat() < pair.getSecond()) {
-                                    this.taskOwner.addEffect(new MobEffectInstance(pair.getFirst()));
-                                }
-                            }
-                            return false;
-                        }
-                        if (!PotionUtils.getMobEffects(itemstack1).isEmpty()) {
-                            this.taskOwner.playSound(SoundEvents.GENERIC_DRINK, 1, 1);
-                            this.taskOwner.addHunger(10);
-                            for(MobEffectInstance effectinstance : PotionUtils.getMobEffects(itemstack1)) {
-                                if (effectinstance.getEffect().isInstantenous()) {
-                                    effectinstance.getEffect().applyInstantenousEffect(this.taskOwner, this.taskOwner, this.taskOwner, effectinstance.getAmplifier(), 1.0D);
-                                } else {
-                                    this.taskOwner.addEffect(new MobEffectInstance(effectinstance));
-                                }
-                            }
-                            return false;
-                        }
-                        if (!(itemstack1.getItem().isEdible()) || !PotionUtils.getMobEffects(itemstack).isEmpty()) {
-                            this.taskOwner.spawnAtLocation(itemstack, 0.2f);
-                        }
-                        else {
-                            this.taskOwner.playSound(SoundEvents.PLAYER_BURP, 1, 1);
-                            return false;
-                        }
-                        return true;
-                    }
+            }
+        } else {
+            for (int slot = 0; slot < this.targetInventory.getContainerSize(); ++slot) {
+                if (this.stealFromSlot(slot, extractionSide)) {
+                    return true;
                 }
             }
         }
+
         return false;
     }
 
-    private static Container getInventoryAtPosition(Level worldIn, BlockPos pos) {
-        Container iinventory = null;
-        BlockState state = worldIn.getBlockState(pos);
+    private boolean stealFromSlot(int slot, Direction extractionSide) {
+        ItemStack stack = this.targetInventory.getItem(slot);
+        if (stack.isEmpty() || !canExtractItemFromSlot(this.targetInventory, stack, slot, extractionSide)) {
+            return false;
+        }
 
-        if (worldIn.getBlockEntity(pos) != null) {
-            BlockEntity tileentity = worldIn.getBlockEntity(pos);
+        ItemStack stolenStack = stack.copy();
+        this.targetInventory.setItem(slot, ItemStack.EMPTY);
+        this.targetInventory.setChanged();
+        this.taskOwner.setAnimation(EntityBear.ATTACK_SWIPE);
 
-            if (tileentity instanceof Container) {
-                iinventory = (Container)tileentity;
+        FoodProperties food = stolenStack.get(DataComponents.FOOD);
+        if (food != null) {
+            this.taskOwner.playSound(SoundEvents.PLAYER_BURP, 1.0F, 1.0F);
+            this.taskOwner.addHunger(food.nutrition() * 10 * stolenStack.getCount());
+            Consumable consumable = stolenStack.get(DataComponents.CONSUMABLE);
+            if (consumable != null) {
+                for (ConsumeEffect effect : consumable.onConsumeEffects()) {
+                    effect.apply(this.taskOwner.level(), stolenStack, this.taskOwner);
+                }
+            }
+            return true;
+        }
 
-                /*if (iinventory instanceof ChestTileEntity && block instanceof ChestBlock) {
-                    iinventory = (Container) ((ChestBlock)block).getContainer(worldIn.getBlockState(pos), worldIn, pos);
-                }*/
+        PotionContents potion = stolenStack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
+        if (potion.hasEffects()) {
+            this.taskOwner.playSound(SoundEvents.GENERIC_DRINK.value(), 1.0F, 1.0F);
+            this.taskOwner.addHunger(10);
+            this.applyPotionEffects(potion);
+            return true;
+        }
+
+        if (this.taskOwner.level() instanceof ServerLevel serverLevel) {
+            this.taskOwner.spawnAtLocation(serverLevel, stolenStack, 0.2F);
+        }
+        return true;
+    }
+
+    private void applyPotionEffects(PotionContents potion) {
+        for (MobEffectInstance effect : potion.getAllEffects()) {
+            if (effect.getEffect().value().isInstantaneous() && this.taskOwner.level() instanceof ServerLevel serverLevel) {
+                effect.getEffect().value().applyInstantaneousEffect(
+                        serverLevel, this.taskOwner, this.taskOwner, this.taskOwner, effect.getAmplifier(), 1.0D);
+            } else {
+                this.taskOwner.addEffect(new MobEffectInstance(effect));
+            }
+        }
+    }
+
+    private void openTargetContainer() {
+        if (!this.containerOpen && this.targetPos != null) {
+            this.setChestOpen(true);
+            this.taskOwner.level().gameEvent(this.taskOwner, GameEvent.CONTAINER_OPEN, this.targetPos);
+            this.containerOpen = true;
+        }
+    }
+
+    private void closeTargetContainer() {
+        if (this.containerOpen && this.targetPos != null) {
+            this.setChestOpen(false);
+            this.taskOwner.level().gameEvent(this.taskOwner, GameEvent.CONTAINER_CLOSE, this.targetPos);
+            this.containerOpen = false;
+        }
+    }
+
+    private void setChestOpen(boolean open) {
+        Level level = this.taskOwner.level();
+        BlockState state = level.getBlockState(this.targetPos);
+        if (state.getBlock() instanceof ChestBlock chestBlock
+                && level.getBlockEntity(this.targetPos) instanceof ChestBlockEntity) {
+            level.blockEvent(this.targetPos, state.getBlock(), 1, open ? 1 : 0);
+            SoundEvent sound = open ? chestBlock.getOpenChestSound() : chestBlock.getCloseChestSound();
+            level.playSound(null, this.targetPos, sound, SoundSource.BLOCKS, 0.5F,
+                    level.getRandom().nextFloat() * 0.1F + 0.9F);
+        }
+    }
+
+    private static Container getInventoryAtPosition(Level level, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        if (blockEntity instanceof RandomizableContainer lootContainer) {
+            lootContainer.unpackLootTable(null);
+        }
+
+        if (state.getBlock() instanceof ChestBlock chestBlock) {
+            Container chest = ChestBlock.getContainer(chestBlock, state, level, pos, false);
+            if (chest != null) {
+                return chest;
             }
         }
 
-        return iinventory;
+        return blockEntity instanceof Container container ? container : null;
     }
 
-    private static boolean isInventoryEmpty(Container inventoryIn, Direction side) {
-        if (inventoryIn instanceof WorldlyContainer) {
-            WorldlyContainer isidedinventory = (WorldlyContainer)inventoryIn;
-            int[] aint = isidedinventory.getSlotsForFace(side);
-
-            for (int i : aint) {
-                if (!isidedinventory.getItem(i).isEmpty()) {
+    private static boolean isInventoryEmpty(Container inventory, Direction side) {
+        if (inventory instanceof WorldlyContainer sidedInventory) {
+            for (int slot : sidedInventory.getSlotsForFace(side)) {
+                if (!sidedInventory.getItem(slot).isEmpty()) {
                     return false;
                 }
             }
-        }
-        else {
-            int j = inventoryIn.getContainerSize();
-
-            for (int k = 0; k < j; ++k) {
-                if (!inventoryIn.getItem(k).isEmpty()) {
+        } else {
+            for (int slot = 0; slot < inventory.getContainerSize(); ++slot) {
+                if (!inventory.getItem(slot).isEmpty()) {
                     return false;
                 }
             }
@@ -217,28 +241,26 @@ public class BearRaidChestsGoal extends Goal {
         return true;
     }
 
-    private static boolean canExtractItemFromSlot(Container inventoryIn, ItemStack stack, int index, Direction side) {
-        return !(inventoryIn instanceof WorldlyContainer) || ((WorldlyContainer)inventoryIn).canTakeItemThroughFace(index, stack, side);
+    private static boolean canExtractItemFromSlot(Container inventory, ItemStack stack, int slot, Direction side) {
+        return !(inventory instanceof WorldlyContainer sidedInventory)
+                || sidedInventory.canTakeItemThroughFace(slot, stack, side);
     }
 
-    private BlockPos getNearbyInventories(BlockPos roomCenter) {
-        int X = 15;
-        int Y = 3;
-        //List<BlockPos> inventories = new ArrayList<>();
-        for (BlockPos blockpos : BlockPos.betweenClosed(roomCenter.offset(-X, -Y, -X), roomCenter.offset(X, Y, X))) {
-            if (this.taskOwner.level.getBlockEntity(blockpos) != null && getInventoryAtPosition(this.taskOwner.level, blockpos) != null) {
-                if (!isInventoryEmpty(getInventoryAtPosition(this.taskOwner.level, blockpos), Direction.UP)) {
-                    this.targetInventory = getInventoryAtPosition(this.taskOwner.level, blockpos);
-                    return blockpos; // For some bizarre reason, the blockPos inside the array changes once it exits the loop,
-                    // so yeah, returning the first inventory instead. The code remains commented just in case I ever figure this one out
-                    //inventories.add((BlockPos)blockpos);
-                }
+    private BlockPos getNearbyInventories(BlockPos center) {
+        int horizontalRange = 15;
+        int verticalRange = 3;
+        Level level = this.taskOwner.level();
+        for (BlockPos mutablePos : BlockPos.betweenClosed(
+                center.offset(-horizontalRange, -verticalRange, -horizontalRange),
+                center.offset(horizontalRange, verticalRange, horizontalRange))) {
+            Container inventory = getInventoryAtPosition(level, mutablePos);
+            if (inventory != null && !isInventoryEmpty(inventory, Direction.UP)) {
+                this.targetInventory = inventory;
+                return mutablePos.immutable();
             }
         }
+
+        this.targetInventory = null;
         return null;
-        /*if (inventories.isEmpty()) {
-            return null;
-        }
-        return inventories.get(this.taskOwner.getRandom().nextInt(Math.max(inventories.size() - 1, 1)));*/
     }
 }
