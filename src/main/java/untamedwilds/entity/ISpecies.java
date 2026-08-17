@@ -56,7 +56,7 @@ public interface ISpecies {
     }
 
     default String getSpeciesName(int i) {
-        return MutableComponent.create(new TranslatableContents("entity.untamedwilds." + ((ComplexMob)this).getType().builtInRegistryHolder().key().identifier().getPath() + "_" + getRawSpeciesName(i))).getString();
+        return MutableComponent.create(new TranslatableContents("entity.untamedwilds." + ((ComplexMob)this).getType().builtInRegistryHolder().key().identifier().getPath() + "_" + getRawSpeciesName(i), null, new Object[0])).getString();
     }
 
     default String getSpeciesName() {
@@ -64,6 +64,6 @@ public interface ISpecies {
     }
 
     default boolean isArtificialMobSpawnType(EntitySpawnReason reason) {
-        return reason == EntitySpawnReason.SPAWN_EGG || reason == EntitySpawnReason.BUCKET || reason == EntitySpawnReason.MOB_SUMMONED || reason == EntitySpawnReason.COMMAND || reason == EntitySpawnReason.SPAWNER;
+        return reason == EntitySpawnReason.BUCKET || reason == EntitySpawnReason.MOB_SUMMONED || reason == EntitySpawnReason.COMMAND || reason == EntitySpawnReason.SPAWNER;
     }
 }

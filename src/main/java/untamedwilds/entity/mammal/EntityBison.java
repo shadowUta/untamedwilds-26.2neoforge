@@ -21,11 +21,12 @@ import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.OwnerHurtByTargetGoal;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
-import net.minecraft.world.entity.monster.hoglin.HoglinBase;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import untamedwilds.UntamedWilds;
 import untamedwilds.config.ConfigGamerules;
@@ -52,13 +53,12 @@ public class EntityBison extends ComplexMobTerrestrial implements INewSkins, ISp
         super(type, worldIn);
         ATTACK_THREATEN = Animation.create(50);
         ATTACK_GORE = Animation.create(14);
-        this.maxUpStep = 1F;
         this.turn_speed = 0.2F;
     }
 
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(CHARGING, false);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(CHARGING, false);
     }
 
     public void registerGoals() {
@@ -76,7 +76,6 @@ public class EntityBison extends ComplexMobTerrestrial implements INewSkins, ISp
         this.targetSelector.addGoal(2, new ProtectChildrenTarget<>(this, LivingEntity.class, true, input -> !(input instanceof EntityBison) && getEcoLevel(input) > getEcoLevel(this)));
     }
 
-    @Override
     protected void reassessTameGoals() {
         if (this.isTame()) {
             if (UntamedWilds.DEBUG) {
@@ -96,7 +95,8 @@ public class EntityBison extends ComplexMobTerrestrial implements INewSkins, ISp
                 .add(Attributes.FOLLOW_RANGE, 12.0D)
                 .add(Attributes.MAX_HEALTH, 35.0D)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 1D)
-                .add(Attributes.ARMOR, 2D);
+                .add(Attributes.ARMOR, 2D)
+                .add(Attributes.STEP_HEIGHT, 1.0D);
     }
 
     public boolean wantsToBreed() {
@@ -108,14 +108,14 @@ public class EntityBison extends ComplexMobTerrestrial implements INewSkins, ISp
 
     @Override
     public void aiStep() {
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide()) {
             if (this.herd == null) {
                 IPackEntity.initPack(this);
             }
             else {
                 this.herd.tick();
             }
-            if (this.level.getGameTime() % 1000 == 0) {
+            if (this.level().getGameTime() % 1000 == 0) {
                 this.addHunger(-10);
                 if (!this.isStarving()) {
                     this.heal(1.0F);
@@ -138,23 +138,37 @@ public class EntityBison extends ComplexMobTerrestrial implements INewSkins, ISp
         super.aiStep();
     }
 
-    public boolean doHurtTarget(Entity entityIn) {
-        boolean flag = super.doHurtTarget(entityIn);
+    public boolean doHurtTarget(ServerLevel level, Entity entityIn) {
+        boolean flag = super.doHurtTarget(level, entityIn);
         if (flag && this.getAnimation() == NO_ANIMATION && !this.isBaby()) {
             Animation anim = chooseAttackAnimation();
             this.setAnimation(anim);
             if (!this.isCharging()) {
                 this.playSound(SoundEvents.ZOGLIN_ATTACK, 1.0F, this.getVoicePitch());
-                HoglinBase.hurtAndThrowTarget(this, (LivingEntity)entityIn);
+                if (entityIn instanceof LivingEntity livingEntity) {
+                    livingEntity.push((livingEntity.getX() - this.getX()) * 0.5D, 0.2D, (livingEntity.getZ() - this.getZ()) * 0.5D);
+                }
             }
         }
         return flag;
     }
 
-    public boolean hurt(DamageSource damageSource, float amount) {
+    public boolean hurtServer(ServerLevel level, DamageSource damageSource, float amount) {
         // Retaliate I: Mob will strike back when attacked by its current target
         performRetaliation(damageSource, this.getHealth(), amount, true);
-        return super.hurt(damageSource, amount);
+        return super.hurtServer(level, damageSource, amount);
+    }
+
+    @Override
+    public void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.putBoolean("Charging", this.isCharging());
+    }
+
+    @Override
+    public void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        this.setCharging(input.getBooleanOr("Charging", false));
     }
 
     protected void playStepSound(BlockPos pos, BlockState blockIn) {
@@ -167,26 +181,26 @@ public class EntityBison extends ComplexMobTerrestrial implements INewSkins, ISp
 
     @Nullable
     public EntityBison getBreedOffspring(ServerLevel serverWorld, AgeableMob ageable) {
-        return create_offspring(new EntityBison(ModEntity.BISON.get(), this.level));
+        return create_offspring(new EntityBison(ModEntity.BISON.get(), serverWorld));
     }
 
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack itemstack = player.getItemInHand(InteractionHand.MAIN_HAND);
 
-        if (hand == InteractionHand.MAIN_HAND && !this.level.isClientSide()) {
+        if (hand == InteractionHand.MAIN_HAND && !this.level().isClientSide()) {
             if (!this.isTame() && this.isBaby() && EntityUtils.hasFullHealth(this) && this.isFood(itemstack)) {
                 this.playSound(SoundEvents.HORSE_EAT, 1.5F, 0.8F);
                 if (this.getRandom().nextInt(3) == 0) {
                     this.tame(player);
-                    EntityUtils.spawnParticlesOnEntity(this.level, this, ParticleTypes.HEART, 3, 6);
+                    EntityUtils.spawnParticlesOnEntity(this.level(), this, ParticleTypes.HEART, 3, 6);
                 } else {
-                    EntityUtils.spawnParticlesOnEntity(this.level, this, ParticleTypes.SMOKE, 3, 3);
+                    EntityUtils.spawnParticlesOnEntity(this.level(), this, ParticleTypes.SMOKE, 3, 3);
                 }
             }
             if (!this.isTame() && !this.isBaby() && itemstack.isEmpty()) {
                 this.setSitting(false);
                 this.setSleeping(false);
-                if (!this.level.isClientSide) {
+                if (!this.level().isClientSide()) {
                     player.setYRot(this.getYRot());
                     player.setXRot(this.getXRot());
                     player.startRiding(this);
@@ -260,7 +274,7 @@ public class EntityBison extends ComplexMobTerrestrial implements INewSkins, ISp
 
                 this.bison.ejectPassengers();
                 this.bison.setTarget((LivingEntity) entity);
-                this.bison.level.broadcastEntityEvent(this.bison, (byte)6);
+                this.bison.level().broadcastEntityEvent(this.bison, (byte)6);
             }
         }
     }

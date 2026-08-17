@@ -5,7 +5,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
@@ -37,7 +36,7 @@ public class BisonTerritorialityFight extends Goal {
         }
         if (this.taskOwner.getRandom().nextInt(400) != 0)
             return false;
-        List<? extends EntityBison> list = this.taskOwner.level.getEntitiesOfClass(this.taskOwner.getClass(), this.taskOwner.getBoundingBox().inflate(8.0D, 4.0D, 8.0D));
+        List<? extends EntityBison> list = this.taskOwner.level().getEntitiesOfClass(this.taskOwner.getClass(), this.taskOwner.getBoundingBox().inflate(8.0D, 4.0D, 8.0D));
         EntityBison target_animal = null;
         double d0 = Double.MAX_VALUE;
 
@@ -63,8 +62,8 @@ public class BisonTerritorialityFight extends Goal {
 
     @Override
     public void start() {
-        EntityUtils.spawnParticlesOnEntity(this.taskOwner.level, this.taskOwner, ParticleTypes.ANGRY_VILLAGER, 10, 1);
-        EntityUtils.spawnParticlesOnEntity(this.targetAnimal.level, this.targetAnimal, ParticleTypes.ANGRY_VILLAGER, 10, 1);
+        EntityUtils.spawnParticlesOnEntity(this.taskOwner.level(), this.taskOwner, ParticleTypes.ANGRY_VILLAGER, 10, 1);
+        EntityUtils.spawnParticlesOnEntity(this.targetAnimal.level(), this.targetAnimal, ParticleTypes.ANGRY_VILLAGER, 10, 1);
         this.charge = 40;
         this.targetAnimal.goalSelector.addGoal(1, this.slaveGoal);
         this.taskOwner.getLookControl().setLookAt(this.targetAnimal);
@@ -88,17 +87,21 @@ public class BisonTerritorialityFight extends Goal {
             }
         } else { // AABB checking
             AABB offset_box = this.taskOwner.getBoundingBox().move(Math.cos(Math.toRadians(this.taskOwner.getYRot() + 90)) * 1.2, 0, Math.sin(Math.toRadians(this.taskOwner.getYRot() + 90)) * 1.2);
-            List<LivingEntity> entitiesHit = this.taskOwner.getLevel().getNearbyEntities(LivingEntity.class, TargetingConditions.forCombat(), this.taskOwner, offset_box);
+            List<LivingEntity> entitiesHit = this.taskOwner.level().getEntitiesOfClass(LivingEntity.class, offset_box,
+                entity -> entity != this.taskOwner && this.taskOwner.level() instanceof ServerLevel serverLevel
+                    && TargetingConditions.forCombat().test(serverLevel, this.taskOwner, entity));
             for (LivingEntity entityHit : entitiesHit) {
                 if (!entityHit.equals(this.taskOwner) && this.taskOwner.hasLineOfSight(entityHit)) {
                     if (entityHit.equals(this.targetAnimal)) {
                         RandomSource rand = this.taskOwner.getRandom();
-                        ServerLevel world = (ServerLevel) this.taskOwner.getLevel();
+                        if (!(this.taskOwner.level() instanceof ServerLevel world)) {
+                            continue;
+                        }
                         world.sendParticles(ParticleTypes.SMOKE,
                             rand.nextDouble() * (offset_box.maxX - offset_box.minX) + offset_box.minX,
-                            rand.nextDouble() * (offset_box.maxY - offset_box.minY) + offset_box.minX,
+                            rand.nextDouble() * (offset_box.maxY - offset_box.minY) + offset_box.minY,
                             rand.nextDouble() * (offset_box.maxZ - offset_box.minZ) + offset_box.minZ, 10, 0, 0, 0, 0.05);
-                        this.targetAnimal.hurt(DamageSource.GENERIC, 2);
+                        this.targetAnimal.hurtServer(world, world.damageSources().mobAttack(this.taskOwner), 2);
                         this.isDone = true;
                     }
                 }
@@ -110,7 +113,7 @@ public class BisonTerritorialityFight extends Goal {
         this.targetAnimal.goalSelector.removeGoal(this.slaveGoal);
         this.charge = 0;
         this.taskOwner.setSprinting(false);
-        this.taskOwner.level.playSound(null, this.taskOwner.getX(), this.taskOwner.getY(), this.taskOwner.getZ(), SoundEvents.GOAT_RAM_IMPACT, SoundSource.NEUTRAL, 1.0F, 1.0F);
+        this.taskOwner.level().playSound(null, this.taskOwner.getX(), this.taskOwner.getY(), this.taskOwner.getZ(), SoundEvents.GOAT_RAM_IMPACT, SoundSource.NEUTRAL, 1.0F, 1.0F);
         this.taskOwner.setDeltaMovement(this.taskOwner.getDeltaMovement().scale(-0.15F));
     }
 
@@ -158,18 +161,22 @@ public class BisonTerritorialityFight extends Goal {
                 }
             } else { // AABB checking
                 AABB offset_box = this.taskOwner.getBoundingBox().move(Math.cos(Math.toRadians(this.taskOwner.getYRot() + 90)) * 1.2, 0, Math.sin(Math.toRadians(this.taskOwner.getYRot() + 90)) * 1.2);
-                List<LivingEntity> entitiesHit = this.taskOwner.getLevel().getNearbyEntities(LivingEntity.class, TargetingConditions.forCombat(), this.taskOwner, offset_box);
+                List<LivingEntity> entitiesHit = this.taskOwner.level().getEntitiesOfClass(LivingEntity.class, offset_box,
+                    entity -> entity != this.taskOwner && this.taskOwner.level() instanceof ServerLevel serverLevel
+                        && TargetingConditions.forCombat().test(serverLevel, this.taskOwner, entity));
                 for (LivingEntity entityHit : entitiesHit) {
                     if (!entityHit.equals(this.taskOwner) && this.taskOwner.hasLineOfSight(entityHit)) {
                         if (entityHit.equals(this.targetAnimal)) {
                             RandomSource rand = this.taskOwner.getRandom();
-                            ServerLevel world = (ServerLevel) this.taskOwner.getLevel();
+                            if (!(this.taskOwner.level() instanceof ServerLevel world)) {
+                                continue;
+                            }
                             world.sendParticles(ParticleTypes.SMOKE,
                                 rand.nextDouble() * (offset_box.maxX - offset_box.minX) + offset_box.minX,
-                                rand.nextDouble() * (offset_box.maxY - offset_box.minY) + offset_box.minX,
+                                rand.nextDouble() * (offset_box.maxY - offset_box.minY) + offset_box.minY,
                                 rand.nextDouble() * (offset_box.maxZ - offset_box.minZ) + offset_box.minZ,
                                 10, 0, 0, 0, 0.05);
-                            this.targetAnimal.hurt(DamageSource.mobAttack(null), 2);
+                            this.targetAnimal.hurtServer(world, world.damageSources().mobAttack(this.taskOwner), 2);
                             this.isDone = true;
                         }
                     }

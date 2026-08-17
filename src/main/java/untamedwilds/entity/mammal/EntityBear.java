@@ -5,6 +5,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -15,6 +17,7 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.*;
@@ -55,8 +58,6 @@ public class EntityBear extends ComplexMobTerrestrial implements ISpecies, INewS
 
     public EntityBear(EntityType<? extends ComplexMob> type, Level worldIn) {
         super(type, worldIn);
-        this.entityData.define(SHORT_SNOUT, false);
-        this.entityData.define(BACK_HUMP, false);
         ANIMATION_ROAR = Animation.create(50);
         IDLE_TALK = Animation.create(20);
         IDLE_STAND = Animation.create(148);
@@ -65,8 +66,14 @@ public class EntityBear extends ComplexMobTerrestrial implements ISpecies, INewS
         ATTACK_MAUL = Animation.create(76);
         ATTACK_SWIPE = Animation.create(26);
         ATTACK_POUND = Animation.create(28);
-        this.maxUpStep = 1;
         this.turn_speed = 0.3F;
+    }
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(SHORT_SNOUT, false);
+        builder.define(BACK_HUMP, false);
     }
 
     public void registerGoals() {
@@ -101,7 +108,7 @@ public class EntityBear extends ComplexMobTerrestrial implements ISpecies, INewS
         if (super.wantsToBreed()) {
             if (!this.isSleeping() && this.getAge() == 0 && EntityUtils.hasFullHealth(this) && this.getHunger() >= 80) {
                 if (ConfigGamerules.hardcoreBreeding.get()) {
-                    List<LivingEntity> list = this.level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(6.0D, 4.0D, 6.0D));
+                    List<LivingEntity> list = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(6.0D, 4.0D, 6.0D));
                     return list.size() < 3;
                 }
                 return true;
@@ -112,7 +119,7 @@ public class EntityBear extends ComplexMobTerrestrial implements ISpecies, INewS
 
     @Nullable
     public EntityBear getBreedOffspring(ServerLevel serverWorld, AgeableMob ageable) {
-        return create_offspring(new EntityBear(ModEntity.BEAR.get(), this.level));
+        return create_offspring(new EntityBear(ModEntity.BEAR.get(), this.level()));
     }
 
     public boolean isPushedByFluid() {
@@ -120,7 +127,7 @@ public class EntityBear extends ComplexMobTerrestrial implements ISpecies, INewS
     }
 
     public void aiStep() {
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide()) {
             if (this.tickCount % 1000 == 0) {
                 this.addHunger(-2);
                 if (!this.isStarving()) {
@@ -129,7 +136,7 @@ public class EntityBear extends ComplexMobTerrestrial implements ISpecies, INewS
             }
             // Bearserk
             if (this.getHealth() < this.getMaxHealth() / 2) {
-                this.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 1200, 0, true, true));
+                this.addEffect(new MobEffectInstance(MobEffects.STRENGTH, 1200, 0, true, true));
                 this.forceSleep = -1200;
             }
 
@@ -160,7 +167,7 @@ public class EntityBear extends ComplexMobTerrestrial implements ISpecies, INewS
         }
         if (this.getAnimation() != NO_ANIMATION) {
             if (this.getAnimation() == ATTACK_BITE && this.getAnimationTick() == 1) {
-                this.playSound(ModSounds.ENTITY_ATTACK_BITE, 1.5F, 0.8F);
+                this.playSound(ModSounds.ENTITY_ATTACK_BITE.value(), 1.5F, 0.8F);
             }
             if (this.getAnimation() == ATTACK_SWIPE && this.getAnimationTick() == 8) {
                 this.playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.5F, 0.8F);
@@ -175,11 +182,11 @@ public class EntityBear extends ComplexMobTerrestrial implements ISpecies, INewS
                 }
                 if (this.getAnimationTick() == 20) {
                     this.playSound(SoundEvents.PLAYER_SMALL_FALL, 1.5F, 0.8F);
-                    if (!this.level.isClientSide()) {
+                    if (this.level() instanceof ServerLevel serverLevel) {
                         BlockPos pos = this.blockPosition().below();
-                        BlockState state = this.level.getBlockState(pos);
-                        if (!state.addLandingEffects((ServerLevel) this.level, pos, state, this, 40))
-                            ((ServerLevel)this.level).sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, state), this.getX(), this.getY(), this.getZ(), 40, 0.0D, 0.0D, 0.0D, 99.3F);
+                        BlockState state = serverLevel.getBlockState(pos);
+                        if (!state.addLandingEffects(serverLevel, pos, state, this, 40))
+                            serverLevel.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, state), this.getX(), this.getY(), this.getZ(), 40, 0.0D, 0.0D, 0.0D, 99.3F);
                     }
                 }
             }
@@ -196,7 +203,6 @@ public class EntityBear extends ComplexMobTerrestrial implements ISpecies, INewS
         super.aiStep();
     }
 
-    @Override
     protected void reassessTameGoals() {
         if (this.isTame()) {
             if (UntamedWilds.DEBUG) {
@@ -224,8 +230,9 @@ public class EntityBear extends ComplexMobTerrestrial implements ISpecies, INewS
         this.playSound(SoundEvents.POLAR_BEAR_STEP, 0.15F, 1.0F);
     }
 
-    public boolean doHurtTarget(Entity entityIn) {
-        boolean flag = super.doHurtTarget(entityIn);
+    @Override
+    public boolean doHurtTarget(ServerLevel level, Entity entityIn) {
+        boolean flag = super.doHurtTarget(level, entityIn);
         if (flag && this.getAnimation() == NO_ANIMATION && !this.isBaby()) {
             Animation anim = chooseAttackAnimation();
             this.setAnimation(anim);
@@ -234,14 +241,16 @@ public class EntityBear extends ComplexMobTerrestrial implements ISpecies, INewS
         return flag;
     }
 
-    public boolean hurt(DamageSource damageSource, float amount) {
+    @Override
+    public boolean hurtServer(ServerLevel level, DamageSource damageSource, float amount) {
         // Retaliate II: Mob will strike back when attacked by any mob
         performRetaliation(damageSource, this.getHealth(), amount, false);
-        return super.hurt(damageSource, amount);
+        return super.hurtServer(level, damageSource, amount);
     }
 
-    public boolean isInvulnerableTo(DamageSource source) {
-        return super.isInvulnerableTo(source) || source == DamageSource.SWEET_BERRY_BUSH;
+    @Override
+    public boolean isInvulnerableTo(ServerLevel level, DamageSource source) {
+        return super.isInvulnerableTo(level, source) || source.is(DamageTypes.SWEET_BERRY_BUSH);
     }
 
     private Animation chooseAttackAnimation() {
@@ -254,20 +263,20 @@ public class EntityBear extends ComplexMobTerrestrial implements ISpecies, INewS
     }
 
     protected float getStandingEyeHeight(Pose poseIn, EntityDimensions sizeIn) {
-        return sizeIn.height * 0.85F;
+        return sizeIn.height() * 0.85F;
     }
 
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack itemstack = player.getItemInHand(InteractionHand.MAIN_HAND);
-        if (hand == InteractionHand.MAIN_HAND && !this.level.isClientSide()) {
+        if (hand == InteractionHand.MAIN_HAND && !this.level().isClientSide()) {
 
             if (!this.isTame() && this.isBaby() && EntityUtils.hasFullHealth(this) && this.isFood(itemstack)) {
                 this.playSound(SoundEvents.HORSE_EAT, 1.5F, 0.8F);
                 if (this.getRandom().nextInt(3) == 0) {
                     this.tame(player);
-                    EntityUtils.spawnParticlesOnEntity(this.level, this, ParticleTypes.HEART, 3, 6);
+                    EntityUtils.spawnParticlesOnEntity(this.level(), this, ParticleTypes.HEART, 3, 6);
                 } else {
-                    EntityUtils.spawnParticlesOnEntity(this.level, this, ParticleTypes.SMOKE, 3, 3);
+                    EntityUtils.spawnParticlesOnEntity(this.level(), this, ParticleTypes.SMOKE, 3, 3);
                 }
             }
         }
@@ -309,15 +318,17 @@ public class EntityBear extends ComplexMobTerrestrial implements ISpecies, INewS
         return data;
     }
 
-    public void addAdditionalSaveData(CompoundTag compound){
+    @Override
+    public void addAdditionalSaveData(ValueOutput compound){
         super.addAdditionalSaveData(compound);
         compound.putBoolean("hasShortSnout", this.hasShortSnout());
         compound.putBoolean("hasHump", this.hasHump());
     }
 
-    public void readAdditionalSaveData(CompoundTag compound){
+    @Override
+    public void readAdditionalSaveData(ValueInput compound){
         super.readAdditionalSaveData(compound);
-        this.setShortSnout(compound.getBoolean("hasShortSnout"));
-        this.setHump(compound.getBoolean("hasHump"));
+        this.setShortSnout(compound.getBooleanOr("hasShortSnout", false));
+        this.setHump(compound.getBooleanOr("hasHump", false));
     }
 }
