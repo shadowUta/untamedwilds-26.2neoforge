@@ -301,7 +301,7 @@ public class EntityBear extends ComplexMobTerrestrial implements ISpecies, INewS
     private void setHump(boolean hump){ this.entityData.set(BACK_HUMP, hump); }
 
     // TODO: Very shitty hardcoded solution for Blind Cave Bears to keep spawning
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, MobSpawnType reason, @Nullable SpawnGroupData spawnDataIn, @Nullable CompoundTag dataTag) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, EntitySpawnReason reason, @Nullable SpawnGroupData spawnDataIn, @Nullable CompoundTag dataTag) {
         SpawnGroupData data = super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
         if (this.getY() < 53) {
             this.setVariant(1);

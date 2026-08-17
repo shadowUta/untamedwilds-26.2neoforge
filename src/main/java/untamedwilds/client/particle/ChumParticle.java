@@ -3,22 +3,29 @@ package untamedwilds.client.particle;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
 import net.minecraft.core.particles.SimpleParticleType;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.util.RandomSource;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
 public class ChumParticle extends RisingParticle {
     private final SpriteSet spriteWithAge;
 
     private ChumParticle(ClientLevel world, double x, double y, double z, double motionX, double motionY, double motionZ, SpriteSet spriteWithAge) {
-        super(world, x, y, z, motionX, Math.abs(motionY) * -1, motionZ);
+        super(world, x, y, z, motionX, Math.abs(motionY) * -1, motionZ, spriteWithAge.get(0, 0));
         this.spriteWithAge = spriteWithAge;
         this.lifetime = this.random.nextInt(80) + 120;
         this.setSpriteFromAge(spriteWithAge);
     }
 
-    public ParticleRenderType getRenderType() {
-        return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
+    public TextureAtlasSprite getSprite() {
+        return this.spriteWithAge.get(this.age, this.lifetime);
+    }
+
+    @Override
+    protected Layer getLayer() {
+        return Layer.TRANSLUCENT;
     }
 
     public void tick() {
@@ -57,7 +64,7 @@ public class ChumParticle extends RisingParticle {
             this.spriteSet = spriteSet;
         }
 
-        public Particle createParticle(SimpleParticleType typeIn, ClientLevel worldIn, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
+        public Particle createParticle(SimpleParticleType typeIn, ClientLevel worldIn, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, RandomSource random) {
             ChumParticle soulparticle = new ChumParticle(worldIn, x, y, z, xSpeed, ySpeed, zSpeed, this.spriteSet);
             soulparticle.setAlpha(0.8F);
             return soulparticle;

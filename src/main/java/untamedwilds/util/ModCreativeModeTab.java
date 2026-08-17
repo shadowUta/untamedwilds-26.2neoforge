@@ -1,13 +1,11 @@
 package untamedwilds.util;
 
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import untamedwilds.init.ModItems;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
-@MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
 public class ModCreativeModeTab extends CreativeModeTab {
 

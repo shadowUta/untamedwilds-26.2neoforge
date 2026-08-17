@@ -49,7 +49,7 @@ public class BeAnAssTarget<T extends LivingEntity> extends TargetGoal {
                 return false;
             }
         }
-        List<T> list = this.mob.level.getEntitiesOfClass(this.targetClass, this.getTargetableArea(this.getFollowDistance()), this.targetEntitySelector);
+        List<T> list = this.mob.level().getEntitiesOfClass(this.targetClass, this.getTargetableArea(this.getFollowDistance()), this.targetEntitySelector);
         list.removeIf((Predicate<LivingEntity>) this::shouldRemoveTarget);
 
         if (list.isEmpty()) {

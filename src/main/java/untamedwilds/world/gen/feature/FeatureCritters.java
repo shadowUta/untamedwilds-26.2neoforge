@@ -32,7 +32,7 @@ public class FeatureCritters extends Feature<NoneFeatureConfiguration> {
             return false;
 
         for (int i = 0; i < 5; i++) {
-            Optional<FaunaHandler.SpawnListEntry> entry = WeightedRandom.getRandomItem(rand, FaunaHandler.getSpawnableList(FaunaHandler.animalType.CRITTER));
+            Optional<FaunaHandler.SpawnListEntry> entry = WeightedRandom.getRandomItem(rand, FaunaHandler.getSpawnableList(FaunaHandler.animalType.CRITTER), e -> e.itemWeight);
             if (entry.isPresent()) {
                 EntityType<?> type = entry.get().entityType;
                 if (FaunaSpawn.performWorldGenSpawning(type, SpawnPlacements.Type.NO_RESTRICTIONS, Heightmap.Types.WORLD_SURFACE_WG, world, pos, rand, entry.get().getGroupCount())) {

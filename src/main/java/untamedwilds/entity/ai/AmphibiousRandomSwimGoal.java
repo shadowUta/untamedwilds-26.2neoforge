@@ -36,7 +36,7 @@ public class AmphibiousRandomSwimGoal extends RandomSwimmingGoal {
                 vec31 = this.fish.position().add(this.fish.position().vectorTo(vec3).normalize().multiply(aint[0], aint[1], aint[0]));
             }
 
-            if (vec31 == null || this.fish.level.getFluidState(new BlockPos(vec31)).isEmpty()) {
+            if (vec31 == null || this.fish.level().getFluidState(BlockPos.containing(vec31)).isEmpty()) {
                 return vec3;
             }
 

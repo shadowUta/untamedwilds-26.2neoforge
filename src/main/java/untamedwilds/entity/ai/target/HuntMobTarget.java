@@ -2,7 +2,7 @@ package untamedwilds.entity.ai.target;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobType;
+import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.entity.ai.goal.target.TargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.monster.Creeper;
@@ -39,7 +39,7 @@ public class HuntMobTarget<T extends LivingEntity> extends TargetGoal {
     }
 
     protected boolean isValidTarget(LivingEntity entity, @Nullable Predicate<LivingEntity> predicate) {
-        if (entity instanceof Creeper || entity.equals(this.mob) || (!ConfigGamerules.attackUndead.get() && entity.getMobType() == MobType.UNDEAD) || (entity instanceof ComplexMob cmob && !cmob.canBeTargeted()) || (predicate != null && !predicate.test(entity))) {
+        if (entity instanceof Creeper || entity.equals(this.mob) || (entity instanceof ComplexMob cmob && !cmob.canBeTargeted()) || (predicate != null && !predicate.test(entity))) {
             return false;
         }
         if (!this.isCannibal && this.mob.getClass() == entity.getClass() && this.mob instanceof ComplexMob attacker && entity instanceof ComplexMob defender) {
@@ -63,7 +63,7 @@ public class HuntMobTarget<T extends LivingEntity> extends TargetGoal {
             }
         }
 
-        List<T> list = this.mob.level.getEntitiesOfClass(this.targetClass, this.getTargettableArea(this.getFollowDistance()), this.targetEntitySelector);
+        List<T> list = this.mob.level().getEntitiesOfClass(this.targetClass, this.getTargettableArea(this.getFollowDistance()), this.targetEntitySelector);
         if (list.isEmpty())
             return false;
 

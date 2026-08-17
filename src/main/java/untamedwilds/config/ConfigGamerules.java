@@ -1,32 +1,32 @@
 package untamedwilds.config;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class ConfigGamerules {
 
-    public static ForgeConfigSpec.BooleanValue naturalBreeding;
-    public static ForgeConfigSpec.BooleanValue hardcoreBreeding;
-    public static ForgeConfigSpec.BooleanValue easyBreeding;
-    public static ForgeConfigSpec.BooleanValue genderedBreeding;
-    public static ForgeConfigSpec.BooleanValue hardcoreDeath;
-    public static ForgeConfigSpec.BooleanValue playerBreeding;
-    public static ForgeConfigSpec.BooleanValue randomSpecies;
-    public static ForgeConfigSpec.BooleanValue scientificNames;
-    public static ForgeConfigSpec.BooleanValue grazerGriefing;
-    public static ForgeConfigSpec.BooleanValue mobGriefing;
-    public static ForgeConfigSpec.BooleanValue angrySleepers;
-    public static ForgeConfigSpec.BooleanValue contactAgression;
-    public static ForgeConfigSpec.BooleanValue mobsLayEggs;
-    public static ForgeConfigSpec.BooleanValue spyglassBehaviorChange;
-    public static ForgeConfigSpec.IntValue spyglassCheckRange;
-    public static ForgeConfigSpec.BooleanValue sleepBehaviour;
-    public static ForgeConfigSpec.BooleanValue easyMobCapturing;
-    public static ForgeConfigSpec.IntValue cycleLength;
-    public static ForgeConfigSpec.DoubleValue rareSkinChance;
-    public static ForgeConfigSpec.BooleanValue wildRareSkins;
-    public static ForgeConfigSpec.BooleanValue attackUndead;
+    public static ModConfigSpec.BooleanValue naturalBreeding;
+    public static ModConfigSpec.BooleanValue hardcoreBreeding;
+    public static ModConfigSpec.BooleanValue easyBreeding;
+    public static ModConfigSpec.BooleanValue genderedBreeding;
+    public static ModConfigSpec.BooleanValue hardcoreDeath;
+    public static ModConfigSpec.BooleanValue playerBreeding;
+    public static ModConfigSpec.BooleanValue randomSpecies;
+    public static ModConfigSpec.BooleanValue scientificNames;
+    public static ModConfigSpec.BooleanValue grazerGriefing;
+    public static ModConfigSpec.BooleanValue mobGriefing;
+    public static ModConfigSpec.BooleanValue angrySleepers;
+    public static ModConfigSpec.BooleanValue contactAgression;
+    public static ModConfigSpec.BooleanValue mobsLayEggs;
+    public static ModConfigSpec.BooleanValue spyglassBehaviorChange;
+    public static ModConfigSpec.IntValue spyglassCheckRange;
+    public static ModConfigSpec.BooleanValue sleepBehaviour;
+    public static ModConfigSpec.BooleanValue easyMobCapturing;
+    public static ModConfigSpec.IntValue cycleLength;
+    public static ModConfigSpec.DoubleValue rareSkinChance;
+    public static ModConfigSpec.BooleanValue wildRareSkins;
+    public static ModConfigSpec.BooleanValue attackUndead;
 
-    ConfigGamerules(final ForgeConfigSpec.Builder builder) {
+    ConfigGamerules(final ModConfigSpec.Builder builder) {
         builder.comment("Options pertaining to global Gamerules");
 
         naturalBreeding = builder.comment("Defines whether animals should breed without Player intervention.").define("gamerules.natural_breeding", true);

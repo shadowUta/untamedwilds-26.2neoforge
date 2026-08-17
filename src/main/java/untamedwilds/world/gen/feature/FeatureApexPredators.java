@@ -38,7 +38,7 @@ public class FeatureApexPredators extends Feature<NoneFeatureConfiguration> {
             return false;
 
         for (int i = 0; i < 3; i++) {
-            Optional<FaunaHandler.SpawnListEntry> entry = WeightedRandom.getRandomItem(rand, FaunaHandler.getSpawnableList(FaunaHandler.animalType.APEX_PRED));
+            Optional<FaunaHandler.SpawnListEntry> entry = WeightedRandom.getRandomItem(rand, FaunaHandler.getSpawnableList(FaunaHandler.animalType.APEX_PRED), e -> e.itemWeight);
             if (entry.isPresent()) {
                 EntityType<?> type = entry.get().entityType;
                 if (type != null) {

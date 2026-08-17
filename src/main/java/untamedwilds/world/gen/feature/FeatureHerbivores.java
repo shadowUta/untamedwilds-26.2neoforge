@@ -33,7 +33,7 @@ public class FeatureHerbivores extends Feature<NoneFeatureConfiguration> {
             return false;
 
         for (int i = 0; i < 3; i++) {
-            Optional<FaunaHandler.SpawnListEntry> entry = WeightedRandom.getRandomItem(rand, FaunaHandler.getSpawnableList(FaunaHandler.animalType.LARGE_HERB));
+            Optional<FaunaHandler.SpawnListEntry> entry = WeightedRandom.getRandomItem(rand, FaunaHandler.getSpawnableList(FaunaHandler.animalType.LARGE_HERB), e -> e.itemWeight);
             if (entry.isPresent()) {
                 EntityType<?> type = entry.get().entityType;
                 if (FaunaSpawn.performWorldGenSpawning(type, SpawnPlacements.Type.NO_RESTRICTIONS, Heightmap.Types.WORLD_SURFACE_WG, world, pos, rand, entry.get().getGroupCount())) {

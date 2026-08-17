@@ -1,6 +1,5 @@
 package untamedwilds.entity;
 
-import com.mojang.math.Vector3d;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
@@ -22,7 +21,7 @@ import net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.Vec3;
 import untamedwilds.UntamedWilds;
@@ -33,7 +32,7 @@ public abstract class ComplexMobAquatic extends ComplexMob {
 
     public ComplexMobAquatic(EntityType<? extends ComplexMob> entity, Level worldIn) {
         super(entity, worldIn);
-        this.setPathfindingMalus(BlockPathTypes.WATER, 0.0F);
+        this.setPathfindingMalus(PathType.WATER, 0.0F);
         this.moveControl = new SmoothSwimmingMoveControl(this, 85, 10, 0.02F, 0.1F, true);
         this.lookControl = new SmoothSwimmingLookControl(this, 10);
     }
@@ -45,12 +44,8 @@ public abstract class ComplexMobAquatic extends ComplexMob {
         return true;
     }
 
-    public MobType getMobType() {
-        return MobType.WATER;
-    }
-
     protected float getStandingEyeHeight(Pose p_213348_1_, EntityDimensions p_213348_2_) {
-        return p_213348_2_.height * 0.2F;
+        return p_213348_2_.height() * 0.2F;
     }
 
     public void baseTick() {
@@ -69,7 +64,7 @@ public abstract class ComplexMobAquatic extends ComplexMob {
     }
 
     public void aiStep() {
-        if (!this.isInWater() && this.isOnGround() && this.verticalCollision) {
+        if (!this.isInWater() && this.onGround() && this.verticalCollision) {
             this.setDeltaMovement(this.getDeltaMovement().add(((this.random.nextFloat() * 2.0F - 1.0F) * 0.05F), 0.4000000059604645D, ((this.random.nextFloat() * 2.0F - 1.0F) * 0.05F)));
             this.setOnGround(false);
             this.playSound(this.getFlopSound(), this.getSoundVolume(), this.getVoicePitch());
@@ -79,11 +74,11 @@ public abstract class ComplexMobAquatic extends ComplexMob {
     }
 
     protected void updateAir(int air) {
-        if (this.isAlive() && !this.isInWaterOrBubble()) {
+        if (this.isAlive() && !this.isInWater()) {
             this.setAirSupply(air - 1);
             if (this.getAirSupply() == -20) {
                 this.setAirSupply(0);
-                this.hurt(DamageSource.DROWN, 2.0F);
+                this.hurt(this.damageSources().drown(), 2.0F);
             }
         } else {
             this.setAirSupply(300);
@@ -101,7 +96,7 @@ public abstract class ComplexMobAquatic extends ComplexMob {
     }
 
     public void travel(Vec3 movement) {
-        if (!this.level.isClientSide() && this.isInWater()) {
+        if (!this.level().isClientSide() && this.isInWater()) {
             this.moveRelative(this.getSpeed(), movement);
             this.move(MoverType.SELF, this.getDeltaMovement());
             this.setDeltaMovement(this.getDeltaMovement().scale(0.9D));
@@ -191,11 +186,11 @@ public abstract class ComplexMobAquatic extends ComplexMob {
             Vec3 vector3d = BehaviorUtils.getRandomSwimmablePos(this.mob, 10, 7);
 
             //UntamedWilds.LOGGER.info((vector3d != null) + " " + (this.heightFromBottom > 0) + " " + this.mob.level.canSeeSkyFromBelowWater(this.mob.blockPosition()));
-            if (vector3d != null && this.heightFromBottom > 0 && this.mob.level.canSeeSkyFromBelowWater(this.mob.blockPosition())) {
-                int offset = this.heightFromBottom + this.mob.level.getRandom().nextInt(7) - 4;
+            if (vector3d != null && this.heightFromBottom > 0 && this.mob.level().canSeeSkyFromBelowWater(this.mob.blockPosition())) {
+                int offset = this.heightFromBottom + this.mob.level().getRandom().nextInt(7) - 4;
                 //UntamedWilds.LOGGER.info(vector3d);
                 //((ServerLevel)this.mob.level).sendParticles(ParticleTypes.GLOW, vector3d.x(), this.mob.level.getHeight(Heightmap.Types.OCEAN_FLOOR, (int)vector3d.x(), (int)vector3d.z()) + offset, vector3d.z() + 0.5, 50, 0.0D, 0.0D, 0.0D, 0.15F);
-                return new Vec3(vector3d.x(), this.mob.level.getHeight(Heightmap.Types.OCEAN_FLOOR, (int)vector3d.x(), (int)vector3d.z()) + offset, vector3d.z());
+                return new Vec3(vector3d.x(), this.mob.level().getHeight(Heightmap.Types.OCEAN_FLOOR, (int)vector3d.x(), (int)vector3d.z()) + offset, vector3d.z());
             }
             return vector3d;
         }

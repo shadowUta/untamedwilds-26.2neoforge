@@ -10,7 +10,7 @@ import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 import untamedwilds.entity.ComplexMob;
 
@@ -29,7 +29,7 @@ public class SmartFollowOwnerGoal extends Goal {
 
     public SmartFollowOwnerGoal(ComplexMob entityIn, double speedIn, float minDistIn, float maxDistIn) {
         this.taskOwner = entityIn;
-        this.level = taskOwner.level;
+        this.level = taskOwner.level();
         this.followSpeed = speedIn;
         this.navigator = entityIn.getNavigation();
         this.minDist = minDistIn;
@@ -58,15 +58,15 @@ public class SmartFollowOwnerGoal extends Goal {
     @Override
     public void start() {
         this.timeToRecalcPath = 0;
-        this.oldWaterCost = this.taskOwner.getPathfindingMalus(BlockPathTypes.WATER);
-        this.taskOwner.setPathfindingMalus(BlockPathTypes.WATER, 0.0F);
+        this.oldWaterCost = this.taskOwner.getPathfindingMalus(PathType.WATER);
+        this.taskOwner.setPathfindingMalus(PathType.WATER, 0.0F);
     }
 
     @Override
     public void stop() {
         this.owner = null;
         this.navigator.stop();
-        this.taskOwner.setPathfindingMalus(BlockPathTypes.WATER, this.oldWaterCost);
+        this.taskOwner.setPathfindingMalus(PathType.WATER, this.oldWaterCost);
     }
 
     @Override
@@ -107,15 +107,15 @@ public class SmartFollowOwnerGoal extends Goal {
         } else if (!this.canTeleportTo(new BlockPos(p_25304_, p_25305_, p_25306_))) {
             return false;
         } else {
-            this.taskOwner.moveTo((double)p_25304_ + 0.5D, p_25305_, (double)p_25306_ + 0.5D, this.taskOwner.getYRot(), this.taskOwner.getXRot());
+            this.taskOwner.teleportTo((double)p_25304_ + 0.5D, p_25305_, (double)p_25306_ + 0.5D);
             this.taskOwner.getNavigation().stop();
             return true;
         }
     }
 
     private boolean canTeleportTo(BlockPos p_25308_) {
-        BlockPathTypes blockpathtypes = WalkNodeEvaluator.getBlockPathTypeStatic(this.level, p_25308_.mutable());
-        if (blockpathtypes != BlockPathTypes.WALKABLE) {
+        PathType pathType = WalkNodeEvaluator.getPathTypeStatic(this.taskOwner, p_25308_);
+        if (pathType != PathType.WALKABLE) {
             return false;
         } else {
             BlockState blockstate = this.level.getBlockState(p_25308_.below());

@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 import untamedwilds.client.model.ModelTarantula;
 import untamedwilds.entity.arthropod.EntityTarantula;
@@ -27,7 +27,7 @@ public class RendererTarantula extends MobRenderer<EntityTarantula, ModelTarantu
         this.shadowRadius = f * 0.6F;
     }
 
-    public @NotNull ResourceLocation getTextureLocation(EntityTarantula entity) {
+    public @NotNull Identifier getTextureLocation(EntityTarantula entity) {
         return entity.getTexture();
     }
 }

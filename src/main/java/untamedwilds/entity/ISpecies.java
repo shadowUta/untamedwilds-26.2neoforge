@@ -4,7 +4,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.level.biome.Biome;
 import untamedwilds.config.ConfigGamerules;
 import untamedwilds.util.SpeciesDataHolder;
@@ -22,7 +22,7 @@ import java.util.Random;
 
 public interface ISpecies {
 
-    default int setSpeciesByBiome(Holder<Biome> biome, MobSpawnType reason) {
+    default int setSpeciesByBiome(Holder<Biome> biome, EntitySpawnReason reason) {
         if (ConfigGamerules.randomSpecies.get() || isArtificialMobSpawnType(reason)) {
             return ((Mob)this).getRandom().nextInt(ComplexMob.getEntityData(((Mob)this).getType()).getSpeciesData().size());
         }
@@ -63,7 +63,7 @@ public interface ISpecies {
         return this instanceof ComplexMob ? getSpeciesName(((ComplexMob)this).getVariant()) : "";
     }
 
-    default boolean isArtificialMobSpawnType(MobSpawnType reason) {
-        return reason == MobSpawnType.SPAWN_EGG || reason == MobSpawnType.BUCKET || reason == MobSpawnType.MOB_SUMMONED || reason == MobSpawnType.COMMAND || reason == MobSpawnType.SPAWNER;
+    default boolean isArtificialMobSpawnType(EntitySpawnReason reason) {
+        return reason == EntitySpawnReason.SPAWN_EGG || reason == EntitySpawnReason.BUCKET || reason == EntitySpawnReason.MOB_SUMMONED || reason == EntitySpawnReason.COMMAND || reason == EntitySpawnReason.SPAWNER;
     }
 }

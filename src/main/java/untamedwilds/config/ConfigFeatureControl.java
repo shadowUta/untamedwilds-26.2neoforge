@@ -1,7 +1,7 @@
 package untamedwilds.config;
 
 import com.google.common.collect.Lists;
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -9,35 +9,35 @@ import java.util.List;
 
 public class ConfigFeatureControl {
 
-    public static ForgeConfigSpec.BooleanValue addAnemones;
-    public static ForgeConfigSpec.BooleanValue addReeds;
-    public static ForgeConfigSpec.BooleanValue addFlora;
-    public static ForgeConfigSpec.BooleanValue addAlgae;
-    public static ForgeConfigSpec.BooleanValue addTreeOrchids;
-    public static ForgeConfigSpec.BooleanValue addBurrows;
+    public static ModConfigSpec.BooleanValue addAnemones;
+    public static ModConfigSpec.BooleanValue addReeds;
+    public static ModConfigSpec.BooleanValue addFlora;
+    public static ModConfigSpec.BooleanValue addAlgae;
+    public static ModConfigSpec.BooleanValue addTreeOrchids;
+    public static ModConfigSpec.BooleanValue addBurrows;
 
-    public static ForgeConfigSpec.ConfigValue<List<? extends String>> reedBlacklist;
-    public static ForgeConfigSpec.ConfigValue<List<? extends String>> floraBlacklist;
-    public static ForgeConfigSpec.ConfigValue<List<? extends String>> algaeBlacklist;
+    public static ModConfigSpec.ConfigValue<List<? extends String>> reedBlacklist;
+    public static ModConfigSpec.ConfigValue<List<? extends String>> floraBlacklist;
+    public static ModConfigSpec.ConfigValue<List<? extends String>> algaeBlacklist;
 
-    public static ForgeConfigSpec.IntValue freqReeds;
-    public static ForgeConfigSpec.IntValue freqFlora;
-    public static ForgeConfigSpec.IntValue freqAlgae;
+    public static ModConfigSpec.IntValue freqReeds;
+    public static ModConfigSpec.IntValue freqFlora;
+    public static ModConfigSpec.IntValue freqAlgae;
 
-    public static ForgeConfigSpec.IntValue freqCritter;
-    public static ForgeConfigSpec.IntValue freqWater;
-    public static ForgeConfigSpec.IntValue freqSessile;
-    public static ForgeConfigSpec.IntValue freqOcean;
-    public static ForgeConfigSpec.IntValue freqApex;
-    public static ForgeConfigSpec.IntValue freqHerbivores;
-    public static ForgeConfigSpec.IntValue probUnderground;
+    public static ModConfigSpec.IntValue freqCritter;
+    public static ModConfigSpec.IntValue freqWater;
+    public static ModConfigSpec.IntValue freqSessile;
+    public static ModConfigSpec.IntValue freqOcean;
+    public static ModConfigSpec.IntValue freqApex;
+    public static ModConfigSpec.IntValue freqHerbivores;
+    public static ModConfigSpec.IntValue probUnderground;
 
-    public static ForgeConfigSpec.ConfigValue<List<? extends String>> dimensionFeatureBlacklist;
-    public static HashMap<String, ForgeConfigSpec.BooleanValue> options = new HashMap<>();
+    public static ModConfigSpec.ConfigValue<List<? extends String>> dimensionFeatureBlacklist;
+    public static HashMap<String, ModConfigSpec.BooleanValue> options = new HashMap<>();
 
-    private final ForgeConfigSpec.Builder builder;
+    private final ModConfigSpec.Builder builder;
 
-    ConfigFeatureControl(final ForgeConfigSpec.Builder builder) {
+    ConfigFeatureControl(final ModConfigSpec.Builder builder) {
         //builder.push("feature_control");
         this.builder = builder;
         builder.comment("Options pertaining to blocks and their world generation");
@@ -67,8 +67,8 @@ public class ConfigFeatureControl {
         //builder.pop();
     }
 
-    private ForgeConfigSpec.BooleanValue define(String name, boolean value, String comment) {
-        ForgeConfigSpec.BooleanValue option = builder.comment(comment).define(name, value);
+    private ModConfigSpec.BooleanValue define(String name, boolean value, String comment) {
+        ModConfigSpec.BooleanValue option = builder.comment(comment).define(name, value);
         options.put(name, option);
         return option;
     }

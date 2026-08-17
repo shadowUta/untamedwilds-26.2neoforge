@@ -2,7 +2,7 @@ package untamedwilds.network;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import untamedwilds.UntamedWilds;
@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 
 public class SyncTextureData {
 
-    private final ResourceLocation entityName;
+    private final Identifier entityName;
     private final String speciesName;
     private final Integer skinsData;
     private final Integer id;
@@ -27,7 +27,7 @@ public class SyncTextureData {
         id = buf.readInt();
     }
 
-    public SyncTextureData(ResourceLocation str, String species_name, Integer skins, Integer id) {
+    public SyncTextureData(Identifier str, String species_name, Integer skins, Integer id) {
         this.entityName = str;
         this.speciesName = species_name;
         this.skinsData = skins;

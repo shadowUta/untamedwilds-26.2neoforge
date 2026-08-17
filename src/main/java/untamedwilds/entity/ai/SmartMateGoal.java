@@ -2,7 +2,7 @@ package untamedwilds.entity.ai;
 
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.ai.goal.Goal;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.Level;
 import untamedwilds.config.ConfigGamerules;
 import untamedwilds.entity.ComplexMob;
@@ -26,7 +26,7 @@ public class SmartMateGoal extends Goal {
 
     private SmartMateGoal(ComplexMob entityIn, double speedIn, int chance, Class<? extends ComplexMob> mateClass) {
         this.taskOwner = entityIn;
-        this.world = entityIn.level;
+        this.world = entityIn.level();
         this.mateClass = mateClass;
         this.executionChance = chance;
         this.moveSpeed = speedIn;
@@ -62,9 +62,7 @@ public class SmartMateGoal extends Goal {
         if (this.spawnBabyDelay >= 100 && this.taskOwner.distanceToSqr(this.targetMate) < 9.0D) {
             this.taskOwner.resetLove();
             this.targetMate.resetLove();
-            if (this.world.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
-                this.world.addFreshEntity(new ExperienceOrb(this.world, this.taskOwner.getX(), this.taskOwner.getY(), this.taskOwner.getZ(), this.taskOwner.getRandom().nextInt(7) + 1));
-            }
+            this.world.addFreshEntity(new ExperienceOrb(this.world, this.taskOwner.getX(), this.taskOwner.getY(), this.taskOwner.getZ(), this.taskOwner.getRandom().nextInt(7) + 1));
             // Positive Growing Age is used as pregnancy counter (handled in ComplexMob)
             this.taskOwner.setAge(this.taskOwner.getPregnancyTime());
             this.targetMate.setAge(this.taskOwner.getPregnancyTime());

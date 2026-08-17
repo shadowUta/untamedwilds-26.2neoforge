@@ -19,12 +19,14 @@ public class SmartAvoidGoal <T extends LivingEntity> extends AvoidEntityGoal<T> 
     protected ComplexMob taskOwner;
     protected final float avoidDistance;
     private final TargetingConditions builtTargetSelector;
+    private final Predicate<LivingEntity> targetSelector;
 
     public SmartAvoidGoal(ComplexMob entityIn, Class<T> classToAvoidIn, float avoidDistanceIn, double farSpeedIn, double nearSpeedIn, final Predicate<LivingEntity> targetSelector) {
         super(entityIn, classToAvoidIn, avoidDistanceIn, farSpeedIn, nearSpeedIn, EntitySelector.NO_CREATIVE_OR_SPECTATOR::test);
         this.taskOwner = entityIn;
         this.avoidDistance = avoidDistanceIn;
-        this.builtTargetSelector = TargetingConditions.forCombat().range(avoidDistanceIn).selector(targetSelector);
+        this.targetSelector = targetSelector;
+        this.builtTargetSelector = TargetingConditions.forCombat().range(avoidDistanceIn);
         this.setFlags(EnumSet.of(Goal.Flag.MOVE));
     }
 
@@ -37,7 +39,7 @@ public class SmartAvoidGoal <T extends LivingEntity> extends AvoidEntityGoal<T> 
             return false;
         }
 
-        List<T> list = this.taskOwner.level.getNearbyEntities(avoidClass, this.builtTargetSelector, this.taskOwner, this.taskOwner.getBoundingBox().inflate(avoidDistance, 4f, avoidDistance));
+        List<T> list = this.taskOwner.level().getEntitiesOfClass(avoidClass, this.taskOwner.getBoundingBox().inflate(avoidDistance, 4f, avoidDistance), this.targetSelector);
         if (list.isEmpty()) {
             return false;
         } else {

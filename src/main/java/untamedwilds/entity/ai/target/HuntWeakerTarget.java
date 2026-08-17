@@ -1,7 +1,7 @@
 package untamedwilds.entity.ai.target;
 
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobType;
+import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.monster.Creeper;
 import untamedwilds.config.ConfigGamerules;
@@ -25,7 +25,7 @@ public class HuntWeakerTarget<T extends LivingEntity> extends HuntMobTarget<T> {
     }
 
     protected boolean isValidTarget(LivingEntity entity, @Nullable Predicate<LivingEntity> predicate) {
-        if (entity instanceof Creeper || entity.equals(this.mob) || (!ConfigGamerules.attackUndead.get() && entity.getMobType() == MobType.UNDEAD) || entity.isVehicle() || (predicate != null && !predicate.test(entity)) || entity.getHealth() / entity.getMaxHealth() > 0.8) {
+        if (entity instanceof Creeper || entity.equals(this.mob) || entity.isVehicle() || (predicate != null && !predicate.test(entity)) || entity.getHealth() / entity.getMaxHealth() > 0.8) {
             return false;
         }
         if (ComplexMob.getEcoLevel(entity) < ComplexMob.getEcoLevel(this.mob) && this.mob.getClass() == entity.getClass() && this.mob instanceof ComplexMob attacker && entity instanceof ComplexMob defender) {
@@ -41,7 +41,7 @@ public class HuntWeakerTarget<T extends LivingEntity> extends HuntMobTarget<T> {
         if (this.mob.isBaby() || this.mob.getRandom().nextInt(this.executionChance) != 0) {
             return false;
         }
-        List<T> list = this.mob.level.getEntitiesOfClass(this.targetClass, this.mob.getBoundingBox().inflate(this.getFollowDistance(), 12.0D, this.getFollowDistance()), this.targetEntitySelector);
+        List<T> list = this.mob.level().getEntitiesOfClass(this.targetClass, this.mob.getBoundingBox().inflate(this.getFollowDistance(), 12.0D, this.getFollowDistance()), this.targetEntitySelector);
         if (list.isEmpty())
             return false;
 

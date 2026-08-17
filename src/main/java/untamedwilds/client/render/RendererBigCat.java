@@ -5,7 +5,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 import untamedwilds.client.model.ModelBigCat;
 import untamedwilds.client.model.ModelBigCatCub;
@@ -38,7 +38,7 @@ public class RendererBigCat extends MobRenderer<EntityBigCat, EntityModel<Entity
     }
 
     @Override
-    public @NotNull ResourceLocation getTextureLocation(EntityBigCat entity) {
+    public @NotNull Identifier getTextureLocation(EntityBigCat entity) {
         return entity.getTexture();
     }
 }

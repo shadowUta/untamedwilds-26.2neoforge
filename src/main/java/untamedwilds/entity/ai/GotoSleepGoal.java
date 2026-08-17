@@ -1,6 +1,7 @@
 package untamedwilds.entity.ai;
 
-import com.mojang.math.Vector3f;
+import org.joml.Vector3f;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -67,7 +68,8 @@ public class GotoSleepGoal extends Goal {
                 this.creature.setHome(pos);
             }
         }
-        this.target = new Vector3f(this.creature.getHomeAsVec());
+        Vec3 home = this.creature.getHomeAsVec();
+        this.target = new Vector3f((float) home.x, (float) home.y, (float) home.z);
         return true;
     }
 
@@ -115,7 +117,7 @@ public class GotoSleepGoal extends Goal {
 
     private boolean isValidShelter(BlockPos blockPos) {
         // We consider a valid shelter a dark location, with Sky Light Level less than 14 (mostly, to prevent mobs sleeping under broad daylight)
-        return !this.creature.level.canSeeSky(blockPos);
+        return !this.creature.level().canSeeSky(blockPos);
         //return this.creature.level.getLightFor(LightType.SKY, blockPos) <= 14; // Was 12
     }
 }

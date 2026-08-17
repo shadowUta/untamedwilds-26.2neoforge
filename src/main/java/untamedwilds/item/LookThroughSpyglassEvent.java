@@ -2,7 +2,7 @@ package untamedwilds.item;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.contents.LiteralContents;
+import net.minecraft.network.chat.contents.PlainTextContents.LiteralContents;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -16,9 +16,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 import untamedwilds.UntamedWilds;
 import untamedwilds.config.ConfigGamerules;
 import untamedwilds.entity.ComplexMob;
@@ -26,7 +26,7 @@ import untamedwilds.entity.ISpecies;
 import untamedwilds.entity.relict.EntitySpitter;
 import untamedwilds.init.ModAdvancementTriggers;
 
-@Mod.EventBusSubscriber(modid = UntamedWilds.MOD_ID)
+@net.neoforged.fml.common.EventBusSubscriber(modid = UntamedWilds.MOD_ID)
 public class LookThroughSpyglassEvent {
 
     @SubscribeEvent

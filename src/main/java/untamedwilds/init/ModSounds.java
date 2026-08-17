@@ -1,19 +1,21 @@
 package untamedwilds.init;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 import untamedwilds.UntamedWilds;
 
 @SuppressWarnings("unused")
-@Mod.EventBusSubscriber(modid = UntamedWilds.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = UntamedWilds.MOD_ID)
 public class ModSounds {
 
-    public static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, UntamedWilds.MOD_ID);
+    public static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(Registries.SOUND_EVENT, UntamedWilds.MOD_ID);
 
-    public static final SoundEvent ENTITY_ATTACK_BITE = registerSound("entity.generic.bite");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ENTITY_ATTACK_BITE = registerSound("entity.generic.bite");
 
     public static final SoundEvent ENTITY_HIPPO_AMBIENT = registerSound("entity.hippo.ambient");
 
@@ -65,10 +67,8 @@ public class ModSounds {
     public static final SoundEvent ENTITY_SNAKE_HISS = registerSound("entity.snake.warning");
     public static final SoundEvent ENTITY_SNAKE_RATTLE = registerSound("entity.snake.rattle");
 
-    private static SoundEvent registerSound(String soundName) {
-        ResourceLocation location = new ResourceLocation(UntamedWilds.MOD_ID, soundName);
-        SoundEvent event = new SoundEvent(location);
-        ModSounds.SOUNDS.register(soundName, () -> event);
-        return event;
+    private static DeferredHolder<SoundEvent, SoundEvent> registerSound(String soundName) {
+        Identifier location = Identifier.fromNamespaceAndPath(UntamedWilds.MOD_ID, soundName);
+        return ModSounds.SOUNDS.register(soundName, () -> new SoundEvent(location));
     }
 }

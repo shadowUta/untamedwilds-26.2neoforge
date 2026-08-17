@@ -56,7 +56,7 @@ public class GuardPositionTarget<T extends LivingEntity> extends TargetGoal {
         if (this.guardPos == null)
             this.guardPos = this.mob.blockPosition();
 
-        List<T> list = this.mob.level.getEntitiesOfClass(this.targetClass, this.getTargettableArea(this.getFollowDistance()), this.targetEntitySelector);
+        List<T> list = this.mob.level().getEntitiesOfClass(this.targetClass, this.getTargettableArea(this.getFollowDistance()), this.targetEntitySelector);
         if (list.isEmpty() && this.guardPos != null) {
             this.mob.getNavigation().moveTo(this.guardPos.getX(), this.guardPos.getY(), this.guardPos.getZ(), 1);
             if (this.mob.distanceToSqr(this.guardPos.getX(), this.guardPos.getY(), this.guardPos.getZ()) < 2) {

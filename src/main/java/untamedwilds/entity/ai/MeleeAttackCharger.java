@@ -1,6 +1,5 @@
 package untamedwilds.entity.ai;
 
-import com.mojang.math.Vector3d;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
@@ -35,11 +34,11 @@ public class MeleeAttackCharger extends Goal {
     public boolean canUse() {
         LivingEntity chargeTarget = this.taskOwner.getTarget();
 
-        if (this.taskOwner.isBaby() || chargeTarget == null || !this.taskOwner.isOnGround() || this.taskOwner.getRandom().nextInt(this.executionChance) != 0) {
+        if (this.taskOwner.isBaby() || chargeTarget == null || !this.taskOwner.onGround() || this.taskOwner.getRandom().nextInt(this.executionChance) != 0) {
             return false;
         } else {
             double distance = this.taskOwner.distanceTo(chargeTarget);
-            if (distance < 2 || distance > 24 || !this.taskOwner.isOnGround()) {
+            if (distance < 2 || distance > 24 || !this.taskOwner.onGround()) {
                 return false;
             } else {
                 Vec3 chargePos = EntityUtils.getOvershootPath(taskOwner, chargeTarget, 10);
@@ -83,10 +82,10 @@ public class MeleeAttackCharger extends Goal {
                 ((ServerWorld)this.taskOwner.world).spawnParticle(ParticleTypes.SOUL_FIRE_FLAME, offset_box.minX, offset_box.minY, offset_box.minZ, 1, 0, 0, 0, 0.05D);
                 ((ServerWorld)this.taskOwner.world).spawnParticle(ParticleTypes.SOUL_FIRE_FLAME, offset_box.maxX, offset_box.maxY, offset_box.maxZ, 1, 0, 0, 0, 0.05D);
             }*/
-            List<LivingEntity> entitiesHit = this.taskOwner.getLevel().getNearbyEntities(LivingEntity.class, TargetingConditions.forCombat(), this.taskOwner, offset_box);
+            List<LivingEntity> entitiesHit = this.taskOwner.level().getEntitiesOfClass(LivingEntity.class, offset_box);
             for (LivingEntity entityHit : entitiesHit) {
                 if (!(entityHit instanceof EntityRhino) && !entityHit.equals(this.taskOwner) && this.taskOwner.hasLineOfSight(entityHit)) {
-                    this.taskOwner.doHurtTarget(entityHit);
+                    this.taskOwner.doHurtTarget((net.minecraft.server.level.ServerLevel)this.taskOwner.level(), entityHit);
                 }
             }
         }

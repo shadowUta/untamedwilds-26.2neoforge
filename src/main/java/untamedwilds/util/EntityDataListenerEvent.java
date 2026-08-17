@@ -1,12 +1,12 @@
 package untamedwilds.util;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraftforge.event.AddReloadListenerEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 import untamedwilds.UntamedWilds;
 import untamedwilds.entity.ComplexMob;
 import untamedwilds.init.ModEntity;
@@ -110,7 +110,7 @@ public class EntityDataListenerEvent {
         registerData();
 
         for (EntityType<?> types : ComplexMob.ENTITY_DATA_HASH.keySet()) {
-            ResourceLocation entityName = types.builtInRegistryHolder().key().location();
+            Identifier entityName = types.builtInRegistryHolder().key().location();
             int size = 0;
 
             for (SpeciesDataHolder speciesData : ComplexMob.ENTITY_DATA_HASH.get(types).getSpeciesData()) {
@@ -121,8 +121,8 @@ public class EntityDataListenerEvent {
 
     public static EntityDataHolder registerEntityData(EntityType<?> typeIn) {
         String nameIn = Objects.requireNonNull(typeIn.builtInRegistryHolder().key().location()).getPath();
-        if (ENTITY_DATA_HOLDERS.getData(new ResourceLocation(UntamedWilds.MOD_ID, nameIn)) != null) {
-            EntityDataHolder data = ENTITY_DATA_HOLDERS.getData(new ResourceLocation(UntamedWilds.MOD_ID, nameIn));
+        if (ENTITY_DATA_HOLDERS.getData(Identifier.fromNamespaceAndPath(UntamedWilds.MOD_ID, nameIn)) != null) {
+            EntityDataHolder data = ENTITY_DATA_HOLDERS.getData(Identifier.fromNamespaceAndPath(UntamedWilds.MOD_ID, nameIn));
             processData(data, typeIn);
             return data;
         }

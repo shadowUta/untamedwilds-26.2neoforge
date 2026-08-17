@@ -10,12 +10,12 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.common.world.BiomeModifier;
-import net.minecraftforge.common.world.ModifiableBiomeInfo;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.neoforge.common.world.BiomeModifier;
+import net.neoforged.neoforge.common.world.ModifiableBiomeInfo;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import untamedwilds.UntamedWilds;
 import untamedwilds.config.ConfigFeatureControl;
 import untamedwilds.config.ConfigMobControl;
@@ -26,9 +26,9 @@ public record UntamedWildsBiomeModifier(TagKey<Biome> dimension, List<HolderSet<
                                         List<HolderSet<Biome>> blacklist, GenerationStep.Decoration decoration,
                                         Holder<PlacedFeature> feature, String configOption) implements BiomeModifier {
 
-    public static final DeferredRegister<Codec<? extends BiomeModifier>> BIOME_MODIFIER_SERIALIZERS = DeferredRegister.create(ForgeRegistries.Keys.BIOME_MODIFIER_SERIALIZERS, UntamedWilds.MOD_ID);
+    public static final DeferredRegister<Codec<? extends BiomeModifier>> BIOME_MODIFIER_SERIALIZERS = DeferredRegister.create(NeoForgeRegistries.Keys.BIOME_MODIFIER_SERIALIZERS, UntamedWilds.MOD_ID);
 
-    public static final RegistryObject<Codec<UntamedWildsBiomeModifier>> BIOME_MODIFIER_SERIALIZER = BIOME_MODIFIER_SERIALIZERS.register("biome_modifier_serializer",
+    public static final DeferredHolder<Codec<? extends BiomeModifier>, Codec<UntamedWildsBiomeModifier>> BIOME_MODIFIER_SERIALIZER = BIOME_MODIFIER_SERIALIZERS.register("biome_modifier_serializer",
         () -> RecordCodecBuilder.create(builder -> builder.group(
             TagKey.codec(Registry.BIOME_REGISTRY).fieldOf("dimension").forGetter(UntamedWildsBiomeModifier::dimension),
             Biome.LIST_CODEC.listOf().fieldOf("biomes").forGetter(UntamedWildsBiomeModifier::biomes),
@@ -40,7 +40,7 @@ public record UntamedWildsBiomeModifier(TagKey<Biome> dimension, List<HolderSet<
 
     @Override
     public void modify(Holder<Biome> biome, Phase phase, ModifiableBiomeInfo.BiomeInfo.Builder builder) {
-        ForgeConfigSpec.BooleanValue option = ConfigFeatureControl.options.get(configOption);
+        ModConfigSpec.BooleanValue option = ConfigFeatureControl.options.get(configOption);
         if (configOption.isEmpty() || (option != null && option.get() || option == null &&
             // TODO just a quick and dirty check for underground features
             ConfigFeatureControl.probUnderground.get() != 0 && ConfigMobControl.masterSpawner.get())) {

@@ -31,7 +31,7 @@ public class FeatureOceanSwimming extends Feature<NoneFeatureConfiguration> {
             return false;
 
         for (int i = 0; i < 5; i++) {
-            Optional<FaunaHandler.SpawnListEntry> entry = WeightedRandom.getRandomItem(rand, FaunaHandler.getSpawnableList(FaunaHandler.animalType.LARGE_OCEAN));
+            Optional<FaunaHandler.SpawnListEntry> entry = WeightedRandom.getRandomItem(rand, FaunaHandler.getSpawnableList(FaunaHandler.animalType.LARGE_OCEAN), e -> e.itemWeight);
             if (entry.isPresent()) {
                 if (FaunaSpawn.performWorldGenSpawning(entry.get().entityType, SpawnPlacements.Type.IN_WATER, Heightmap.Types.OCEAN_FLOOR, world, pos, rand, entry.get().getGroupCount())) {
                     return true;

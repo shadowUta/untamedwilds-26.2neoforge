@@ -54,8 +54,8 @@ public class CritterBurrowBlockEntity extends BlockEntity {
             BlockPos blockpos = this.getBlockPos();
             if (worldIn.hasNearbyAlivePlayer((double)blockpos.getX() + 0.5D, (double)blockpos.getY() + 0.5D, (double)blockpos.getZ() + 0.5D, ConfigMobControl.critterSpawnRange.get())) {
                 if (!this.getInhabitants().isEmpty()) {
-                    int i = worldIn.random.nextInt(this.inhabitants.size());
-                    Entity spawn = this.getEntityType().create(worldIn, this.inhabitants.get(i).entityData, null, null, blockpos, MobSpawnType.DISPENSER, true, false);
+                    int i = worldIn.getRandom().nextInt(this.inhabitants.size());
+                    Entity spawn = this.getEntityType().create(worldIn, this.inhabitants.get(i).entityData, null, null, blockpos, EntitySpawnReason.DISPENSER, true, false);
                     if (spawn != null) {
                         worldIn.addFreshEntityWithPassengers(spawn);
                         this.inhabitants.remove(i);
@@ -64,12 +64,12 @@ public class CritterBurrowBlockEntity extends BlockEntity {
                 }
                 else if (this.getCount() > 0 && this.getEntityType() != null) {
                     // Turns out that calling EntityType.create(...) will fucking crash the game if it pulls an invalid variant
-                    //Entity spawn = this.getEntityType().create(worldIn, null, null, null, blockpos, MobSpawnType.CHUNK_GENERATION, true, false);
+                    //Entity spawn = this.getEntityType().create(worldIn, null, null, null, blockpos, EntitySpawnReason.CHUNK_GENERATION, true, false);
                     Entity spawn = this.getEntityType().create(worldIn);
                     if (spawn != null) {
-                        spawn.moveTo(blockpos.getX() + 0.5D, blockpos.getY(), blockpos.getZ() + 0.5D, Mth.wrapDegrees(worldIn.random.nextFloat() * 360.0F), 0.0F);
+                        spawn.moveTo(blockpos.getX() + 0.5D, blockpos.getY(), blockpos.getZ() + 0.5D, Mth.wrapDegrees(worldIn.getRandom().nextFloat() * 360.0F), 0.0F);
                         if (spawn instanceof Mob mobSpawn) {
-                            mobSpawn.finalizeSpawn(worldIn, worldIn.getCurrentDifficultyAt(blockpos), MobSpawnType.CHUNK_GENERATION, null, null);
+                            mobSpawn.finalizeSpawn(worldIn, worldIn.getCurrentDifficultyAt(blockpos), EntitySpawnReason.CHUNK_GENERATION, null, null);
                         }
                         if (spawn instanceof ComplexMob entitySpawn) {
                             entitySpawn.setVariant(EntityUtils.getClampedNumberOfSpecies(this.variant, this.entityType));

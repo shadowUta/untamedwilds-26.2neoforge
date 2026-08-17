@@ -53,7 +53,7 @@ public class SmartSwimGoal_Land extends Goal {
 
     @Override
     public boolean canContinueToUse() {
-        return !this.entity.isOnGround() && this.entity.isInWater() && this.entity.getTarget() == null;
+        return !this.entity.onGround() && this.entity.isInWater() && this.entity.getTarget() == null;
     }
 
     @Override
@@ -61,12 +61,12 @@ public class SmartSwimGoal_Land extends Goal {
         if (this.entity.getNavigation().isDone()) {
             this.entity.getMoveControl().strafe(this.speed, 0);
         }
-        boolean colliding = this.entity.level.collidesWithSuffocatingBlock(this.entity, this.entity.getBoundingBox().expandTowards(this.entity.getLookAngle()));
+        boolean colliding = this.entity.level().collidesWithSuffocatingBlock(this.entity, this.entity.getBoundingBox().expandTowards(this.entity.getLookAngle()));
         if (this.entity.isEyeInFluid(FluidTags.WATER) || colliding) {
             this.entity.getJumpControl().jump();
         }
         if (this.entity.tickCount % 6 == 0) {
-            EntityUtils.spawnParticlesOnEntity(this.entity.level, this.entity, ParticleTypes.SPLASH, 4, 2);
+            EntityUtils.spawnParticlesOnEntity(this.entity.level(), this.entity, ParticleTypes.SPLASH, 4, 2);
         }
     }
     /*public SmartSwimGoal_Land(ComplexMob entityIn) {

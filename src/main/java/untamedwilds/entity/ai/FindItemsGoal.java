@@ -7,6 +7,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.core.component.DataComponents;
 import untamedwilds.entity.ComplexMobTerrestrial;
 
 import java.util.Comparator;
@@ -49,9 +50,9 @@ public class FindItemsGoal extends Goal {
         if (this.taskOwner.getRandom().nextInt(this.executionChance) != 0) {
             return false;
         }
-        List<ItemEntity> list = this.taskOwner.level.getEntitiesOfClass(ItemEntity.class, this.getTargettableArea(distance));
+        List<ItemEntity> list = this.taskOwner.level().getEntitiesOfClass(ItemEntity.class, this.getTargettableArea(distance));
 
-        list.removeIf((ItemEntity item) -> !item.getItem().isEdible());
+        list.removeIf((ItemEntity item) -> item.getItem().get(DataComponents.FOOD) == null);
         if (!list.isEmpty()) {
             if (this.hyperCarnivore) {
                 list.removeIf((ItemEntity item) -> !isMeat(item.getItem().getItem()));
@@ -61,7 +62,7 @@ public class FindItemsGoal extends Goal {
             if (!list.isEmpty()) {
                 list.sort(this.sorter);
                 this.targetItem = list.get(0);
-                this.targetItemStack = this.targetItem.getItem().getItem().getFoodProperties();
+                this.targetItemStack = this.targetItem.getItem().get(DataComponents.FOOD);
                 return true;
             }
         }
@@ -73,10 +74,10 @@ public class FindItemsGoal extends Goal {
     }
 
     private boolean isMeat(Item item) {
-        if (item.getDefaultInstance().getItem().getFoodProperties() == null) {
+        if (item.getDefaultInstance().get(DataComponents.FOOD) == null) {
             return false;
         }
-        return item.getDefaultInstance().getItem().getFoodProperties().isMeat() || item.getDefaultInstance().is(ItemTags.FISHES);
+        return item.getDefaultInstance().is(ItemTags.FISHES);
     }
 
     @Override
@@ -98,7 +99,7 @@ public class FindItemsGoal extends Goal {
     public void tick() {
         double distance = Math.sqrt(Math.pow(this.taskOwner.getX() - this.targetItem.getX(), 2.0D) + Math.pow(this.taskOwner.getZ() - this.targetItem.getZ(), 2.0D));
         if (distance < 1.5D) {
-            this.taskOwner.addHunger(Math.max(targetItemStack.getNutrition() * 10, 10));
+            this.taskOwner.addHunger(Math.max(targetItemStack.nutrition() * 10, 10));
             this.targetItem.getItem().shrink(1);
             this.taskOwner.setAnimation(taskOwner.getAnimationEat());
         }

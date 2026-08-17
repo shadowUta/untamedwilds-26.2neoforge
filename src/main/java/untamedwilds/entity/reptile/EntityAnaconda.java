@@ -1,6 +1,5 @@
 package untamedwilds.entity.reptile;
 
-import com.mojang.math.Vector3d;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -27,9 +26,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.entity.PartEntity;
+import net.neoforged.neoforge.entity.PartEntity;
 import untamedwilds.entity.*;
 import untamedwilds.entity.ai.*;
 import untamedwilds.entity.ai.control.movement.SmartSwimmingMoveControl;
@@ -55,7 +54,7 @@ public class EntityAnaconda extends ComplexMobAmphibious implements ISpecies, IN
 
     public EntityAnaconda(EntityType<? extends ComplexMobTerrestrial> type, Level worldIn) {
         super(type, worldIn);
-        this.setPathfindingMalus(BlockPathTypes.WATER, 0.0F);
+        this.setPathfindingMalus(PathType.WATER, 0.0F);
         this.moveControl = new SmartSwimmingMoveControl(this, 20, 5, 0.3F, 0.4F, true);
         this.lookControl = new SmoothSwimmingLookControl(this, 10);
         this.ticksToSit = 40;
@@ -81,7 +80,7 @@ public class EntityAnaconda extends ComplexMobAmphibious implements ISpecies, IN
     }
 
     @Override
-    public net.minecraftforge.entity.PartEntity<?>[] getParts() {
+    public net.neoforged.neoforge.entity.PartEntity<?>[] getParts() {
         return this.anacondaParts;
     }
 
@@ -154,11 +153,11 @@ public class EntityAnaconda extends ComplexMobAmphibious implements ISpecies, IN
                 }
                 this.ringBuffer[this.ringBufferIndex][0] = this.getYRot() ;
                 this.ringBuffer[ringBufferIndex][1] = this.getY();
-                Vector3d[] avector3d = new Vector3d[this.anacondaParts.length];
+                Vec3[] avector3d = new Vec3[this.anacondaParts.length];
 
                 for (int j = 0; j < this.anacondaParts.length; ++j) {
                     this.anacondaParts[j].collideWithNearbyEntities();
-                    avector3d[j] = new Vector3d(this.anacondaParts[j].getX(), this.anacondaParts[j].getY(), this.anacondaParts[j].getZ());
+                    avector3d[j] = new Vec3(this.anacondaParts[j].getX(), this.anacondaParts[j].getY(), this.anacondaParts[j].getZ());
                 }
                 float f15 = (float) (this.getMovementOffsets(5, 1.0F)[1] - this.getMovementOffsets(10, 1.0F)[1]) * 10.0F * ((float) Math.PI / 180F);
                 float f16 = Mth.cos(f15);

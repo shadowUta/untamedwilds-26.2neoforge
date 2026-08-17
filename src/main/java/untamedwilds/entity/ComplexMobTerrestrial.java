@@ -9,6 +9,8 @@ import com.mojang.serialization.DataResult;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -51,14 +53,14 @@ public abstract class ComplexMobTerrestrial extends ComplexMob implements IAnima
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(HUNGER, 79); // One point less than the breeding threshold
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(HUNGER, 79); // One point less than the breeding threshold
     }
 
     public void aiStep() {
         AnimationHandler.INSTANCE.updateAnimations(this);
-        if (!level.isClientSide) {
+        if (!this.level().isClientSide()) {
             if (this.forceSleep > 0) {
                 this.forceSleep--;
             }
@@ -107,18 +109,18 @@ public abstract class ComplexMobTerrestrial extends ComplexMob implements IAnima
     }
 
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
-        if (hand == InteractionHand.MAIN_HAND && !this.level.isClientSide()) {
+        if (hand == InteractionHand.MAIN_HAND && !this.level().isClientSide()) {
             ItemStack itemstack = player.getItemInHand(hand);
             if (!this.isBaby() && this.isFood(itemstack) && !this.dead) {
-                if (!this.level.isClientSide && !player.isCreative()) {
+                if (!this.level().isClientSide() && !player.isCreative()) {
                     itemstack.shrink(1);
                 }
                 if (ConfigGamerules.playerBreeding.get() && this.age == 0) {
                     this.setInLove(player);
-                    EntityUtils.spawnParticlesOnEntity(this.level, this, ParticleTypes.HEART, 7, 1);
+                    EntityUtils.spawnParticlesOnEntity(this.level(), this, ParticleTypes.HEART, 7, 1);
                 }
                 this.setAnimation(this.getAnimationEat());
-                this.playSound(SoundEvents.GENERIC_EAT, 1F, 1);
+                this.playSound(SoundEvents.GENERIC_EAT.value(), 1F, 1);
                 return InteractionResult.CONSUME;
             }
         }
@@ -139,7 +141,7 @@ public abstract class ComplexMobTerrestrial extends ComplexMob implements IAnima
         if (type == ActivityType.CATHEMERAL) {
             return this.tickCount % 17000 < 3000;
         }
-        long time = this.level.getDayTime();
+        long time = this.level().getLevelData().getGameTime();
         if (!times.getFirst().equals(times.getSecond())) {
             if (times.getFirst() > times.getSecond()) {
                 return time > times.getFirst() || time < times.getSecond();
@@ -200,19 +202,8 @@ public abstract class ComplexMobTerrestrial extends ComplexMob implements IAnima
         this.setHunger((i > 200) ? 200 : (Math.max(i, 0)));
     }
 
-    public boolean hurt(DamageSource source, float amount) {
-        if (this.isSitting()) {
-            this.setSitting(false);
-        }
-        if (this.isSleeping() && this.forceSleep <= 0) {
-            this.setSleeping(false);
-            this.forceSleep = -4000;
-        }
-        return super.hurt(source, amount);
-    }
-
     public void die(DamageSource p_70645_1_) {
-        if (!this.level.isClientSide && !ConfigGamerules.hardcoreDeath.get() && this.getHome() != BlockPos.ZERO && this.isTame() && this.getHunger() != 0) {
+        if (!this.level().isClientSide() && !ConfigGamerules.hardcoreDeath.get() && this.getHome() != BlockPos.ZERO && this.isTame() && this.getHunger() != 0) {
             this.addEffect(new MobEffectInstance(MobEffects.GLOWING, 800, 0));
             this.setHealth(0.5F);
             this.setHunger(0);
@@ -261,7 +252,7 @@ public abstract class ComplexMobTerrestrial extends ComplexMob implements IAnima
 
     public Animation getAnimationEat() { return this.NO_ANIMATION; }
 
-    public void addAdditionalSaveData(CompoundTag compound){
+    public void addAdditionalSaveData(ValueOutput compound){
         super.addAdditionalSaveData(compound);
         compound.putBoolean("Sleeping", this.isSleeping());
         compound.putInt("SleepingTicks", this.forceSleep);
@@ -269,12 +260,12 @@ public abstract class ComplexMobTerrestrial extends ComplexMob implements IAnima
         compound.putInt("Hunger", this.getHunger());
     }
 
-    public void readAdditionalSaveData(CompoundTag compound){
+    public void readAdditionalSaveData(ValueInput compound){
         super.readAdditionalSaveData(compound);
-        this.setSleeping(compound.getBoolean("Sleeping"));
-        this.forceSleep = compound.getInt("SleepingTicks");
-        this.setSitting(compound.getBoolean("Sitting"));
-        this.setHunger(compound.getInt("Hunger"));
+        this.setSleeping(compound.getBooleanOr("Sleeping", false));
+        this.forceSleep = compound.getIntOr("SleepingTicks", 0);
+        this.setSitting(compound.getBooleanOr("Sitting", false));
+        this.setHunger(compound.getIntOr("Hunger", 79));
     }
 
     /*static class MoveHelperController extends MoveControl {
@@ -355,7 +346,7 @@ public abstract class ComplexMobTerrestrial extends ComplexMob implements IAnima
                 float f1 = (float)(this.getSpeed() * this.entity.getAttribute(Attributes.MOVEMENT_SPEED).getValue());
                 this.entity.setAIMoveSpeed(Mth.lerp(0.125F, this.entity.getAIMoveSpeed(), f1));
 
-                if (d2 > (double)this.entity.maxUpStep && d0 * d0 + d1 * d1 < (double)Math.max(1.0F, this.entity.getBbWidth()) || !voxelshape.isEmpty() && this.entity.getY() < voxelshape.getEnd(Direction.Axis.Y) + (double)blockpos.getY() && !block.isIn(BlockTags.DOORS) && !block.isIn(BlockTags.FENCES)) {
+                if (d2 > (double)this.entity.maxUpStep() && d0 * d0 + d1 * d1 < (double)Math.max(1.0F, this.entity.getBbWidth()) || !voxelshape.isEmpty() && this.entity.getY() < voxelshape.getEnd(Direction.Axis.Y) + (double)blockpos.getY() && !block.isIn(BlockTags.DOORS) && !block.isIn(BlockTags.FENCES)) {
                     this.entity.getJumpControl().jump();
                     this.action = MovementController.Action.JUMPING;
                 }

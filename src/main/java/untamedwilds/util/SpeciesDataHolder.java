@@ -3,13 +3,13 @@ package untamedwilds.util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraftforge.registries.ForgeRegistries;
 import untamedwilds.UntamedWilds;
 import untamedwilds.entity.ComplexMobTerrestrial;
 
@@ -36,7 +36,7 @@ public class SpeciesDataHolder {
             Codec.INT.fieldOf("skins").orElse(10).forGetter((p_237054_0_) -> p_237054_0_.skins),
             //Codec.pair(Codec.INT, Codec.INT).fieldOf("skins").orElse(new Pair<>(1, 0)).forGetter((p_237054_0_) -> p_237054_0_.skins),
             Codec.STRING.fieldOf("breeding_season").orElse("NONE").forGetter((p_237054_0_) -> p_237054_0_.breeding_season),
-            Codec.unboundedMap(Codec.STRING, SoundEvent.CODEC).fieldOf("sounds").orElse(Collections.emptyMap()).forGetter((p_237052_0_) -> p_237052_0_.sounds),
+            Codec.unboundedMap(Codec.STRING, SoundEvent.DIRECT_CODEC).fieldOf("sounds").orElse(Collections.emptyMap()).forGetter((p_237052_0_) -> p_237052_0_.sounds),
             Codec.unboundedMap(Codec.STRING, Codec.INT).fieldOf("flags").orElse(Collections.emptyMap()).forGetter((p_237054_0_) -> p_237054_0_.flags),
             Codec.STRING.listOf().listOf().fieldOf("spawnBiomes").orElse(new ArrayList<>()).forGetter((p_237052_0_) -> p_237052_0_.spawnBiomes))
         .apply(p_237051_0_, SpeciesDataHolder::new));
@@ -68,7 +68,7 @@ public class SpeciesDataHolder {
         this.health = health;
         this.activityType = activityType;
         this.favouriteFood_input = favourite_food;
-        this.favouriteFood = new ItemStack(ForgeRegistries.ITEMS.getValue(ResourceLocation.tryParse(this.favouriteFood_input)));
+        this.favouriteFood = new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.parse(this.favouriteFood_input)));
         this.growing_time = growing_time;
         this.offspring = offspring;
         this.skins = skins;
@@ -227,9 +227,9 @@ public class SpeciesDataHolder {
 
         public boolean isValidBiome(Holder<Biome> biomekey, Biome biome) {
             boolean result = switch (this.type) {
-                case BIOME_TAG -> biomekey.is(TagKey.create(Registry.BIOME_REGISTRY, new ResourceLocation(this.key)))
-                    || biomekey.is(TagKey.create(Registry.BIOME_REGISTRY, new ResourceLocation("forge", this.key)));
-                case REGISTRY_NAME -> biomekey.unwrapKey().get().location().equals(new ResourceLocation(this.key));
+                case BIOME_TAG -> biomekey.is(TagKey.create(Registries.BIOME, Identifier.parse(this.key)))
+                    || biomekey.is(TagKey.create(Registries.BIOME, Identifier.fromNamespaceAndPath("forge", this.key)));
+                case REGISTRY_NAME -> biomekey.unwrapKey().get().identifier().equals(Identifier.parse(this.key));
             };
             if (this.modifier == ConditionModifiers.INVERTED) {
                 return !result;

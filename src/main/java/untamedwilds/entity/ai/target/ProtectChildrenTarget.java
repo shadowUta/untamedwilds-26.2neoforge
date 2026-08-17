@@ -2,7 +2,7 @@ package untamedwilds.entity.ai.target;
 
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobType;
+import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.monster.Creeper;
@@ -22,7 +22,7 @@ public class ProtectChildrenTarget<T extends LivingEntity> extends HuntMobTarget
     }
 
     protected boolean isValidTarget(LivingEntity entity, @Nullable Predicate<LivingEntity> predicate) {
-        if (entity instanceof Creeper || entity.equals(this.mob) || (!ConfigGamerules.attackUndead.get() && entity.getMobType() == MobType.UNDEAD) || (predicate != null && !predicate.test(entity))) {
+        if (entity instanceof Creeper || entity.equals(this.mob) || (predicate != null && !predicate.test(entity))) {
             return false;
         }
         if (ComplexMob.getEcoLevel(entity) < ComplexMob.getEcoLevel(this.mob) && this.mob.getClass() == entity.getClass() && this.mob instanceof ComplexMob attacker && entity instanceof ComplexMob defender) {
@@ -40,10 +40,10 @@ public class ProtectChildrenTarget<T extends LivingEntity> extends HuntMobTarget
 
         if (this.mob instanceof ComplexMob temp) {
 
-            for (Mob child : this.mob.level.getEntitiesOfClass(this.mob.getClass(), mob.getBoundingBox().inflate(8.0D, 4.0D, 8.0D))) {
+            for (Mob child : this.mob.level().getEntitiesOfClass(this.mob.getClass(), mob.getBoundingBox().inflate(8.0D, 4.0D, 8.0D))) {
                 if (child.isBaby() && ((ComplexMob)child).getVariant() == temp.getVariant()) {
                     this.protectTarget = child;
-                    List<T> list = this.mob.level.getEntitiesOfClass(this.targetClass, this.getTargettableArea(this.getFollowDistance()), this.targetEntitySelector);
+                    List<T> list = this.mob.level().getEntitiesOfClass(this.targetClass, this.getTargettableArea(this.getFollowDistance()), this.targetEntitySelector);
 
                     if (list.isEmpty()) {
                         return false;

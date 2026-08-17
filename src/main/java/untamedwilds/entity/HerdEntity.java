@@ -90,7 +90,7 @@ public class HerdEntity {
         if (this.getLeader().tickCount % 10 == 0) {
             List<ComplexMob> toRemove = new ArrayList<>();
             if (this.isOpenToCombine()) {
-                List<ComplexMob> list = this.getLeader().getLevel().getEntitiesOfClass(ComplexMob.class, this.getLeader().getBoundingBox().inflate(16.0D, 12.0D, 16.0D));
+                List<ComplexMob> list = this.getLeader().level().getEntitiesOfClass(ComplexMob.class, this.getLeader().getBoundingBox().inflate(16.0D, 12.0D, 16.0D));
                 for (ComplexMob creature : list) {
                     if (!this.containsCreature(creature) && creature.herd != null && canCombineHerds(this, creature.herd)) {
                         int netSize = this.creatureList.size() + creature.herd.creatureList.size();

@@ -43,7 +43,7 @@ public class MeleeAttackCircle extends Goal {
         if (this.attacker.isBaby()) {
             return false;
         }
-        long i = this.attacker.level.getGameTime();
+        long i = this.attacker.level().getGameTime();
         if (i - this.field_220720_k < 20L) {
             return false;
         } else {
@@ -90,7 +90,7 @@ public class MeleeAttackCircle extends Goal {
 
     public void stop() {
         LivingEntity livingentity = this.attacker.getTarget();
-        if (livingentity == null || !TargetingConditions.forCombat().test(this.attacker, livingentity)) {
+        if (livingentity == null || !livingentity.isAlive()) {
             this.attacker.setTarget(null);
         }
         this.attacker.setAggressive(false);
@@ -153,7 +153,9 @@ public class MeleeAttackCircle extends Goal {
         double d0 = this.getAttackReachSqr(enemy);
         if (this.attacker.hasLineOfSight(enemy) && distToEnemySqr <= d0 && this.attackTick <= 0) {
             this.attackTick = 20;
-            this.attacker.doHurtTarget(enemy);
+            if (this.attacker.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+                this.attacker.doHurtTarget(serverLevel, enemy);
+            }
             this.attacker.getLookControl().setLookAt(enemy, 30.0F, 30.0F);
         }
     }

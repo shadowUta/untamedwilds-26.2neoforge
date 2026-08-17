@@ -1,6 +1,7 @@
 package untamedwilds.entity.ai.unique;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -37,15 +38,15 @@ public class BaleenWhaleFeedGoal extends Goal {
     protected BlockPos getPosition() {
         Vec3 vector3d = BehaviorUtils.getRandomSwimmablePos(this.taskOwner, 20, 7);
 
-        for(int i = 0; vector3d != null && !this.taskOwner.level.getBlockState(new BlockPos(vector3d)).isPathfindable(this.taskOwner.level, new BlockPos(vector3d), PathComputationType.WATER) && i++ < 10; vector3d = BehaviorUtils.getRandomSwimmablePos(this.taskOwner, 20, 7)) {
+        for (int i = 0; vector3d != null && !this.taskOwner.level().getBlockState(BlockPos.containing(vector3d)).isPathfindable(PathComputationType.WATER) && i++ < 10; vector3d = BehaviorUtils.getRandomSwimmablePos(this.taskOwner, 20, 7)) {
         }
 
-        if (vector3d != null && this.taskOwner.level.canSeeSky(this.taskOwner.blockPosition())) {
+        if (vector3d != null && this.taskOwner.level().canSeeSky(this.taskOwner.blockPosition())) {
             int offset = 5 + this.taskOwner.getRandom().nextInt(7) - 4;
-            return new BlockPos(vector3d.x(), this.taskOwner.level.getHeight(Heightmap.Types.OCEAN_FLOOR, (int)vector3d.x(), (int)vector3d.z()) + offset, vector3d.z());
+            return BlockPos.containing(vector3d.x(), this.taskOwner.level().getHeight(Heightmap.Types.OCEAN_FLOOR, Mth.floor(vector3d.x()), Mth.floor(vector3d.z())) + offset, vector3d.z());
         }
         if (vector3d != null) {
-            return new BlockPos(vector3d);
+            return BlockPos.containing(vector3d);
         }
         return null;
     }

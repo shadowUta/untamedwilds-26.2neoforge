@@ -5,7 +5,7 @@ import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 import untamedwilds.client.model.ModelOpossum;
 import untamedwilds.entity.mammal.EntityOpossum;
@@ -31,7 +31,7 @@ public class RendererOpossum extends MobRenderer<EntityOpossum, EntityModel<Enti
         this.shadowRadius = f * 0.4F;
     }
 
-    public @NotNull ResourceLocation getTextureLocation(EntityOpossum entity) {
+    public @NotNull Identifier getTextureLocation(EntityOpossum entity) {
         return entity.getTexture();
     }
 }

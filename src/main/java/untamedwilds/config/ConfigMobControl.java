@@ -1,20 +1,20 @@
 package untamedwilds.config;
 
 import com.google.common.collect.Lists;
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 import java.util.List;
 
 public class ConfigMobControl {
 
-    public static ForgeConfigSpec.IntValue critterSpawnRange;
-    public static ForgeConfigSpec.IntValue burrowRepopulationChance;
-    public static ForgeConfigSpec.IntValue treeSpawnBias;
-    public static ForgeConfigSpec.BooleanValue masterSpawner;
-    public static ForgeConfigSpec.BooleanValue tickingNests;
-    public static ForgeConfigSpec.ConfigValue<List<? extends String>> dimensionBlacklist;
+    public static ModConfigSpec.IntValue critterSpawnRange;
+    public static ModConfigSpec.IntValue burrowRepopulationChance;
+    public static ModConfigSpec.IntValue treeSpawnBias;
+    public static ModConfigSpec.BooleanValue masterSpawner;
+    public static ModConfigSpec.BooleanValue tickingNests;
+    public static ModConfigSpec.ConfigValue<List<? extends String>> dimensionBlacklist;
 
-    ConfigMobControl(final ForgeConfigSpec.Builder builder) {
+    ConfigMobControl(final ModConfigSpec.Builder builder) {
         builder.comment("Pest Control");
         masterSpawner = builder.comment("This toggle can used to fully disable the spawning of all UntamedWilds entities, giving flexibility if somebody chooses to use alternative mob spawning methods.").define("mobcontrol.masterspawner", true);
 

@@ -1,9 +1,9 @@
 package untamedwilds.util;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraftforge.event.AddReloadListenerEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
 import untamedwilds.UntamedWilds;
 import untamedwilds.world.FaunaHandler;
 
@@ -44,8 +44,8 @@ public class SpawnDataListenerEvent {
     }
 
     public static SpawnDataHolder registerSpawnData(String nameIn) {
-        if (SPAWN_DATA_HOLDER.getData(new ResourceLocation(UntamedWilds.MOD_ID, nameIn)) != null) {
-            SpawnDataHolder data = SPAWN_DATA_HOLDER.getData(new ResourceLocation(UntamedWilds.MOD_ID, nameIn));
+        if (SPAWN_DATA_HOLDER.getData(Identifier.fromNamespaceAndPath(UntamedWilds.MOD_ID, nameIn)) != null) {
+            SpawnDataHolder data = SPAWN_DATA_HOLDER.getData(Identifier.fromNamespaceAndPath(UntamedWilds.MOD_ID, nameIn));
 
             if (FaunaHandler.getSpawnableList(nameIn) != null) {
                 List<FaunaHandler.SpawnListEntry> spawn_list = FaunaHandler.getSpawnableList(nameIn);

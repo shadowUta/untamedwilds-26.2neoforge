@@ -5,7 +5,7 @@ import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 import untamedwilds.client.model.ModelManatee;
 import untamedwilds.entity.mammal.EntityManatee;
@@ -36,7 +36,7 @@ public class RendererManatee extends MobRenderer<EntityManatee, EntityModel<Enti
         this.shadowRadius = f;
     }
 
-    public @NotNull ResourceLocation getTextureLocation(EntityManatee entity) {
+    public @NotNull Identifier getTextureLocation(EntityManatee entity) {
         return entity.getTexture();
     }
 }

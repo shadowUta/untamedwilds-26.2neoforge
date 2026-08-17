@@ -21,7 +21,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShovelItem;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 import untamedwilds.config.ConfigGamerules;
 import untamedwilds.entity.ComplexMob;
 import untamedwilds.entity.INewSkins;
@@ -39,7 +39,7 @@ public class EntityGiantClam extends ComplexMob implements ISpecies, INewSkins {
     public EntityGiantClam(EntityType<? extends ComplexMob> type, Level worldIn) {
         super(type, worldIn);
         this.entityData.define(CLAM_OPEN, false);
-        this.setPathfindingMalus(BlockPathTypes.WATER, 0.0F);
+        this.setPathfindingMalus(PathType.WATER, 0.0F);
     }
 
     public static AttributeSupplier.Builder registerAttributes() {

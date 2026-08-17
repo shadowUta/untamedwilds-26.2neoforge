@@ -1,15 +1,14 @@
 package untamedwilds.config;
 
-import com.electronwill.nightconfig.core.file.CommentedFileConfig;
-import com.electronwill.nightconfig.core.io.WritingMode;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 import untamedwilds.UntamedWilds;
 
-@Mod.EventBusSubscriber(modid = UntamedWilds.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = UntamedWilds.MOD_ID)
 public class ConfigBase {
-    private static final ForgeConfigSpec.Builder common_builder = new ForgeConfigSpec.Builder();
-    public static final ForgeConfigSpec common_config;
+    private static final ModConfigSpec.Builder common_builder = new ModConfigSpec.Builder();
+    public static final ModConfigSpec common_config;
 
     public static final ConfigFeatureControl FEATURES;
     public static final ConfigGamerules GAMERULES;
@@ -25,9 +24,7 @@ public class ConfigBase {
         common_config = common_builder.build();
     }
 
-    public static void loadConfig(ForgeConfigSpec config, String path) {
-        final CommentedFileConfig configData = CommentedFileConfig.builder(path).sync().autosave().writingMode(WritingMode.REPLACE).build();
-        configData.load();
-        config.setConfig(configData);
+    public static void loadConfig(ModConfigSpec config, String path) {
+        // NeoForge 26.2 loads ModConfigSpec through the ModConfig event system.
     }
 }

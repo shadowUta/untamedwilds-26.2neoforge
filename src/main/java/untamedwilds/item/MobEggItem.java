@@ -12,7 +12,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -20,8 +20,8 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import untamedwilds.entity.ComplexMob;
 import untamedwilds.entity.INeedsPostUpdate;
 import untamedwilds.util.EntityUtils;
@@ -60,7 +60,7 @@ public class MobEggItem extends Item {
             BlockPos spawnPos = blockState.getCollisionShape(worldIn, pos).isEmpty() ? pos : pos.relative(facing);
 
             EntityType<?> entity = EntityUtils.getEntityTypeFromTag(itemStack.getTag(), this.entity.get());
-            Entity spawn = entity.create((ServerLevel) worldIn, itemStack.getTag(), null, useContext.getPlayer(), spawnPos, MobSpawnType.BUCKET, true, !Objects.equals(pos, spawnPos) && facing == Direction.UP);
+            Entity spawn = entity.create((ServerLevel) worldIn, itemStack.getTag(), null, useContext.getPlayer(), spawnPos, EntitySpawnReason.BUCKET, true, !Objects.equals(pos, spawnPos) && facing == Direction.UP);
             if (spawn instanceof ComplexMob) {
                 ComplexMob entitySpawn = (ComplexMob) spawn;
                 entitySpawn.setVariant(this.getSpecies(itemStack, entitySpawn));

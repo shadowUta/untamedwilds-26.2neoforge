@@ -5,7 +5,7 @@ import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 import untamedwilds.client.model.ModelGiantClam;
 import untamedwilds.entity.mollusk.EntityGiantClam;
@@ -28,7 +28,7 @@ public class RendererGiantClam extends MobRenderer<EntityGiantClam, EntityModel<
         this.shadowRadius = f;
     }
 
-    public @NotNull ResourceLocation getTextureLocation(EntityGiantClam entity) {
+    public @NotNull Identifier getTextureLocation(EntityGiantClam entity) {
         return entity.getTexture();
     }
 }

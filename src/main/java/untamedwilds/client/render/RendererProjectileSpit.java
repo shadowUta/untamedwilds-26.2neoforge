@@ -9,17 +9,17 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.projectile.LlamaSpit;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import untamedwilds.client.model.ModelProjectileSpit;
 import untamedwilds.entity.ProjectileSpit;
 
 @OnlyIn(Dist.CLIENT)
 public class RendererProjectileSpit extends EntityRenderer<ProjectileSpit> {
-    private static final ResourceLocation LLAMA_SPIT_LOCATION = new ResourceLocation("textures/entity/llama/spit.png");
+    private static final Identifier LLAMA_SPIT_LOCATION = Identifier.withDefaultNamespace("textures/entity/llama/spit.png");
     private final ModelProjectileSpit<ProjectileSpit> model;
 
     public RendererProjectileSpit(EntityRendererProvider.Context p_174296_) {
@@ -39,7 +39,7 @@ public class RendererProjectileSpit extends EntityRenderer<ProjectileSpit> {
         super.render(p_115373_, p_115374_, p_115375_, p_115376_, p_115377_, p_115378_);
     }
 
-    public ResourceLocation getTextureLocation(ProjectileSpit p_115371_) {
+    public Identifier getTextureLocation(ProjectileSpit p_115371_) {
         return LLAMA_SPIT_LOCATION;
     }
 }

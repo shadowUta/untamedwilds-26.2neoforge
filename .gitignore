@@ -28,3 +28,5 @@ forge*changelog.txt
 /src/main/unused/
 /src/test/
 /.gitattributes
+模组测试游戏路径.md
+.gitignore

@@ -3,7 +3,7 @@ package untamedwilds.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -28,7 +28,7 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import untamedwilds.UntamedWilds;
 import untamedwilds.block.blockentity.ReptileNestBlockEntity;
 import untamedwilds.config.ConfigMobControl;
@@ -120,7 +120,7 @@ public class NestReptileBlock extends Block implements SimpleWaterloggedBlock, E
                 else {
                     te.removeEggs(worldIn, 1);
                     CompoundTag baseTag = new CompoundTag();
-                    ItemStack item = new ItemStack(ForgeRegistries.ITEMS.getValue(new ResourceLocation(UntamedWilds.MOD_ID + ":egg_" + te.getEntityType().builtInRegistryHolder().key().location().getPath())));
+                    ItemStack item = new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.parse(UntamedWilds.MOD_ID + ":egg_" + te.getEntityType().builtInRegistryHolder().key().location().getPath())));
                     baseTag.putInt("variant", te.getVariant());
                     baseTag.putInt("custom_model_data", te.getVariant());
                     item.setTag(baseTag);

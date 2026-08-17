@@ -12,12 +12,12 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.util.Mth;
-import com.mojang.math.Vector3d;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.entity.PartEntity;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.entity.PartEntity;
 import untamedwilds.entity.*;
 import untamedwilds.entity.ai.SmartMateGoal;
 import untamedwilds.init.ModEntity;
@@ -99,11 +99,11 @@ public class EntityWhaleShark extends ComplexMobAquatic implements ISpecies, INe
             // Just replaced the contents of Mth.interpolateAngle with the returned formula. Why even is this shit @OnlyIn(Client)???
             this.ringBuffer[this.ringBufferIndex][0] = this.yRotO + 0.5F * Mth.wrapDegrees(this.getYRot() - this.yRotO);
             this.ringBuffer[ringBufferIndex][1] = this.getY();
-            Vector3d[] avector3d = new Vector3d[this.whale_shark_parts.length];
+            Vec3[] avector3d = new Vec3[this.whale_shark_parts.length];
 
             for (int j = 0; j < this.whale_shark_parts.length; ++j) {
                 this.whale_shark_parts[j].collideWithNearbyEntities();
-                avector3d[j] = new Vector3d(this.whale_shark_parts[j].getX(), this.whale_shark_parts[j].getY(), this.whale_shark_parts[j].getZ());
+                avector3d[j] = new Vec3(this.whale_shark_parts[j].getX(), this.whale_shark_parts[j].getY(), this.whale_shark_parts[j].getZ());
             }
             float f15 = (float) (this.getMovementOffsets(5, 1.0F)[1] - this.getMovementOffsets(10, 1.0F)[1]) * 10.0F * ((float) Math.PI / 180F);
             float f16 = Mth.cos(f15);

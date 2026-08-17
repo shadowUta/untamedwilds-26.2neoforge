@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 import untamedwilds.client.model.ModelAnaconda;
 import untamedwilds.entity.reptile.EntityAnaconda;
@@ -23,7 +23,7 @@ public class RendererAnaconda extends MobRenderer<EntityAnaconda, EntityModel<En
         matrixStackIn.scale(f, f, f);
     }
 
-    public @NotNull ResourceLocation getTextureLocation(EntityAnaconda entity) {
+    public @NotNull Identifier getTextureLocation(EntityAnaconda entity) {
         return entity.getTexture();
     }
 }

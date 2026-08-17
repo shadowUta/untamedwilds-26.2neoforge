@@ -118,7 +118,7 @@ public class FaunaSpawn {
                             float f = entityType.getWidth();
                             double d0 = Mth.clamp(x, (double)blockpos.getX() + (double)f, (double)blockpos.getX() + 16.0D - (double)f);
                             double d1 = Mth.clamp(z, (double)blockpos.getZ() + (double)f, (double)blockpos.getZ() + 16.0D - (double)f);
-                            if (!worldIn.noCollision(entityType.getAABB(d0, y, d1)) || !SpawnPlacements.checkSpawnRules(entityType, worldIn, MobSpawnType.CHUNK_GENERATION, blockpos, worldIn.getRandom())) {
+                            if (!worldIn.noCollision(entityType.getAABB(d0, y, d1)) || !SpawnPlacements.checkSpawnRules(entityType, worldIn, EntitySpawnReason.CHUNK_GENERATION, blockpos, worldIn.getRandom())) {
                                 continue;
                             }
                             Entity entity;
@@ -132,9 +132,9 @@ public class FaunaSpawn {
                             assert entity != null;
                             entity.moveTo(blockpos.getX(), blockpos.getY(), blockpos.getZ(), random.nextFloat() * 360.0F, 0.0F);
                             if (entity instanceof Mob mobEntity) {
-                                if (net.minecraftforge.common.ForgeHooks.canEntitySpawn(mobEntity, worldIn, d0, blockpos.getY(), d1, null, MobSpawnType.CHUNK_GENERATION) == -1) continue;
-                                if (mobEntity.checkSpawnRules(worldIn, MobSpawnType.CHUNK_GENERATION) && worldIn.noCollision(entity)) {
-                                    mobEntity.finalizeSpawn(worldIn, worldIn.getCurrentDifficultyAt(mobEntity.blockPosition()), MobSpawnType.CHUNK_GENERATION, null, null);
+                                if (net.minecraftforge.common.ForgeHooks.canEntitySpawn(mobEntity, worldIn, d0, blockpos.getY(), d1, null, EntitySpawnReason.CHUNK_GENERATION) == -1) continue;
+                                if (mobEntity.checkSpawnRules(worldIn, EntitySpawnReason.CHUNK_GENERATION) && worldIn.noCollision(entity)) {
+                                    mobEntity.finalizeSpawn(worldIn, worldIn.getCurrentDifficultyAt(mobEntity.blockPosition()), EntitySpawnReason.CHUNK_GENERATION, null, null);
                                     if (mobEntity instanceof ComplexMob && mobEntity.isAlive()) {
                                         if (mobEntity instanceof ISpecies) {
                                             if (species == -1) {

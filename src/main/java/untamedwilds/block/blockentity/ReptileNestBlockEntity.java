@@ -13,7 +13,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -55,12 +55,12 @@ public class ReptileNestBlockEntity extends BlockEntity {
                     float offsetZ = rand.nextFloat();
                     if (this.getEggCount() > 0 && this.getEntityType() != null && worldIn.noCollision(this.getEntityType().getAABB(blockpos.getX() + offsetX, blockpos.getY(), blockpos.getZ() + offsetZ).deflate(this.getEntityType().getWidth() / 4).move(0, 4, 0))) {
                         // Turns out that calling EntityType.create(...) will fucking crash the game if it pulls an invalid variant
-                        //Entity spawn = this.getEntityType().create(worldIn, null, null, null, blockpos, MobSpawnType.CHUNK_GENERATION, true, false);
+                        //Entity spawn = this.getEntityType().create(worldIn, null, null, null, blockpos, EntitySpawnReason.CHUNK_GENERATION, true, false);
                         Entity spawn = this.getEntityType().create(worldIn);
                         if (spawn != null) {
                             spawn.moveTo(blockpos.getX() + offsetX, blockpos.getY(), blockpos.getZ() + offsetZ, Mth.wrapDegrees(rand.nextFloat() * 360.0F), 0.0F);
                             if (spawn instanceof Mob mobSpawn) {
-                                mobSpawn.finalizeSpawn(worldIn, worldIn.getCurrentDifficultyAt(blockpos), MobSpawnType.BREEDING, null, null);
+                                mobSpawn.finalizeSpawn(worldIn, worldIn.getCurrentDifficultyAt(blockpos), EntitySpawnReason.BREEDING, null, null);
                             }
                             if (spawn instanceof ComplexMob entitySpawn) {
                                 entitySpawn.setVariant(EntityUtils.getClampedNumberOfSpecies(this.variant, this.entityType));

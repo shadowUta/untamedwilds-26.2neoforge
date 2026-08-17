@@ -21,7 +21,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 import untamedwilds.UntamedWilds;
 import untamedwilds.entity.*;
 import untamedwilds.entity.ai.*;
@@ -41,7 +41,7 @@ public class EntityNewt extends ComplexMobAmphibious implements ISpecies, INewSk
         super(type, worldIn);
         this.moveControl = new SmartSwimmingMoveControl(this, 40, 5, 0.25F, 0.3F, true);
         this.lookControl = new SmartSwimmerLookControl(this, 20);
-        //this.setPathfindingMalus(BlockPathTypes.WATER, this.isAquatic() ? 0.0F : -1);
+        //this.setPathfindingMalus(PathType.WATER, this.isAquatic() ? 0.0F : -1);
     }
 
     public static AttributeSupplier.Builder registerAttributes() {

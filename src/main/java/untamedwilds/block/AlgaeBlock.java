@@ -12,6 +12,8 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.ScheduledTickAccess;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
@@ -19,7 +21,12 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
-public class AlgaeBlock extends BushBlock implements BonemealableBlock, LiquidBlockContainer, net.minecraftforge.common.IForgeShearable {
+public class AlgaeBlock extends BushBlock implements BonemealableBlock, LiquidBlockContainer {
+
+    @Override
+    public boolean canPlaceLiquid(LivingEntity player, BlockGetter level, BlockPos pos, BlockState state, Fluid fluid) {
+        return fluid == Fluids.WATER;
+    }
     protected static final VoxelShape SHAPE = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 12.0D, 14.0D);
 
     public AlgaeBlock(BlockBehaviour.Properties properties) {
@@ -40,8 +47,8 @@ public class AlgaeBlock extends BushBlock implements BonemealableBlock, LiquidBl
         return fluidstate.is(FluidTags.WATER) && fluidstate.getAmount() == 8 ? super.getStateForPlacement(context) : null;
     }
 
-    public BlockState updateShape(BlockState stateIn, Direction facing, BlockState facingState, LevelAccessor worldIn, BlockPos currentPos, BlockPos facingPos) {
-        BlockState blockstate = super.updateShape(stateIn, facing, facingState, worldIn, currentPos, facingPos);
+    public BlockState updateShape(BlockState stateIn, LevelAccessor worldIn, ScheduledTickAccess tickAccess, BlockPos currentPos, Direction facing, BlockPos facingPos, BlockState facingState, RandomSource random) {
+        BlockState blockstate = super.updateShape(stateIn, worldIn, tickAccess, currentPos, facing, facingPos, facingState, random);
         if (!blockstate.isAir()) {
             worldIn.scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickDelay(worldIn));
         }
@@ -73,11 +80,6 @@ public class AlgaeBlock extends BushBlock implements BonemealableBlock, LiquidBl
 
     public OffsetType getOffsetType() {
         return OffsetType.XZ;
-    }
-
-    @Override
-    public boolean canPlaceLiquid(BlockGetter worldIn, BlockPos pos, BlockState state, Fluid fluidIn) {
-        return false;
     }
 
     @Override

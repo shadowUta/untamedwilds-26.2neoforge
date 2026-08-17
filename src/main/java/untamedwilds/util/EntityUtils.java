@@ -3,16 +3,16 @@ package untamedwilds.util;
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.ChatFormatting;
-import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.contents.LiteralContents;
+import net.minecraft.network.chat.contents.PlainTextContents.LiteralContents;
 import net.minecraft.network.chat.contents.TranslatableContents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -24,18 +24,15 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.PotionUtils;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.entity.PartEntity;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.entity.PartEntity;
 import untamedwilds.UntamedWilds;
 import untamedwilds.config.ConfigGamerules;
 import untamedwilds.entity.*;
@@ -63,7 +60,7 @@ public abstract class EntityUtils {
 
     // Spawn particles throughout the entity
     public static <T extends ParticleOptions> void spawnParticlesOnEntity(Level worldIn, LivingEntity entityIn, T particle, int count, int iter) {
-        if (worldIn.isClientSide) return;
+        if (worldIn.isClientSide()) return;
         if (entityIn.isMultipartEntity()) {
             for (PartEntity<?> part : entityIn.getParts()) {
                 for (int i = 0; i < iter; i++) {
@@ -147,13 +144,13 @@ public abstract class EntityUtils {
                         itemstack.getTagElement("EntityTag").putUUID("UUID", Mth.createInsecureUUID(worldIn.random));
                     }
                 }
-                spawn = entity.spawn(worldIn, itemstack, player, spawnPos, MobSpawnType.BUCKET, true, offset);
+                spawn = entity.spawn(worldIn, itemstack, player, spawnPos, EntitySpawnReason.BUCKET, true, offset);
                 if (spawn != null && itemstack.hasCustomHoverName()) {
                     spawn.setCustomName(itemstack.getHoverName());
                 }
             } else {
                 // If no NBT data is assigned to the entity (eg. Item taken from the Creative menu), create a new, random mob
-                spawn = entity.create(worldIn, null, null, player, spawnPos, MobSpawnType.SPAWN_EGG, true, offset);
+                spawn = entity.create(worldIn, null, null, player, spawnPos, EntitySpawnReason.SPAWN_EGG, true, offset);
                 if (spawn instanceof ComplexMob entitySpawn) {
                     int true_species = species != null ? species : entitySpawn.getRandom().nextInt(ComplexMob.getEntityData(entitySpawn.getType()).getSpeciesData().size());
                     entitySpawn.setVariant(true_species);
@@ -177,7 +174,7 @@ public abstract class EntityUtils {
     public static void dropEggs(ComplexMob entity, String item_name, int number) {
         if (ConfigGamerules.mobsLayEggs.get()) {
             CompoundTag baseTag = new CompoundTag();
-            ItemStack item = new ItemStack(ForgeRegistries.ITEMS.getValue(new ResourceLocation(UntamedWilds.MOD_ID + ":" + item_name.toLowerCase())));
+            ItemStack item = new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.parse(UntamedWilds.MOD_ID + ":" + item_name.toLowerCase())));
             baseTag.putInt("variant", entity.getVariant());
             baseTag.putInt("custom_model_data", entity.getVariant());
             item.setTag(baseTag);
@@ -191,7 +188,7 @@ public abstract class EntityUtils {
     // This function turns the entity into an item with item_name registry name, and removes the entity from the world
     public static void turnEntityIntoItem(LivingEntity entity, String item_name) {
         if (ConfigGamerules.easyMobCapturing.get() || ((Mob) entity).getTarget() == null) {
-            ItemEntity entityitem = entity.spawnAtLocation(new ItemStack(ForgeRegistries.ITEMS.getValue(new ResourceLocation(UntamedWilds.MOD_ID + ":" + item_name.toLowerCase()))), 0.2F);
+            ItemEntity entityitem = entity.spawnAtLocation(new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.parse(UntamedWilds.MOD_ID + ":" + item_name.toLowerCase()))), 0.2F);
             RandomSource rand = entity.getRandom();
             if (entityitem != null) {
                 entityitem.setDeltaMovement((rand.nextFloat() - rand.nextFloat()) * 0.1F, rand.nextFloat() * 0.05F, (rand.nextFloat() - rand.nextFloat()) * 0.1F);
@@ -209,13 +206,13 @@ public abstract class EntityUtils {
         if (ConfigGamerules.easyMobCapturing.get() || ((Mob) entity).getTarget() == null) {
             entity.playSound(SoundEvents.BUCKET_FILL_FISH, 1.0F, 1.0F);
             itemstack.shrink(1);
-            ItemStack newitem = new ItemStack(ForgeRegistries.ITEMS.getValue(new ResourceLocation(UntamedWilds.MOD_ID + ":" + item_name.toLowerCase())));
+            ItemStack newitem = new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.parse(UntamedWilds.MOD_ID + ":" + item_name.toLowerCase())));
             newitem.setTag(writeEntityToNBT(entity, false, true));
             if (entity.hasCustomName()) {
                 newitem.setHoverName(entity.getCustomName());
             }
-            if (!entity.getLevel().isClientSide) {
-                CriteriaTriggers.FILLED_BUCKET.trigger((ServerPlayer) player, newitem);
+            if (!entity.getLevel().isClientSide()) {
+                player.awardStat(net.minecraft.stats.Stats.ITEM_PICKED_UP.get(newitem.getItem()));
             }
             if (itemstack.isEmpty()) {
                 player.setItemInHand(hand, newitem);
@@ -227,7 +224,7 @@ public abstract class EntityUtils {
     }
 
     // This function pulls X items from the defined LootTable
-    public static List<ItemStack> getItemFromLootTable(ResourceLocation lootTableIn, Level worldIn) {
+    public static List<ItemStack> getItemFromLootTable(Identifier lootTableIn, Level worldIn) {
         LootContext.Builder lootcontext$builder = new LootContext.Builder((ServerLevel) worldIn);
         if (worldIn.getServer() != null) {
             return worldIn.getServer().getLootTables().get(lootTableIn).getRandomItems(lootcontext$builder.create(new LootContextParamSet.Builder().build()));
@@ -274,12 +271,12 @@ public abstract class EntityUtils {
     }
 
     // Pulls all resources with the given name from the provided ResourceLocation
-    public static Pair<Integer, Integer> buildSkinArrays(String name, String species, EntityDataHolder dataIn, int variant, HashMap<String, HashMap<Integer, ArrayList<ResourceLocation>>> common_list, HashMap<String, HashMap<Integer, ArrayList<ResourceLocation>>> rare_list) {
+    public static Pair<Integer, Integer> buildSkinArrays(String name, String species, EntityDataHolder dataIn, int variant, HashMap<String, HashMap<Integer, ArrayList<Identifier>>> common_list, HashMap<String, HashMap<Integer, ArrayList<Identifier>>> rare_list) {
         return buildSkinArrays(name, species, dataIn.getSkins(variant), variant, common_list, rare_list);
     }
 
     // Pulls all resources with the given name from the provided ResourceLocation
-    public static Pair<Integer, Integer> buildSkinArrays(String name, String species, int skins, int variant, HashMap<String, HashMap<Integer, ArrayList<ResourceLocation>>> common_list, HashMap<String, HashMap<Integer, ArrayList<ResourceLocation>>> rare_list) {
+    public static Pair<Integer, Integer> buildSkinArrays(String name, String species, int skins, int variant, HashMap<String, HashMap<Integer, ArrayList<Identifier>>> common_list, HashMap<String, HashMap<Integer, ArrayList<Identifier>>> rare_list) {
         String path = "textures/entity/" + name + "/" + species;
 
         if (!common_list.containsKey(name)) {
@@ -293,17 +290,17 @@ public abstract class EntityUtils {
         if (values.getFirst() >= 1) {
             for (int i = 0; i <= values.getFirst(); i++) {
                 final String full_path = String.format(path + "_%d.png", i + 1);
-                common_list.get(name).get(variant).add(new ResourceLocation(UntamedWilds.MOD_ID, full_path));
+                common_list.get(name).get(variant).add(Identifier.fromNamespaceAndPath(UntamedWilds.MOD_ID, full_path));
             }
         } else {
-            common_list.get(name).get(variant).add(new ResourceLocation(UntamedWilds.MOD_ID, path + ".png"));
+                common_list.get(name).get(variant).add(Identifier.fromNamespaceAndPath(UntamedWilds.MOD_ID, path + ".png"));
         }
 
         if (values.getSecond() >= 0) {
             rare_list.get(name).put(variant, new ArrayList<>());
             for (int i = 0; i <= values.getSecond(); i++) {
                 final String full_path = String.format(path + "_%dr.png", i + 1);
-                rare_list.get(name).get(variant).add(new ResourceLocation(UntamedWilds.MOD_ID, full_path));
+                rare_list.get(name).get(variant).add(Identifier.fromNamespaceAndPath(UntamedWilds.MOD_ID, full_path));
             }
         }
         //Pair<Integer, Integer> result = new Pair<>(populateSkinArray(path, "_%d.png", variant, common_list.get(name), true), populateSkinArray(path, "_%dr.png", variant, rare_list.get(name), false));
@@ -315,15 +312,15 @@ public abstract class EntityUtils {
 
     // Populates the provided array with the data located in the specified path
     @Deprecated
-    public static int populateSkinArray(String path, String suffix, int variant, HashMap<Integer, ArrayList<ResourceLocation>> list, boolean addDefault) {
+    public static int populateSkinArray(String path, String suffix, int variant, HashMap<Integer, ArrayList<Identifier>> list, boolean addDefault) {
         list.put(variant, new ArrayList<>());
         for (int i = 0; i < 99; i++) {
             int k = i;
             try {
                 if (!suffix.matches("[^a-z0-9/._:-]")) {
                     final String full_path = String.format(path + suffix, i + 1);
-                    Minecraft.getInstance().getResourceManager().getResource(new ResourceLocation(UntamedWilds.MOD_ID, full_path));
-                    list.get(variant).add(new ResourceLocation(UntamedWilds.MOD_ID, full_path));
+                    Minecraft.getInstance().getResourceManager().getResource(Identifier.fromNamespaceAndPath(UntamedWilds.MOD_ID, full_path));
+                    list.get(variant).add(Identifier.fromNamespaceAndPath(UntamedWilds.MOD_ID, full_path));
                 } else {
                     UntamedWilds.LOGGER.error("Invalid character in " + suffix + ", terminating Skin registry");
                     break;
@@ -331,7 +328,7 @@ public abstract class EntityUtils {
             } catch (Exception e) {
                 if (k == 0 && addDefault) {
                     //UntamedWilds.LOGGER.info("Using the default path instead");
-                    list.get(variant).add(new ResourceLocation(UntamedWilds.MOD_ID, path + ".png"));
+                    list.get(variant).add(Identifier.fromNamespaceAndPath(UntamedWilds.MOD_ID, path + ".png"));
                     k++;
                 }
                 //UntamedWilds.LOGGER.info(k + " " + variant + " " + path + " " + list);
@@ -372,13 +369,13 @@ public abstract class EntityUtils {
         if (ComplexMob.ENTITY_DATA_HASH.containsKey(typeIn)) {
             SoundEvent location = ComplexMob.ENTITY_DATA_HASH.get(typeIn).getSounds(variantIn, sound_type);
             if (location != null) {
-                return ForgeRegistries.SOUND_EVENTS.getValue(location.getLocation());
+                return BuiltInRegistries.SOUND_EVENT.getValue(location.getLocation());
             }
         }
         /*else if (ComplexMob.CLIENT_DATA_HASH.containsKey(typeIn)) {
             SoundEvent location = ComplexMob.CLIENT_DATA_HASH.get(typeIn).getSounds(variantIn, sound_type);
             if (location != null) {
-                return ForgeRegistries.SOUND_EVENTS.getValue(location.name);
+                return BuiltInRegistries.SOUND_EVENT.getValue(location.name);
             }
         }*/
         //UntamedWilds.LOGGER.warn("There's no name provided for the species");
@@ -394,7 +391,7 @@ public abstract class EntityUtils {
     }
 
     // Takes the skin from the TEXTURES_COMMON or TEXTURES_RARE array
-    public static ResourceLocation getSkinFromEntity(ComplexMob entityIn) {
+    public static Identifier getSkinFromEntity(ComplexMob entityIn) {
         if (entityIn.getType().builtInRegistryHolder().key().location() != null) {
             String name = entityIn.getType().builtInRegistryHolder().key().location().getPath();
             if (entityIn.getSkin() > 99 && ComplexMob.TEXTURES_RARE.get(name).containsKey(entityIn.getVariant())) {
@@ -404,7 +401,7 @@ public abstract class EntityUtils {
                 return ComplexMob.TEXTURES_COMMON.get(name).get(entityIn.getVariant()).get(Math.min(entityIn.getSkin(), ComplexMob.TEXTURES_COMMON.get(name).get(entityIn.getVariant()).size() - 1));
         }
         //UntamedWilds.LOGGER.warn("No Skin found for entity: " + entityIn.getType().getRegistryName());
-        return new ResourceLocation("missing");
+        return Identifier.withDefaultNamespace("missing");
     }
 
     // Tests an ItemStack and consumes it if found to be a Food. Also applies it's effects
@@ -424,12 +421,12 @@ public abstract class EntityUtils {
                     }
                 }
             }
-        } else if (!PotionUtils.getMobEffects(itemstack).isEmpty()) {
+        } else if (itemstack.is(Items.POTION) && !itemstack.isEmpty()) {
             entityIn.playSound(SoundEvents.GENERIC_DRINK, 1, 1);
             if (entityIn instanceof ComplexMobTerrestrial)
                 ((ComplexMobTerrestrial) entityIn).addHunger(10);
 
-            for (MobEffectInstance effectinstance : PotionUtils.getMobEffects(itemstack)) {
+            for (MobEffectInstance effectinstance : itemstack.getOrDefault(net.minecraft.core.component.DataComponents.POTION_CONTENTS, net.minecraft.world.item.alchemy.PotionContents.EMPTY).getAllEffects()) {
                 if (effectinstance.getEffect().isInstantenous())
                     effectinstance.getEffect().applyInstantenousEffect(entityIn.getOwner(), entityIn.getOwner(), entityIn, effectinstance.getAmplifier(), 1.0D);
                 else

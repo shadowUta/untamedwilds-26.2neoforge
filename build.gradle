@@ -1,145 +1,187 @@
-buildscript {
-    repositories {
-        maven { url = 'https://maven.minecraftforge.net' }
-        maven {
-            url = 'https://repo.spongepowered.org/repository/maven-public/'
-            content { includeGroup "org.spongepowered" }
-        }
-        mavenCentral()
-    }
-    dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
-        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
-    }
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version '2.0.144'
+    id 'idea'
 }
 
-apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'eclipse'
-apply plugin: 'org.spongepowered.mixin'
+tasks.named('wrapper', Wrapper).configure {
+    distributionType = Wrapper.DistributionType.BIN
+}
 
-version = "${mc_version}-${untamedwilds_version}"
-group = 'raytrace082.untamedwilds' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = 'untamedwilds'
+version = mod_version
+group = mod_group_id
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+base {
+    archivesName = mod_id
+}
 
-println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
-minecraft {
-    mappings channel: 'official', version: mc_version
-    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+sourceSets.main.resources {
+    srcDir('src/generated/resources')
+    exclude('**/*.bbmodel')
+    exclude('src/generated/**/.cache')
+}
+
+// Citadel compatibility layer: compile only the animation/model API used by
+// Untamed Wilds. The source is built together with the main mod so the final
+// artifact remains a single mod jar and does not require a separate Citadel jar.
+def citadelSourceRoot = file('.envi/Citadel-1.21/Citadel-1.21/src/main/java')
+def generatedCitadelSource = layout.buildDirectory.dir('generated/sources/citadelCompat/java')
+def syncCitadelCompat = tasks.register('syncCitadelCompat', Sync) {
+    from citadelSourceRoot
+    into generatedCitadelSource
+    include 'com/github/alexthe666/citadel/animation/Animation.java'
+    include 'com/github/alexthe666/citadel/animation/AnimationEvent.java'
+    include 'com/github/alexthe666/citadel/animation/IAnimatedEntity.java'
+    include 'com/github/alexthe666/citadel/animation/IScaleable.java'
+}
+def animationHandlerCompat = layout.buildDirectory.dir('generated/sources/animationHandlerCompat/java')
+tasks.register('writeAnimationHandlerCompat') {
+    outputs.dir(animationHandlerCompat)
+    doLast {
+        def file = animationHandlerCompat.get().asFile.toPath().resolve('com/github/alexthe666/citadel/animation/AnimationHandler.java').toFile()
+        file.parentFile.mkdirs()
+        file.text = '''package com.github.alexthe666.citadel.animation;
+public final class AnimationHandler {
+    public static final AnimationHandler INSTANCE = new AnimationHandler();
+    private AnimationHandler() {}
+    public void updateAnimations(Object entity) {}
+}
+'''
+    }
+}
+sourceSets.main.java.srcDir animationHandlerCompat
+compileJava.dependsOn tasks.named('writeAnimationHandlerCompat')
+sourceSets.main.java.srcDir generatedCitadelSource
+sourceSets.main.java.exclude 'untamedwilds/client/model/**'
+sourceSets.main.java.exclude 'untamedwilds/client/render/**'
+sourceSets.main.java.exclude 'untamedwilds/client/layer/**'
+sourceSets.main.java.exclude 'untamedwilds/network/**'
+sourceSets.main.java.exclude 'untamedwilds/init/ModVillagerTrades.java'
+sourceSets.main.java.exclude 'untamedwilds/package-info.java'
+sourceSets.main.java.exclude 'untamedwilds/item/UntamedSpawnEggItem.java'
+sourceSets.main.java.exclude 'untamedwilds/util/EntityDataListenerEvent.java'
+sourceSets.main.java.exclude 'untamedwilds/util/SpawnDataHolder.java'
+sourceSets.main.java.exclude 'untamedwilds/util/SpawnDataListenerEvent.java'
+sourceSets.main.java.exclude 'untamedwilds/world/UntamedWildsGenerator.java'
+sourceSets.main.java.exclude 'untamedwilds/world/gen/feature/FeatureApexPredators.java'
+sourceSets.main.java.exclude 'untamedwilds/world/gen/feature/FeatureCritters.java'
+sourceSets.main.java.exclude 'untamedwilds/world/gen/feature/FeatureDenseWater.java'
+sourceSets.main.java.exclude 'untamedwilds/world/gen/feature/FeatureHerbivores.java'
+sourceSets.main.java.exclude 'untamedwilds/world/gen/feature/FeatureOceanSessileSpawns.java'
+sourceSets.main.java.exclude 'untamedwilds/world/gen/feature/FeatureOceanSwimming.java'
+sourceSets.main.java.exclude 'untamedwilds/world/gen/feature/FeatureUndergroundFaunaLarge.java'
+sourceSets.main.java.exclude 'untamedwilds/util/ModEntityRightClickEvent.java'
+sourceSets.main.java.exclude 'untamedwilds/world/gen/feature/FeatureCritterBurrow.java'
+sourceSets.main.java.exclude 'untamedwilds/world/gen/treedecorator/TreeOrchidDecorator.java'
+sourceSets.main.java.exclude 'untamedwilds/world/FaunaSpawn.java'
+sourceSets.main.java.exclude 'untamedwilds/network/handler/**'
+sourceSets.main.java.exclude 'untamedwilds/block/blockentity/CritterBurrowBlockEntity.java'
+sourceSets.main.java.exclude 'untamedwilds/block/blockentity/EggBlockEntity.java'
+sourceSets.main.java.exclude 'untamedwilds/block/blockentity/ReptileNestBlockEntity.java'
+sourceSets.main.java.exclude 'untamedwilds/block/CritterBurrowBlock.java'
+sourceSets.main.java.exclude 'untamedwilds/block/NestReptileBlock.java'
+sourceSets.main.java.exclude 'untamedwilds/block/StrangeEggBlock.java'
+sourceSets.main.java.exclude 'untamedwilds/block/CageBlock.java'
+sourceSets.main.java.exclude 'untamedwilds/block/ReedBlock.java'
+sourceSets.main.java.exclude 'untamedwilds/block/LardBlock.java'
+sourceSets.main.java.exclude 'untamedwilds/block/EpyphitePlantBlock.java'
+sourceSets.main.java.exclude 'untamedwilds/block/CarpetBlock.java'
+sourceSets.main.java.exclude 'untamedwilds/block/CustomGrassBlock.java'
+sourceSets.main.java.exclude 'untamedwilds/block/FloatingPlantBlock.java'
+sourceSets.main.java.exclude 'untamedwilds/block/TallGrassBlock.java'
+sourceSets.main.java.exclude 'untamedwilds/block/TallPlantBlock.java'
+sourceSets.main.java.exclude 'untamedwilds/block/TitanArumBlock.java'
+sourceSets.main.java.exclude 'untamedwilds/world/gen/feature/FeatureReedClusters.java'
+sourceSets.main.java.exclude 'untamedwilds/entity/ai/LayEggsOnNestGoal.java'
+sourceSets.main.java.exclude 'untamedwilds/network/handler/**'
+
+repositories {
+    mavenCentral()
+    maven { name = 'CurseMaven'; url = 'https://www.cursemaven.com' }
+    maven { name = 'ModMaven'; url = 'https://modmaven.k-4u.nl' }
+    maven { name = 'JEI'; url = 'https://dvs1.progwml6.com/files/maven/' }
+    maven { name = 'Jared'; url = 'https://maven.blamejared.com/' }
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+
+neoForge {
+    version = project.neo_version
 
     runs {
         client {
-            workingDirectory project.file('run')
-
-            // Recommended logging data for a userdev environment
-            // The markers can be added/remove as needed separated by commas.
-            // "SCAN": For mods scan.
-            // "REGISTRIES": For firing of registry events.
-            // "REGISTRYDUMP": For getting the contents of all registries.
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-            property 'mixin.env.remapRefMap', 'true'
-            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
-
-            mods {
-                untamedwilds {
-                    source sourceSets.main
-                }
-            }
+            client()
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
-
         server {
-            workingDirectory project.file('run')
-
-            // Recommended logging data for a userdev environment
-            // The markers can be added/remove as needed separated by commas.
-            // "SCAN": For mods scan.
-            // "REGISTRIES": For firing of registry events.
-            // "REGISTRYDUMP": For getting the contents of all registries.
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-
-            mods {
-                untamedwilds {
-                    source sourceSets.main
-                }
-            }
+            server()
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
-
         data {
-            workingDirectory project.file('run')
+            clientData()
+            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+        }
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            logLevel = org.slf4j.event.Level.DEBUG
+        }
+    }
 
-            // Recommended logging data for a userdev environment
-            // The markers can be added/remove as needed separated by commas.
-            // "SCAN": For mods scan.
-            // "REGISTRIES": For firing of registry events.
-            // "REGISTRYDUMP": For getting the contents of all registries.
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-            args '--mod', 'untamedwilds', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
-
-            mods {
-                untamedwilds {
-                    source sourceSets.main
-                }
-            }
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
         }
     }
 }
 
-// Include resources generated by data generators.
-sourceSets.main.resources { srcDir 'src/generated/resources' }
-
-repositories{
-    maven {
-        name = "CurseForge"
-        url = "https://minecraft.curseforge.com/api/maven/"
-    }
-    maven {
-        name = "ModMaven"
-        url = "https://modmaven.k-4u.nl"
-    }
-    maven {
-        name = "JEI"
-        url "https://dvs1.progwml6.com/files/maven/"
-    }
-    maven {
-        name = "Jared"
-        url = "https://maven.blamejared.com/"
-    }
-    maven {
-        name = "CurseMaven"
-        url = "https://www.cursemaven.com"
-    }
-    mavenCentral()
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.19.2-43.2.0'
-    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
-    compileOnly fg.deobf("vazkii.patchouli:Patchouli:1.19.2-77")
-    runtimeOnly fg.deobf("vazkii.patchouli:Patchouli:1.19.2-77")
-    runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}-forge:11.6.0.1013")
-    compileOnly fg.deobf("curse.maven:crash-utilities-371813:4406293")
-    runtimeOnly fg.deobf("curse.maven:crash-utilities-371813:4406293")
-    compileOnly fg.deobf("curse.maven:citadel4-331936:4473243")
-    runtimeOnly fg.deobf("curse.maven:citadel4-331936:4473243")
+    // NeoForge-compatible dependency coordinates will be restored as each library is migrated.
 }
 
-// Example for how to get properties into the manifest for reading at runtime.
-jar {
-    manifest {
-        attributes([
-                "Specification-Title": "untamedwilds",
-                "Specification-Vendor": "RayTrace082",
-                "Specification-Version": "1", // We are version 1 of ourselves
-                "Implementation-Title": project.name,
-                "Implementation-Version": "${mc_version}",
-                "Implementation-Vendor" :"RayTrace082",
-                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
-                "MixinConfigs": "untamedwilds.mixins.json"
-        ])
+var generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
+    var replaceProperties = [
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+    ]
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from 'src/main/templates'
+    into 'build/generated/sources/modMetadata'
+}
+
+sourceSets.main.resources.srcDir generateModMetadata
+neoForge.ideSyncTask generateModMetadata
+
+tasks.withType(JavaCompile).configureEach {
+    dependsOn syncCitadelCompat
+    options.encoding = 'UTF-8'
+}
+
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
     }
-    finalizedBy('reobfJar')
+}
+
+publishing {
+    publications {
+        register('mavenJava', MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven { url = "file://${project.projectDir}/repo" }
+    }
 }

@@ -2,7 +2,6 @@ package untamedwilds.item.debug;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
@@ -18,7 +17,7 @@ public class HighlighterItem extends Item {
         super(properties);
     }
 
-    public InteractionResultHolder<ItemStack> use(Level worldIn, Player playerIn, InteractionHand handIn) {
+    public InteractionResult use(Level worldIn, Player playerIn, InteractionHand handIn) {
         if (playerIn.isSteppingCarefully() && worldIn.isClientSide) {
             Minecraft.getInstance().getEntityRenderDispatcher().setRenderHitBoxes(!Minecraft.getInstance().getEntityRenderDispatcher().shouldRenderHitBoxes());
         }

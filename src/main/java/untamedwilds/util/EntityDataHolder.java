@@ -3,10 +3,10 @@ package untamedwilds.util;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.resources.Identifier;
 import untamedwilds.UntamedWilds;
 import untamedwilds.entity.ComplexMobTerrestrial;
 
@@ -27,7 +27,7 @@ public class EntityDataHolder {
             Codec.INT.fieldOf("offspring").orElse(1).forGetter((p_237054_0_) -> p_237054_0_.offspring),
             Codec.STRING.fieldOf("breeding_season").orElse("ANY").forGetter((p_237054_0_) -> p_237054_0_.breeding_season),
             //Codec.unboundedMap(Codec.STRING, SoundEvent.CODEC).fieldOf("sounds").orElse(Collections.emptyMap()).forGetter((p_237052_0_) -> p_237052_0_.sounds),
-            Codec.unboundedMap(Codec.STRING, SoundEvent.CODEC).fieldOf("sounds").orElse(Collections.emptyMap()).forGetter((p_237052_0_) -> p_237052_0_.sounds),
+            Codec.unboundedMap(Codec.STRING, SoundEvent.DIRECT_CODEC).fieldOf("sounds").orElse(Collections.emptyMap()).forGetter((p_237052_0_) -> p_237052_0_.sounds),
             Codec.unboundedMap(Codec.STRING, Codec.INT).fieldOf("flags").orElse(Collections.emptyMap()).forGetter((p_237054_0_) -> p_237054_0_.flags),
             SpeciesDataHolder.CODEC.listOf().fieldOf("species").orElse(new ArrayList<>()).forGetter((p_237052_0_) -> p_237052_0_.speciesData))
             .apply(p_237051_0_, EntityDataHolder::new));
@@ -56,7 +56,7 @@ public class EntityDataHolder {
         this.activityType = activityType;
 
         this.favouriteFood_input = favouriteFood;
-        this.favouriteFood = new ItemStack(ForgeRegistries.ITEMS.getValue(ResourceLocation.tryParse(this.favouriteFood_input)));
+        this.favouriteFood = new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.parse(this.favouriteFood_input)));
         this.growing_time = growing_time;
         this.offspring = offspring;
         this.breeding_season = breeding;
@@ -122,7 +122,7 @@ public class EntityDataHolder {
     }
 
     public ItemStack getFavouriteFood(int i) {
-        if (this.speciesData.get(i).getFavouriteFood().getItem().builtInRegistryHolder().key().location().toString().equals("minecraft:air")) {
+        if (this.speciesData.get(i).getFavouriteFood().getItem().builtInRegistryHolder().key().identifier().toString().equals("minecraft:air")) {
             return this.favouriteFood;
         }
         return this.speciesData.get(i).getFavouriteFood();

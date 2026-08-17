@@ -49,16 +49,16 @@ public class JumpGoal extends Goal {
 
     private boolean canJumpTo(BlockPos pos, int dx, int dz, int scale) {
         BlockPos blockpos = pos.offset(dx * scale, 0, dz * scale);
-        return this.taskOwner.level.getFluidState(blockpos).is(FluidTags.WATER) && !this.taskOwner.level.getBlockState(blockpos).getMaterial().blocksMotion();
+        return this.taskOwner.level().getFluidState(blockpos).is(FluidTags.WATER) && !this.taskOwner.level().getBlockState(blockpos).isSolid();
     }
 
     private boolean isAirAbove(BlockPos pos, int dx, int dz, int scale) {
-        return this.taskOwner.level.getBlockState(pos.offset(dx * scale, 1, dz * scale)).isAir() && this.taskOwner.level.getBlockState(pos.offset(dx * scale, 2, dz * scale)).isAir();
+        return this.taskOwner.level().getBlockState(pos.offset(dx * scale, 1, dz * scale)).isAir() && this.taskOwner.level().getBlockState(pos.offset(dx * scale, 2, dz * scale)).isAir();
     }
 
     public boolean canContinueToUse() {
         double d0 = this.taskOwner.getDeltaMovement().y;
-        return (!(d0 * d0 < (double)0.03F) || this.taskOwner.getXRot() == 0.0F || !(Math.abs(this.taskOwner.getXRot()) < 10.0F) || !this.taskOwner.isInWater()) && !this.taskOwner.isOnGround();
+        return (!(d0 * d0 < (double)0.03F) || this.taskOwner.getXRot() == 0.0F || !(Math.abs(this.taskOwner.getXRot()) < 10.0F) || !this.taskOwner.isInWater()) && !this.taskOwner.onGround();
     }
 
     public boolean isInterruptable() {
@@ -78,7 +78,7 @@ public class JumpGoal extends Goal {
     public void tick() {
         boolean flag = this.inWater;
         if (!flag) {
-            FluidState fluidstate = this.taskOwner.level.getFluidState(this.taskOwner.blockPosition());
+            FluidState fluidstate = this.taskOwner.level().getFluidState(this.taskOwner.blockPosition());
             this.inWater = fluidstate.is(FluidTags.WATER);
         }
 
@@ -88,7 +88,7 @@ public class JumpGoal extends Goal {
 
         Vec3 vec3 = this.taskOwner.getDeltaMovement();
         if (vec3.y * vec3.y < (double)0.03F && this.taskOwner.getXRot() != 0.0F) {
-            this.taskOwner.setXRot(Mth.rotlerp(this.taskOwner.getXRot(), 0.0F, 0.2F));
+            this.taskOwner.setXRot(this.taskOwner.getXRot() * 0.8F);
         } else if (vec3.length() > (double)1.0E-5F) {
             double d0 = vec3.horizontalDistance();
             double d1 = Math.atan2(-vec3.y, d0) * (double)(180F / (float)Math.PI);

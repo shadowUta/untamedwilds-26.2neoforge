@@ -25,7 +25,7 @@ public class GrazeGoal extends Goal {
 
     public GrazeGoal(ComplexMobTerrestrial entityIn, int chance) {
         this.taskOwner = entityIn;
-        this.entityWorld = entityIn.level;
+        this.entityWorld = entityIn.level();
         this.executionChance = chance;
         this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK, Flag.JUMP));
     }
@@ -35,7 +35,7 @@ public class GrazeGoal extends Goal {
         if (!this.taskOwner.canMove() || this.taskOwner.isBaby() || this.taskOwner.getHunger() > 100 || this.taskOwner.getTarget() != null || this.taskOwner.getRandom().nextInt(executionChance) != 0) {
             return false;
         }
-        this.testpos = this.taskOwner.blockPosition().offset(Math.cos(Math.toRadians(this.taskOwner.getYRot()+ 90)) * 1.2, 0, Math.sin(Math.toRadians(this.taskOwner.getYRot() + 90)) * 1.2);
+        this.testpos = BlockPos.containing(this.taskOwner.position().add(Math.cos(Math.toRadians(this.taskOwner.getYRot()+ 90)) * 1.2, 0, Math.sin(Math.toRadians(this.taskOwner.getYRot() + 90)) * 1.2));
         //this.testpos = new BlockPos(this.taskOwner.getPosition());
         if (this.isGrazeable()) {
             return true;
@@ -74,7 +74,7 @@ public class GrazeGoal extends Goal {
         this.eatingGrassTimer = Math.max(0, this.eatingGrassTimer - 1);
         if (this.eatingGrassTimer == 4) {
             if (this.entityWorld.getBlockState(this.testpos).is(ModTags.ModBlockTags.GRAZEABLE_BLOCKS)) {
-                if (net.minecraftforge.event.ForgeEventFactory.getMobGriefingEvent(this.entityWorld, this.taskOwner) && ConfigGamerules.grazerGriefing.get()) {
+                if (ConfigGamerules.grazerGriefing.get()) {
                     this.entityWorld.destroyBlock(this.testpos, false);
                 }
                 this.taskOwner.addHunger(16);
@@ -82,7 +82,7 @@ public class GrazeGoal extends Goal {
             } else {
                 BlockPos blockpos1 = this.testpos.below();
                 if (this.entityWorld.getBlockState(blockpos1).getBlock() == Blocks.GRASS_BLOCK) {
-                    if (net.minecraftforge.event.ForgeEventFactory.getMobGriefingEvent(this.entityWorld, this.taskOwner)) {
+                    if (ConfigGamerules.grazerGriefing.get()) {
                         this.entityWorld.globalLevelEvent(2001, blockpos1, Block.getId(Blocks.GRASS_BLOCK.defaultBlockState()));
                         if (ConfigGamerules.grazerGriefing.get()) {
                             this.entityWorld.setBlock(blockpos1, Blocks.DIRT.defaultBlockState(), 2);

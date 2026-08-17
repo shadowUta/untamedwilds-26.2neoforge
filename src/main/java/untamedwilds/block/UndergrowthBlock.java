@@ -21,7 +21,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.util.Random;
 
-public class UndergrowthBlock extends BushBlock implements BonemealableBlock, net.minecraftforge.common.IForgeShearable {
+public class UndergrowthBlock extends BushBlock implements BonemealableBlock {
 
     protected OffsetType offset;
 

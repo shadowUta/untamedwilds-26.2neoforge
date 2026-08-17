@@ -27,8 +27,11 @@ import untamedwilds.init.ModTags;
 
 import javax.annotation.Nullable;
 import java.util.Random;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.redstone.Orientation;
+import net.minecraft.world.level.ScheduledTickAccess;
 
-public class UndergrowthPoisonousBlock extends UndergrowthBlock implements BonemealableBlock, IPostGenUpdate, net.minecraftforge.common.IForgeShearable {
+public class UndergrowthPoisonousBlock extends UndergrowthBlock implements BonemealableBlock, IPostGenUpdate {
 
     public static final IntegerProperty PROPERTY_AGE = BlockStateProperties.AGE_2;
 
@@ -98,12 +101,11 @@ public class UndergrowthPoisonousBlock extends UndergrowthBlock implements Bonem
         return worldIn.getBlockState(pos.below()).is(ModTags.ModBlockTags.REEDS_PLANTABLE_ON) || worldIn.getBlockState(pos.below()).getBlock() == ModBlock.HEMLOCK.get();
     }
 
-    public BlockState updateShape(BlockState stateIn, Direction facing, BlockState facingState, LevelAccessor worldIn, BlockPos currentPos, BlockPos facingPos) {
+    public BlockState updateShape(BlockState stateIn, LevelAccessor worldIn, ScheduledTickAccess tickAccess, BlockPos currentPos, Direction facing, BlockPos facingPos, BlockState facingState, RandomSource random) {
         if (!stateIn.canSurvive(worldIn, currentPos)) {
             worldIn.scheduleTick(currentPos, this, 1);
         }
-
-        return super.updateShape(stateIn, facing, facingState, worldIn, currentPos, facingPos);
+        return super.updateShape(stateIn, worldIn, tickAccess, currentPos, facing, facingPos, facingState, random);
     }
 
     public boolean isValidBonemealTarget(BlockGetter worldIn, BlockPos pos, BlockState state, boolean isClient) {
@@ -138,7 +140,7 @@ public class UndergrowthPoisonousBlock extends UndergrowthBlock implements Bonem
     }
 
     public float getDestroyProgress(BlockState state, Player player, BlockGetter worldIn, BlockPos pos) {
-        return player.getMainHandItem().canPerformAction(net.minecraftforge.common.ToolActions.SWORD_DIG) ? 1.0F : super.getDestroyProgress(state, player, worldIn, pos);
+        return super.getDestroyProgress(state, player, worldIn, pos);
     }
 
     protected int getNumReedBlocksAbove(BlockGetter worldIn, BlockPos pos) {

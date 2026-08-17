@@ -54,7 +54,7 @@ public class AngrySleeperTarget<T extends LivingEntity> extends TargetGoal {
                 if (player.isSteppingCarefully() || player.isCreative() || player.isSpectator())
                     return false;
             }
-            return TargetingConditions.forCombat().test(this.taskOwner, entity) && this.canAttack(entity, TargetingConditions.DEFAULT);
+            return entity.isAlive() && this.canAttack(entity, TargetingConditions.DEFAULT);
         };
     }
 
@@ -62,7 +62,7 @@ public class AngrySleeperTarget<T extends LivingEntity> extends TargetGoal {
         if (!ConfigGamerules.angrySleepers.get() || this.taskOwner.isBaby() || !this.taskOwner.isSleeping() || this.taskOwner.isTame() || this.taskOwner.forceSleep != 0) {
             return false;
         }
-        List<LivingEntity> list = this.mob.level.getEntitiesOfClass(LivingEntity.class, this.mob.getBoundingBox().inflate(6.0D, 4.0D, 6.0D), (input) -> this.targetEntitySelector.test((T) input));
+        List<LivingEntity> list = this.mob.level().getEntitiesOfClass(LivingEntity.class, this.mob.getBoundingBox().inflate(6.0D, 4.0D, 6.0D), (input) -> this.targetEntitySelector.test((T) input));
         if (!list.isEmpty()) {
             LivingEntity player = list.get(0);
             this.taskOwner.setSleeping(false);

@@ -60,7 +60,7 @@ public class MeleeAttackCircleHerd extends Goal {
         if (this.attacker.isBaby()) {
             return false;
         }
-        long i = this.attacker.level.getGameTime();
+        long i = this.attacker.level().getGameTime();
         if (i - this.field_220720_k < 20L) {
             return false;
         } else {
@@ -93,10 +93,7 @@ public class MeleeAttackCircleHerd extends Goal {
             return false;
         } else if (!this.longMemory) {
             return !this.attacker.getNavigation().isDone();
-        } else if (!this.attacker.isWithinRestriction(livingentity.blockPosition())) {
-            return false;
-        }
-        else {
+        } else {
             return !(livingentity instanceof Player) || !livingentity.isSpectator() && !((Player)livingentity).isCreative();
         }
     }
@@ -109,7 +106,7 @@ public class MeleeAttackCircleHerd extends Goal {
 
     public void stop() {
         LivingEntity livingentity = this.attacker.getTarget();
-        if (!TargetingConditions.forCombat().test(this.attacker, livingentity)) {
+        if (livingentity == null || !livingentity.isAlive()) {
             this.attacker.setTarget(null);
         }
         this.attacker.setAggressive(false);
@@ -163,7 +160,7 @@ public class MeleeAttackCircleHerd extends Goal {
         }
 
         BlockPos forwardNearPos = EntityUtils.getRelativeBlockPos(this.attacker, 1.2F, 0);
-        if (this.isJumper && this.attacker.isOnGround() && this.attacker.getLevel().getBlockState(forwardNearPos.below()).isAir() && this.attacker.getLevel().getBlockState(forwardNearPos.below(2)).isAir() && this.attacker.getSensing().hasLineOfSight(livingentity)) {
+        if (this.isJumper && this.attacker.onGround() && this.attacker.level().getBlockState(forwardNearPos.below()).isAir() && this.attacker.level().getBlockState(forwardNearPos.below(2)).isAir() && this.attacker.getSensing().hasLineOfSight(livingentity)) {
             BlockPos forwardFarPos = EntityUtils.getRelativeBlockPos(this.attacker, 5F, 0);
             if (new Vec3(forwardFarPos.getX(), forwardFarPos.getY(), forwardFarPos.getZ()).distanceTo(livingentity.getPosition(0)) < this.attacker.getPosition(0).distanceTo(livingentity.getPosition(0))) {
                 //this.attacker.getEntityWorld().setBlockState(targetpos, Blocks.TORCH.defaultBlockState());
@@ -174,7 +171,7 @@ public class MeleeAttackCircleHerd extends Goal {
                         Optional<Vec3> jump_vec = this.calculateOptimalJumpVector(this.attacker, Vec3.atCenterOf(forwardFarPos));
                         if (jump_vec.isPresent()) {
                             double d1 = jump_vec.get().length();
-                            double d2 = 1 + d1 + (this.attacker.hasEffect(MobEffects.JUMP) ? (double)(0.1F * (float)(this.attacker.getEffect(MobEffects.JUMP).getAmplifier() + 1)) : 0.0D);
+                            double d2 = 1 + d1;
                             this.attacker.setDeltaMovement(jump_vec.get().x * d2 / d1, jump_vec.get().y, jump_vec.get().z * d2 / d1);
                             this.attacker.getNavigation().stop();
                             break;
@@ -192,7 +189,9 @@ public class MeleeAttackCircleHerd extends Goal {
         double d0 = this.getAttackReachSqr(enemy);
         if (this.attacker.hasLineOfSight(enemy) && distToEnemySqr <= d0 && this.attackTick <= 0) {
             this.attackTick = 20;
-            this.attacker.doHurtTarget(enemy);
+            if (this.attacker.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+                this.attacker.doHurtTarget(serverLevel, enemy);
+            }
         }
     }
 
@@ -270,7 +269,7 @@ public class MeleeAttackCircleHerd extends Goal {
     private boolean isClearTransition(Mob entityIn, Vec3 p_147665_, Vec3 p_147666_) {
         EntityDimensions entitydimensions = entityIn.getDimensions(Pose.LONG_JUMPING);
         Vec3 vec3 = p_147666_.subtract(p_147665_);
-        double d0 = Math.min(entitydimensions.width, entitydimensions.height);
+        double d0 = Math.min(entitydimensions.width(), entitydimensions.height());
         int i = Mth.ceil(vec3.length() / d0);
         Vec3 vec31 = vec3.normalize();
         Vec3 vec32 = p_147665_;
@@ -278,7 +277,7 @@ public class MeleeAttackCircleHerd extends Goal {
         for(int j = 0; j < i; ++j) {
             vec32 = j == i - 1 ? p_147666_ : vec32.add(vec31.scale(d0 * (double)0.9F));
             AABB aabb = entitydimensions.makeBoundingBox(vec32);
-            if (!entityIn.level.noCollision(entityIn, aabb)) {
+            if (!entityIn.level().noCollision(entityIn, aabb)) {
                 return false;
             }
         }

@@ -28,7 +28,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -45,7 +45,7 @@ public class JSONLoader<T> extends SimpleJsonResourceReloadListener {
     private final Codec<T> codec;
     private final String folderName;
 
-    protected Map<ResourceLocation, T> data = new HashMap<>();
+    protected Map<Identifier, T> data = new HashMap<>();
 
     /**
      * Creates a data manager with a standard gson parser
@@ -79,22 +79,22 @@ public class JSONLoader<T> extends SimpleJsonResourceReloadListener {
      * @return The java object that was deserializd from the json with the given ID, or null if no such object is associated with that ID
      */
     @Nullable
-    public T getData(ResourceLocation id) {
+    public T getData(Identifier id) {
         return this.data.get(id);
     }
 
     @Override
-    protected void apply(Map<ResourceLocation, JsonElement> jsons, ResourceManager resourceManager, ProfilerFiller profiler) {
+    protected void apply(Map<Identifier, JsonElement> jsons, ResourceManager resourceManager, ProfilerFiller profiler) {
         UntamedWilds.LOGGER.info("Beginning loading of data for data loader: {}", this.folderName);
         this.data = this.mapValues(jsons);
         UntamedWilds.LOGGER.info("Data loader for {} loaded {} jsons", this.folderName, this.data.size());
     }
 
-    private Map<ResourceLocation, T> mapValues(Map<ResourceLocation, JsonElement> inputs) {
-        Map<ResourceLocation, T> newMap = new HashMap<>();
+    private Map<Identifier, T> mapValues(Map<Identifier, JsonElement> inputs) {
+        Map<Identifier, T> newMap = new HashMap<>();
 
-        for (Entry<ResourceLocation, JsonElement> entry : inputs.entrySet()) {
-            ResourceLocation key = entry.getKey();
+        for (Entry<Identifier, JsonElement> entry : inputs.entrySet()) {
+            Identifier key = entry.getKey();
             JsonElement element = entry.getValue();
             // if we fail to parse json, log an error and continue
             // if we succeeded, add the resulting T to the map
