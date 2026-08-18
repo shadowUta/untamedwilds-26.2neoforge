@@ -1,14 +1,9 @@
 package untamedwilds.world;
 
-import com.google.gson.JsonElement;
-import com.mojang.serialization.JsonOps;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.DataGenerator;
-import net.minecraft.resources.RegistryOps;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BiomeTags;
@@ -22,18 +17,12 @@ import net.minecraft.world.level.levelgen.feature.configurations.CountConfigurat
 import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.ProbabilityFeatureConfiguration;
-import net.minecraft.world.level.levelgen.feature.treedecorators.TreeDecorator;
 import net.minecraft.world.level.levelgen.feature.treedecorators.TreeDecoratorType;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.placement.PlacementModifier;
 import net.minecraft.world.level.levelgen.placement.RarityFilter;
 import net.neoforged.neoforge.common.Tags;
-import net.minecraftforge.common.data.ExistingFileHelper;
-import net.neoforged.neoforge.common.data.JsonCodecProvider;
 import net.neoforged.neoforge.common.world.BiomeModifier;
-import net.neoforged.neoforge.data.event.GatherDataEvent;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -41,6 +30,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import untamedwilds.UntamedWilds;
 import untamedwilds.config.ConfigFeatureControl;
 import untamedwilds.world.gen.feature.*;
+import untamedwilds.world.gen.treedecorator.TreeOrchidDecorator;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -63,8 +53,7 @@ public class UntamedWildsGenerator {
     private static final DeferredHolder<Feature<?>, Feature<ProbabilityFeatureConfiguration>> VEGETATION = regFeature("vegetation", () -> new FeatureVegetation(ProbabilityFeatureConfiguration.CODEC));
     private static final DeferredHolder<Feature<?>, Feature<NoneFeatureConfiguration>> FLOATING_VEGETATION = regFeature("floating_vegetation", () -> new FeatureFloatingPlants(NoneFeatureConfiguration.CODEC));
 
-    // TODO: Unused because can't attach decorators to vanilla features. If I ever implement trees, this will go there
-    public static final DeferredHolder<TreeDecoratorType<?>, TreeDecoratorType<?>> TREE_ORCHID = TREE_DECORATION.register("orchid", () -> new TreeDecoratorType<>(TreeDecorator.CODEC));
+    public static final DeferredHolder<TreeDecoratorType<?>, TreeDecoratorType<TreeOrchidDecorator>> TREE_ORCHID = TREE_DECORATION.register("orchid", () -> new TreeDecoratorType<>(TreeOrchidDecorator.CODEC));
 
     public static final DeferredHolder<Feature<?>, Feature<NoneFeatureConfiguration>> UNDERGROUND = regFeature("underground", () -> new FeatureUndergroundFaunaLarge(NoneFeatureConfiguration.CODEC));
     private static final DeferredHolder<ConfiguredFeature<?, ?>, ConfiguredFeature<?, ?>> UNDERGROUND_CONFIGURED = CONFIGURED_FEATURES.register("underground", () -> new ConfiguredFeature<>(UNDERGROUND.get(), FeatureConfiguration.NONE));
@@ -83,52 +72,52 @@ public class UntamedWildsGenerator {
         return UntamedWildsGenerator.FEATURES.register(name, supplier);
     }
 
-    public static Map<Identifier, BiomeModifier> generateModifierByLocation(RegistryOps<JsonElement> registryOps) {
+    public static Map<Identifier, BiomeModifier> generateModifierByLocation(RegistryAccess registryAccess) {
         Map<Identifier, BiomeModifier> map = new HashMap<>();
-        addFeature(map, "sessile", new Builder(registryOps, new ConfiguredFeature<>(SESSILE.get(), FeatureConfiguration.NONE), "")
+        addFeature(map, "sessile", new Builder(registryAccess, new ConfiguredFeature<>(SESSILE.get(), FeatureConfiguration.NONE), "")
             .placementModifier(RarityFilter.onAverageOnceEvery(ConfigFeatureControl.freqSessile.get()))
             .tag(Arrays.asList(BiomeTags.IS_OCEAN)).decoration(TOP_LAYER_MODIFICATION));
-        addFeature(map, "ocean_rare", new Builder(registryOps, new ConfiguredFeature<>(OCEAN.get(), FeatureConfiguration.NONE), "")
+        addFeature(map, "ocean_rare", new Builder(registryAccess, new ConfiguredFeature<>(OCEAN.get(), FeatureConfiguration.NONE), "")
             .placementModifier(RarityFilter.onAverageOnceEvery(ConfigFeatureControl.freqOcean.get()))
             .tag(Arrays.asList(BiomeTags.IS_OCEAN)).decoration(TOP_LAYER_MODIFICATION));
-        addFeature(map, "sea_anemone", new Builder(registryOps, new ConfiguredFeature<>(SEA_ANEMONE.get(), new CountConfiguration(4)), "gencontrol.anemone")
+        addFeature(map, "sea_anemone", new Builder(registryAccess, new ConfiguredFeature<>(SEA_ANEMONE.get(), new CountConfiguration(4)), "gencontrol.anemone")
             .placementModifier(RarityFilter.onAverageOnceEvery(6))
             .extraBiomes(Biomes.FROZEN_OCEAN, Biomes.DEEP_FROZEN_OCEAN).decoration(GenerationStep.Decoration.VEGETAL_DECORATION));
 
-        addFeature(map, "floating_vegetation", new Builder(registryOps, new ConfiguredFeature<>(FLOATING_VEGETATION.get(), FeatureConfiguration.NONE), "gencontrol.algae")
+        addFeature(map, "floating_vegetation", new Builder(registryAccess, new ConfiguredFeature<>(FLOATING_VEGETATION.get(), FeatureConfiguration.NONE), "gencontrol.algae")
             .placementModifier(RarityFilter.onAverageOnceEvery(ConfigFeatureControl.freqAlgae.get()))
             .tag(Arrays.asList(BiomeTags.IS_JUNGLE)).decoration(GenerationStep.Decoration.VEGETAL_DECORATION));
-        addFeature(map, "reeds", new Builder(registryOps, new ConfiguredFeature<>(REEDS.get(), FeatureConfiguration.NONE), "gencontrol.reeds")
+        addFeature(map, "reeds", new Builder(registryAccess, new ConfiguredFeature<>(REEDS.get(), FeatureConfiguration.NONE), "gencontrol.reeds")
             .placementModifier(RarityFilter.onAverageOnceEvery(ConfigFeatureControl.freqReeds.get()))
-            .blacklist(ConfigFeatureControl.reedBlacklist.get().stream().map(s -> ResourceKey.create(Registry.BIOME_REGISTRY, Identifier.parse(s))).collect(Collectors.toList()))
+            .blacklist(ConfigFeatureControl.reedBlacklist.get().stream().map(s -> ResourceKey.create(Registries.BIOME, Identifier.parse(s))).collect(Collectors.toList()))
             .decoration(GenerationStep.Decoration.VEGETAL_DECORATION));
 
-        addFeature(map, "algae", new Builder(registryOps, new ConfiguredFeature<>(ALGAE.get(), FeatureConfiguration.NONE), "gencontrol.algae")
+        addFeature(map, "algae", new Builder(registryAccess, new ConfiguredFeature<>(ALGAE.get(), FeatureConfiguration.NONE), "gencontrol.algae")
             .placementModifier(RarityFilter.onAverageOnceEvery(ConfigFeatureControl.freqAlgae.get()))
-            .blacklist(ConfigFeatureControl.algaeBlacklist.get().stream().map(s -> ResourceKey.create(Registry.BIOME_REGISTRY, Identifier.parse(s))).collect(Collectors.toList()))
+            .blacklist(ConfigFeatureControl.algaeBlacklist.get().stream().map(s -> ResourceKey.create(Registries.BIOME, Identifier.parse(s))).collect(Collectors.toList()))
             .decoration(GenerationStep.Decoration.VEGETAL_DECORATION));
-        addFeature(map, "vegetation", new Builder(registryOps, new ConfiguredFeature<>(VEGETATION.get(), new ProbabilityFeatureConfiguration(1f / 4)), "gencontrol.bush")
+        addFeature(map, "vegetation", new Builder(registryAccess, new ConfiguredFeature<>(VEGETATION.get(), new ProbabilityFeatureConfiguration(1f / 4)), "gencontrol.bush")
             .placementModifier(RarityFilter.onAverageOnceEvery(ConfigFeatureControl.freqFlora.get()))
-            .blacklist(ConfigFeatureControl.floraBlacklist.get().stream().map(s -> ResourceKey.create(Registry.BIOME_REGISTRY, Identifier.parse(s))).collect(Collectors.toList()))
+            .blacklist(ConfigFeatureControl.floraBlacklist.get().stream().map(s -> ResourceKey.create(Registries.BIOME, Identifier.parse(s))).collect(Collectors.toList()))
             .decoration(GenerationStep.Decoration.VEGETAL_DECORATION));
 
-        addFeature(map, "dense_water", new Builder(registryOps, new ConfiguredFeature<>(DENSE_WATER.get(), FeatureConfiguration.NONE), "")
+        addFeature(map, "dense_water", new Builder(registryAccess, new ConfiguredFeature<>(DENSE_WATER.get(), FeatureConfiguration.NONE), "")
             .placementModifier(RarityFilter.onAverageOnceEvery(ConfigFeatureControl.freqWater.get()))
             .decoration(TOP_LAYER_MODIFICATION));
-        addFeature(map, "burrow", new Builder(registryOps, new ConfiguredFeature<>(ConfigFeatureControl.addBurrows.get() ? CRITTER_BURROW.get() : CRITTERS.get(), FeatureConfiguration.NONE), "")
+        addFeature(map, "burrow", new Builder(registryAccess, new ConfiguredFeature<>(ConfigFeatureControl.addBurrows.get() ? CRITTER_BURROW.get() : CRITTERS.get(), FeatureConfiguration.NONE), "")
             .placementModifier(RarityFilter.onAverageOnceEvery(ConfigFeatureControl.freqCritter.get()))
             .decoration(TOP_LAYER_MODIFICATION));
-        addFeature(map, "apex_predator", new Builder(registryOps, new ConfiguredFeature<>(APEX.get(), FeatureConfiguration.NONE), "")
+        addFeature(map, "apex_predator", new Builder(registryAccess, new ConfiguredFeature<>(APEX.get(), FeatureConfiguration.NONE), "")
             .placementModifier(RarityFilter.onAverageOnceEvery(ConfigFeatureControl.freqApex.get()))
             .decoration(TOP_LAYER_MODIFICATION));
-        addFeature(map, "herbivores", new Builder(registryOps, new ConfiguredFeature<>(HERBIVORES.get(), FeatureConfiguration.NONE), "")
+        addFeature(map, "herbivores", new Builder(registryAccess, new ConfiguredFeature<>(HERBIVORES.get(), FeatureConfiguration.NONE), "")
             .placementModifier(RarityFilter.onAverageOnceEvery(ConfigFeatureControl.freqHerbivores.get()))
             .decoration(TOP_LAYER_MODIFICATION));
 
         // TODO: Restore intended Underground fauna generation
         // TODO: Currently only applies to "Underground" biomes, extend to any biome?
         /*!FaunaHandler.getSpawnableList(FaunaHandler.animalType.LARGE_UNDERGROUND).isEmpty() &&*/
-        addFeature(map, "underground", new Builder(registryOps, UNDERGROUND_CONFIGURED.get(), "mobcontrol.masterspawner")
+        addFeature(map, "underground", new Builder(registryAccess, UNDERGROUND_CONFIGURED.get(), "mobcontrol.masterspawner")
             .tag(Arrays.asList(Tags.Biomes.IS_UNDERGROUND)).decoration(GenerationStep.Decoration.UNDERGROUND_DECORATION)
             .placementModifiers(FeatureUndergroundFaunaLarge.placed()));
         return map;
@@ -142,12 +131,12 @@ public class UntamedWildsGenerator {
         private final List<TagKey<Biome>> biomeTags = new ArrayList<>();
         private final List<Holder<Biome>> blacklist = new ArrayList<>();
         private final List<Holder<Biome>> extraBiomes = new ArrayList<>();
-        private final RegistryOps<JsonElement> registryOps;
+        private final RegistryAccess registryAccess;
         private GenerationStep.Decoration decoration = GenerationStep.Decoration.VEGETAL_DECORATION;
         private final String configOption;
 
-        public Builder(RegistryOps<JsonElement> registryOps, ConfiguredFeature<?, ?> placedFeature, String configOption) {
-            this.registryOps = registryOps;
+        public Builder(RegistryAccess registryAccess, ConfiguredFeature<?, ?> placedFeature, String configOption) {
+            this.registryAccess = registryAccess;
             this.placedFeatureName = placedFeature;
             this.configOption = configOption;
         }
@@ -174,14 +163,14 @@ public class UntamedWildsGenerator {
 
         public Builder blacklist(List<ResourceKey<Biome>> biomes) {
             for (ResourceKey<Biome> biome : biomes) {
-                this.blacklist.add(registryOps.registry(Registry.BIOME_REGISTRY).get().getHolder(biome).get());
+                registryAccess.lookup(Registries.BIOME).flatMap(registry -> registry.get(biome)).ifPresent(this.blacklist::add);
             }
             return this;
         }
 
         public Builder extraBiomes(ResourceKey<Biome>... biomes) {
             for (ResourceKey<Biome> biome : biomes) {
-                this.extraBiomes.add(registryOps.registry(Registry.BIOME_REGISTRY).get().getHolder(biome).get());
+                registryAccess.lookup(Registries.BIOME).flatMap(registry -> registry.get(biome)).ifPresent(this.extraBiomes::add);
             }
             return this;
         }
@@ -191,12 +180,14 @@ public class UntamedWildsGenerator {
             return this;
         }
 
-        private static HolderSet<Biome> getBiomesByTag(RegistryOps<JsonElement> registryOps, TagKey<Biome> tag) {
-            return new HolderSet.Named<>(registryOps.registry(Registry.BIOME_REGISTRY).get(), tag);
+        private static HolderSet<Biome> getBiomesByTag(RegistryAccess registryAccess, TagKey<Biome> tag) {
+            return registryAccess.lookupOrThrow(Registries.BIOME).get(tag)
+                .<HolderSet<Biome>>map(holderSet -> holderSet)
+                .orElseGet(HolderSet::direct);
         }
 
         public UntamedWildsBiomeModifier build() {
-            List<HolderSet<Biome>> biomesSet = new ArrayList<>(this.biomeTags.stream().map(tag -> getBiomesByTag(registryOps, tag)).collect(Collectors.toList()));
+            List<HolderSet<Biome>> biomesSet = new ArrayList<>(this.biomeTags.stream().map(tag -> getBiomesByTag(registryAccess, tag)).collect(Collectors.toList()));
             List<HolderSet<Biome>> blacklistSet = new ArrayList<>();
             blacklistSet.add(HolderSet.direct(this.blacklist));
             Holder<PlacedFeature> placedFeature = Holder.direct(new PlacedFeature(Holder.direct(placedFeatureName), placementModifiers));
@@ -208,16 +199,6 @@ public class UntamedWildsGenerator {
         BiomeModifier modifier = builder.build();
         Identifier location = Identifier.fromNamespaceAndPath(UntamedWilds.MOD_ID, placedFeatureName);
         map.put(location, modifier);
-    }
-
-    @SubscribeEvent
-    public static void data(GatherDataEvent event) {
-        DataGenerator gen = event.getGenerator();
-        ExistingFileHelper helper = event.getExistingFileHelper();
-        RegistryOps<JsonElement> registryOps = RegistryOps.create(JsonOps.INSTANCE, RegistryAccess.builtinCopy());
-        Map<Identifier, BiomeModifier> featureGenMap = generateModifierByLocation(registryOps);
-        JsonCodecProvider<BiomeModifier> jsonCodecProvider = JsonCodecProvider.forDatapackRegistry(gen, helper, UntamedWilds.MOD_ID, registryOps, NeoForgeRegistries.Keys.BIOME_MODIFIERS, featureGenMap);
-        gen.addProvider(event.includeServer(), jsonCodecProvider);
     }
 
     // Returns the biodiversity level of a biome. Values are data-driven, defaulting to 0.6 if no key is found.

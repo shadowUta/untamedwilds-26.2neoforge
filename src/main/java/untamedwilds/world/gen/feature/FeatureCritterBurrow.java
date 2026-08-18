@@ -4,19 +4,17 @@ import com.mojang.serialization.Codec;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.*;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.random.WeightedRandom;
 import net.minecraft.core.BlockPos;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.GrassBlock;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
-import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
-import net.minecraft.world.level.material.Material;
 import untamedwilds.block.CritterBurrowBlock;
 import untamedwilds.block.blockentity.CritterBurrowBlockEntity;
 import untamedwilds.config.ConfigMobControl;
@@ -38,7 +36,7 @@ public class FeatureCritterBurrow extends Feature<NoneFeatureConfiguration> {
         RandomSource rand = context.level().getRandom();
         BlockPos pos = context.origin();
         WorldGenLevel world = context.level();
-        if (ConfigMobControl.dimensionBlacklist.get().contains(world.getLevel().dimension().location().toString()))
+        if (ConfigMobControl.dimensionBlacklist.get().contains(world.getLevel().dimension().identifier().toString()))
             return false;
 
         int i = rand.nextInt(8) - rand.nextInt(8);
@@ -47,7 +45,7 @@ public class FeatureCritterBurrow extends Feature<NoneFeatureConfiguration> {
         pos = new BlockPos(pos.getX() + i, k, pos.getZ() + j);
         Optional<FaunaHandler.SpawnListEntry> entry = WeightedRandom.getRandomItem(rand, FaunaHandler.getSpawnableList(FaunaHandler.animalType.CRITTER), e -> e.itemWeight);
         if (entry.isPresent()) {
-            Entity entity = entry.get().entityType.create(world.getLevel());
+            Entity entity = entry.get().entityType.create(world.getLevel(), EntitySpawnReason.CHUNK_GENERATION);
             int variant = -1;
             if (entity != null && isReplaceablePlant(world, pos)) {
                 if (!world.getFluidState(pos).isEmpty() && !(entity instanceof ComplexMobAmphibious))
@@ -81,9 +79,6 @@ public class FeatureCritterBurrow extends Feature<NoneFeatureConfiguration> {
     }
 
     private static boolean isReplaceablePlant(LevelSimulatedReader p_67289_, BlockPos p_67290_) {
-        return p_67289_.isStateAtPosition(p_67290_, (p_160551_) -> {
-            Material material = p_160551_.getMaterial();
-            return material == Material.REPLACEABLE_PLANT || material == Material.AIR;
-        });
+        return p_67289_.isStateAtPosition(p_67290_, state -> state.isAir() || state.is(BlockTags.REPLACEABLE));
     }
 }

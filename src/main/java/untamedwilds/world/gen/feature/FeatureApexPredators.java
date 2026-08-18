@@ -14,7 +14,6 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
-import net.minecraftforge.registries.ForgeRegistries;
 import untamedwilds.UntamedWilds;
 import untamedwilds.config.ConfigFeatureControl;
 import untamedwilds.config.ConfigMobControl;
@@ -34,7 +33,7 @@ public class FeatureApexPredators extends Feature<NoneFeatureConfiguration> {
         RandomSource rand = context.level().getRandom();
         BlockPos pos = context.origin();
         WorldGenLevel world = context.level();
-        if (ConfigMobControl.dimensionBlacklist.get().contains(world.getLevel().dimension().location().toString()))
+        if (ConfigMobControl.dimensionBlacklist.get().contains(world.getLevel().dimension().identifier().toString()))
             return false;
 
         for (int i = 0; i < 3; i++) {

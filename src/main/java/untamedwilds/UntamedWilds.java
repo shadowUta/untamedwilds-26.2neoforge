@@ -14,6 +14,7 @@ import untamedwilds.config.ConfigBase;
 import untamedwilds.init.*;
 import untamedwilds.util.ModCreativeModeTab;
 import untamedwilds.world.UntamedWildsBiomeModifier;
+import untamedwilds.world.UntamedWildsGenerator;
 import untamedwilds.network.UntamedInstance;
 
 @Mod(value = UntamedWilds.MOD_ID)
@@ -41,6 +42,10 @@ public class UntamedWilds {
         ModEntity.ENTITIES.register(eventBus);
         ModItems.registerSpawnItems();
         UntamedWildsBiomeModifier.BIOME_MODIFIER_SERIALIZERS.register(eventBus);
+        UntamedWildsGenerator.FEATURES.register(eventBus);
+        UntamedWildsGenerator.CONFIGURED_FEATURES.register(eventBus);
+        UntamedWildsGenerator.PLACED_FEATURES.register(eventBus);
+        UntamedWildsGenerator.TREE_DECORATION.register(eventBus);
         ModSounds.SOUNDS.register(eventBus);
         ModParticles.PARTICLES.register(eventBus);
         ModAdvancementTriggers.register();
