@@ -42,6 +42,7 @@ public abstract class UntamedMobRenderer<T extends Mob> extends EntityRenderer<T
         super.extractRenderState(entity, state, partialTick);
         state.entity = entity;
         state.partialTick = partialTick;
+        state.hasRedOverlay = entity.hurtTime > 0 || entity.deathTime > 0;
         state.bodyRot = Mth.rotLerp(partialTick, entity.yBodyRotO, entity.yBodyRot);
         float headRot = Mth.rotLerp(partialTick, entity.yHeadRotO, entity.yHeadRot);
         state.yRot = Mth.wrapDegrees(headRot - state.bodyRot);
@@ -80,9 +81,11 @@ public abstract class UntamedMobRenderer<T extends Mob> extends EntityRenderer<T
         model.setupAnim(entity, state.walkAnimationPos, state.walkAnimationSpeed, state.ageInTicks,
             state.yRot, state.xRot);
         Identifier texture = texture(entity);
+        int overlayCoords = OverlayTexture.pack(OverlayTexture.u(0.0F),
+            OverlayTexture.v(state.hasRedOverlay));
         collector.submitCustomGeometry(pose, RenderTypes.entityCutout(texture), (currentPose, vertexConsumer) ->
             model.renderToBuffer(poseStack(currentPose), vertexConsumer, state.lightCoords,
-                OverlayTexture.NO_OVERLAY, -1));
+                overlayCoords, -1));
         for (UntamedLayer<T> layer : untamedLayers) {
             layer.submit(this, entity, state, pose, collector);
         }
