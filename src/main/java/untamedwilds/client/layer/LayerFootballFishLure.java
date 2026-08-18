@@ -28,6 +28,7 @@ public class LayerFootballFishLure<T extends EntityFootballFish> implements Unta
                        PoseStack pose, SubmitNodeCollector collector) {
         BasicEntityModel<T> model = renderer.getUntamedModel(entity);
         collector.submitCustomGeometry(pose, renderType(),
-            (currentPose, vertexConsumer) -> model.renderToBuffer(pose, vertexConsumer, state.lightCoords, 0, -1));
+            (currentPose, vertexConsumer) -> model.renderToBuffer(
+                UntamedMobRenderer.poseStack(currentPose), vertexConsumer, state.lightCoords, 0, -1));
     }
 }

@@ -9,7 +9,6 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Mob;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,16 +53,6 @@ public abstract class UntamedMobRenderer<T extends Mob> extends EntityRenderer<T
         untamedLayers.add(layer);
     }
 
-    private void invokeScale(T entity, PoseStack pose, float partialTick) {
-        try {
-            Method method = getClass().getDeclaredMethod("scale", entity.getClass(), PoseStack.class, float.class);
-            method.setAccessible(true);
-            method.invoke(this, entity, pose, partialTick);
-        } catch (ReflectiveOperationException ignored) {
-            // Renderers without a custom scale retain the vanilla transform.
-        }
-    }
-
     @Override
     public void submit(UntamedRenderState state, PoseStack pose, SubmitNodeCollector collector, CameraRenderState camera) {
         T entity = entity(state);
@@ -71,13 +60,13 @@ public abstract class UntamedMobRenderer<T extends Mob> extends EntityRenderer<T
         pose.pushPose();
         pose.scale(state.scale, state.scale, state.scale);
         pose.scale(-1.0F, -1.0F, 1.0F);
-        invokeScale(entity, pose, state.partialTick);
+        scale(entity, pose, state.partialTick);
         pose.translate(0.0F, -1.501F, 0.0F);
         model.setupAnim(entity, state.walkAnimationPos, state.walkAnimationSpeed, state.ageInTicks,
             state.yRot, state.xRot);
         Identifier texture = texture(entity);
         collector.submitCustomGeometry(pose, RenderTypes.entityCutout(texture), (currentPose, vertexConsumer) ->
-            model.renderToBuffer(pose, vertexConsumer, state.lightCoords,  Overlay.NO_OVERLAY, -1));
+            model.renderToBuffer(poseStack(currentPose), vertexConsumer, state.lightCoords, Overlay.NO_OVERLAY, -1));
         for (UntamedLayer<T> layer : untamedLayers) {
             layer.submit(this, entity, state, pose, collector);
         }
@@ -87,6 +76,12 @@ public abstract class UntamedMobRenderer<T extends Mob> extends EntityRenderer<T
 
     @SuppressWarnings("unchecked")
     private T entity(UntamedRenderState state) { return (T) state.entity; }
+
+    public static PoseStack poseStack(PoseStack.Pose pose) {
+        PoseStack poseStack = new PoseStack();
+        poseStack.last().set(pose);
+        return poseStack;
+    }
 
     private Identifier texture(T entity) {
         try {
