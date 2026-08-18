@@ -16,7 +16,6 @@ import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import untamedwilds.UntamedWilds;
 import untamedwilds.util.EntityUtils;
 import untamedwilds.util.ModCreativeModeTab;
 
@@ -80,7 +79,6 @@ public class MobBottledItem extends Item {
         if (modelData != null && !modelData.floats().isEmpty()) {
             return modelData.floats().getFirst().intValue();
         }
-        UntamedWilds.LOGGER.error("No variant found in this itemstack NBT data");
         return 0;
     }
 

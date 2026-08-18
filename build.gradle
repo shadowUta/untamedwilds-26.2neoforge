@@ -22,6 +22,52 @@ sourceSets.main.resources {
     exclude('src/generated/**/.cache')
 }
 
+// Minecraft 1.21.4+ resolves registered items through assets/<namespace>/items.
+// Keep the existing baked models as the rendering source and generate the new
+// item definitions, including legacy custom_model_data overrides.
+def generatedItemDefinitions = layout.buildDirectory.dir('generated/resources/itemDefinitions')
+def generateItemDefinitions = tasks.register('generateItemDefinitions') {
+    def legacyItemModels = fileTree('src/main/resources/assets/untamedwilds/models/item') {
+        include '*.json'
+    }
+    inputs.files(legacyItemModels)
+    outputs.dir(generatedItemDefinitions)
+    doLast {
+        def outputRoot = generatedItemDefinitions.get().asFile.toPath()
+                .resolve('assets/untamedwilds/items').toFile()
+        delete(outputRoot)
+        outputRoot.mkdirs()
+
+        legacyItemModels.files.sort().each { modelFile ->
+            def legacy = new groovy.json.JsonSlurper().parse(modelFile)
+            def modelId = "untamedwilds:item/${modelFile.name[0..-6]}"
+            def itemModel
+            if (legacy.overrides) {
+                def entries = legacy.overrides.collect { override ->
+                    def value = override.predicate.custom_model_data as BigDecimal
+                    [threshold: value, model: [type: 'minecraft:model', model: override.model]]
+                }.sort { it.threshold }
+                itemModel = [
+                        type: 'minecraft:range_dispatch',
+                        property: 'minecraft:custom_model_data',
+                        index: 0,
+                        entries: entries,
+                        fallback: [type: 'minecraft:model', model: modelId]
+                ]
+            } else {
+                itemModel = [type: 'minecraft:model', model: modelId]
+            }
+            def definition = [model: itemModel]
+            new File(outputRoot, modelFile.name).text =
+                    groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(definition))
+        }
+    }
+}
+sourceSets.main.resources.srcDir generatedItemDefinitions
+tasks.named('processResources').configure {
+    dependsOn generateItemDefinitions
+}
+
 // Citadel compatibility layer: compile only the animation/model API used by
 // Untamed Wilds. The source is built together with the main mod so the final
 // artifact remains a single mod jar and does not require a separate Citadel jar.

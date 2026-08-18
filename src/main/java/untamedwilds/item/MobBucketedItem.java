@@ -21,7 +21,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluid;
-import untamedwilds.UntamedWilds;
 import untamedwilds.entity.ComplexMob;
 import untamedwilds.util.EntityUtils;
 import untamedwilds.util.ModCreativeModeTab;
@@ -89,7 +88,6 @@ public class MobBucketedItem extends BucketItem {
         if (modelData != null && !modelData.floats().isEmpty()) {
             return modelData.floats().getFirst().intValue();
         }
-        UntamedWilds.LOGGER.error("No variant found in this itemstack NBT data");
         return 0;
     }
 
