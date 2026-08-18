@@ -5,7 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.WeightedRandom;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.SpawnPlacements;
+import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.Feature;
@@ -36,7 +36,7 @@ public class FeatureHerbivores extends Feature<NoneFeatureConfiguration> {
             Optional<FaunaHandler.SpawnListEntry> entry = WeightedRandom.getRandomItem(rand, FaunaHandler.getSpawnableList(FaunaHandler.animalType.LARGE_HERB), e -> e.itemWeight);
             if (entry.isPresent()) {
                 EntityType<?> type = entry.get().entityType;
-                if (FaunaSpawn.performWorldGenSpawning(type, SpawnPlacements.Type.NO_RESTRICTIONS, Heightmap.Types.WORLD_SURFACE_WG, world, pos, rand, entry.get().getGroupCount())) {
+                if (FaunaSpawn.performWorldGenSpawning(type, SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.WORLD_SURFACE_WG, world, pos, rand, entry.get().getGroupCount())) {
                     return true;
                 }
             }

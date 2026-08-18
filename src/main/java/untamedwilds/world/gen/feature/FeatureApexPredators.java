@@ -5,7 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.WeightedRandom;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.SpawnPlacements;
+import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.WorldGenLevel;
@@ -42,7 +42,7 @@ public class FeatureApexPredators extends Feature<NoneFeatureConfiguration> {
             if (entry.isPresent()) {
                 EntityType<?> type = entry.get().entityType;
                 if (type != null) {
-                    if (FaunaSpawn.performWorldGenSpawning(type, SpawnPlacements.Type.NO_RESTRICTIONS, Heightmap.Types.WORLD_SURFACE_WG, world, pos, rand, entry.get().getGroupCount())) {
+                    if (FaunaSpawn.performWorldGenSpawning(type, SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.WORLD_SURFACE_WG, world, pos, rand, entry.get().getGroupCount())) {
                         return true;
                     }
                 }

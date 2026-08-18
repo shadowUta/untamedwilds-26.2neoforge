@@ -2,7 +2,7 @@ package untamedwilds.world.gen.feature;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.SpawnPlacements;
+import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.data.worldgen.placement.PlacementUtils;
 import net.minecraft.util.random.WeightedRandom;
@@ -64,7 +64,7 @@ public class FeatureUndergroundFaunaLarge extends Feature<NoneFeatureConfigurati
                             if (entry.isPresent()) {
                                 EntityType<?> type = entry.get().entityType;
                                 if (type != null) {
-                                    if (FaunaSpawn.performWorldGenSpawning(type, SpawnPlacements.Type.NO_RESTRICTIONS, null, world, blockpos, rng, entry.get().getGroupCount())) {
+                                    if (FaunaSpawn.performWorldGenSpawning(type, SpawnPlacementTypes.NO_RESTRICTIONS, null, world, blockpos, rng, entry.get().getGroupCount())) {
                                         return true;
                                     }
                                 }

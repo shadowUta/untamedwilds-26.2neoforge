@@ -2,7 +2,7 @@ package untamedwilds.world.gen.feature;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.SpawnPlacements;
+import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.util.random.WeightedRandom;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.WorldGenLevel;
@@ -33,7 +33,7 @@ public class FeatureOceanSwimming extends Feature<NoneFeatureConfiguration> {
         for (int i = 0; i < 5; i++) {
             Optional<FaunaHandler.SpawnListEntry> entry = WeightedRandom.getRandomItem(rand, FaunaHandler.getSpawnableList(FaunaHandler.animalType.LARGE_OCEAN), e -> e.itemWeight);
             if (entry.isPresent()) {
-                if (FaunaSpawn.performWorldGenSpawning(entry.get().entityType, SpawnPlacements.Type.IN_WATER, Heightmap.Types.OCEAN_FLOOR, world, pos, rand, entry.get().getGroupCount())) {
+                if (FaunaSpawn.performWorldGenSpawning(entry.get().entityType, SpawnPlacementTypes.IN_WATER, Heightmap.Types.OCEAN_FLOOR, world, pos, rand, entry.get().getGroupCount())) {
                     return true;
                 }
             }

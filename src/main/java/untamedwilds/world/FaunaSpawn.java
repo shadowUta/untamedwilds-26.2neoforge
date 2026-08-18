@@ -39,8 +39,8 @@ public class FaunaSpawn {
         }
     }
 
-    private static boolean canCreatureTypeSpawnAtLocation(SpawnPlacements.Type placeType, LevelReader worldIn, BlockPos pos, @Nullable EntityType<?> entityTypeIn) {
-        if (placeType == SpawnPlacements.Type.NO_RESTRICTIONS) {
+    private static boolean canCreatureTypeSpawnAtLocation(SpawnPlacementType placeType, LevelReader worldIn, BlockPos pos, @Nullable EntityType<?> entityTypeIn) {
+        if (placeType == SpawnPlacementTypes.NO_RESTRICTIONS) {
             return true;
         } else if (entityTypeIn != null && worldIn.getWorldBorder().isWithinBounds(pos)) {
             return canSpawnAtBody(placeType, worldIn, pos, entityTypeIn);
@@ -48,7 +48,7 @@ public class FaunaSpawn {
         return false;
     }
 
-    private static boolean canSpawnAtBody(SpawnPlacements.Type placeType, LevelReader worldIn, BlockPos pos, @Nullable EntityType<?> entityTypeIn) {
+    private static boolean canSpawnAtBody(SpawnPlacementType placeType, LevelReader worldIn, BlockPos pos, @Nullable EntityType<?> entityTypeIn) {
         BlockState blockstate = worldIn.getBlockState(pos);
         FluidState ifluidstate = worldIn.getFluidState(pos);
         //BlockPos blockpos = pos.up();
@@ -73,7 +73,7 @@ public class FaunaSpawn {
     //    return performWorldGenSpawning(entityType, spawnType, Heightmap.Type.WORLD_SURFACE, worldIn, pos, rand, groupSize);
     //}
 
-    public static boolean performWorldGenSpawning(EntityType<?> entityType, SpawnPlacements.Type spawnType, @Nullable Heightmap.Types heightMap, ServerLevelAccessor worldIn, BlockPos pos, RandomSource random, int groupSize) {
+    public static boolean performWorldGenSpawning(EntityType<?> entityType, SpawnPlacementType spawnType, @Nullable Heightmap.Types heightMap, ServerLevelAccessor worldIn, BlockPos pos, RandomSource random, int groupSize) {
         //UntamedWilds.LOGGER.info(entityType);
         if (ConfigMobControl.dimensionBlacklist.get().contains(worldIn.getLevel().dimension().location().toString()))
             return false;
@@ -123,18 +123,18 @@ public class FaunaSpawn {
                             }
                             Entity entity;
                             try {
-                                entity = entityType.create(worldIn.getLevel());
+                                entity = entityType.create(worldIn.getLevel(), EntitySpawnReason.CHUNK_GENERATION);
                             } catch (Exception exception) {
                                 UntamedWilds.LOGGER.warn("Failed to create mob", exception);
                                 continue;
                             }
 
                             assert entity != null;
-                            entity.moveTo(blockpos.getX(), blockpos.getY(), blockpos.getZ(), random.nextFloat() * 360.0F, 0.0F);
+                            entity.setPos(blockpos.getX(), blockpos.getY(), blockpos.getZ());
+                            entity.setYRot(random.nextFloat() * 360.0F);
                             if (entity instanceof Mob mobEntity) {
-                                if (net.minecraftforge.common.ForgeHooks.canEntitySpawn(mobEntity, worldIn, d0, blockpos.getY(), d1, null, EntitySpawnReason.CHUNK_GENERATION) == -1) continue;
                                 if (mobEntity.checkSpawnRules(worldIn, EntitySpawnReason.CHUNK_GENERATION) && worldIn.noCollision(entity)) {
-                                    mobEntity.finalizeSpawn(worldIn, worldIn.getCurrentDifficultyAt(mobEntity.blockPosition()), EntitySpawnReason.CHUNK_GENERATION, null, null);
+                                    mobEntity.finalizeSpawn(worldIn, worldIn.getCurrentDifficultyAt(mobEntity.blockPosition()), EntitySpawnReason.CHUNK_GENERATION, null);
                                     if (mobEntity instanceof ComplexMob && mobEntity.isAlive()) {
                                         if (mobEntity instanceof ISpecies) {
                                             if (species == -1) {

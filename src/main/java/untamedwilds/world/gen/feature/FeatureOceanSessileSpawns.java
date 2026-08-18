@@ -3,7 +3,7 @@ package untamedwilds.world.gen.feature;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.SpawnPlacements;
+import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.util.random.WeightedRandom;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
@@ -34,7 +34,7 @@ public class FeatureOceanSessileSpawns extends Feature<NoneFeatureConfiguration>
         for (int i = 0; i < 5; i++) {
             Optional<FaunaHandler.SpawnListEntry> entry = WeightedRandom.getRandomItem(rand, FaunaHandler.getSpawnableList(FaunaHandler.animalType.BENTHOS), e -> e.itemWeight);
             if (entry.isPresent()) {
-                if (FaunaSpawn.performWorldGenSpawning(entry.get().entityType, SpawnPlacements.Type.NO_RESTRICTIONS, Heightmap.Types.OCEAN_FLOOR, world, pos, rand, entry.get().getGroupCount())) {
+                if (FaunaSpawn.performWorldGenSpawning(entry.get().entityType, SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.OCEAN_FLOOR, world, pos, rand, entry.get().getGroupCount())) {
                     return true;
                 }
             }
