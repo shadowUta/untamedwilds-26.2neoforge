@@ -1,0 +1,11 @@
+{
+  "gives": {
+    "id": "untamedwilds:material_pearl"
+  },
+  "max_uses": 6,
+  "reputation_discount": 0.2,
+  "wants": {
+    "id": "minecraft:emerald"
+  },
+  "xp": 8
+}

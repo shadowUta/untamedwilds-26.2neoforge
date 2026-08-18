@@ -153,11 +153,6 @@ public enum AnimationHandler {
 sourceSets.main.java.srcDir animationHandlerCompat
 compileJava.dependsOn tasks.named('writeAnimationHandlerCompat')
 sourceSets.main.java.srcDir generatedCitadelSource
-sourceSets.main.java.exclude 'untamedwilds/init/ModVillagerTrades.java'
-sourceSets.main.java.exclude 'untamedwilds/package-info.java'
-sourceSets.main.java.exclude 'untamedwilds/item/UntamedSpawnEggItem.java'
-sourceSets.main.java.exclude 'untamedwilds/util/ModEntityRightClickEvent.java'
-sourceSets.main.java.exclude 'untamedwilds/network/handler/**'
 
 repositories {
     mavenCentral()
