@@ -49,7 +49,6 @@ public class SpeciesDataHolder {
     private final float health;
     private final ComplexMobTerrestrial.ActivityType activityType;
     private final String favouriteFood_input;
-    private final ItemStack favouriteFood;
     private final int growing_time;
     private final int offspring;
     private final int skins;
@@ -68,7 +67,6 @@ public class SpeciesDataHolder {
         this.health = health;
         this.activityType = activityType;
         this.favouriteFood_input = favourite_food;
-        this.favouriteFood = new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.parse(this.favouriteFood_input)));
         this.growing_time = growing_time;
         this.offspring = offspring;
         this.skins = skins;
@@ -129,7 +127,10 @@ public class SpeciesDataHolder {
 
     @Nullable
     public ItemStack getFavouriteFood() {
-        return this.favouriteFood;
+        if (this.favouriteFood_input.isBlank()) {
+            return ItemStack.EMPTY;
+        }
+        return new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.parse(this.favouriteFood_input)));
     }
 
     public Integer getGrowingTime() {
