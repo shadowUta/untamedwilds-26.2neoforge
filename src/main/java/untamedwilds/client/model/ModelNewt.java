@@ -138,7 +138,7 @@ public class ModelNewt extends AdvancedEntityModel<EntityNewt> {
         }
 
         // Pitch/Yaw handler
-        if (newt.isInWater() && !newt.isOnGround()) {
+        if (newt.isInWater() && !newt.onGround()) {
             this.setRotateAngle(body_main, newt.getXRot() * ((float) Math.PI / 180F), 0, 0);
         }
         this.head_main.rotateAngleY = Mth.rotLerp((float) 0.05, this.head_main.rotateAngleY, newt.offset);
@@ -149,7 +149,7 @@ public class ModelNewt extends AdvancedEntityModel<EntityNewt> {
         // Movement Animation
         AdvancedModelBox[] bodyParts = new AdvancedModelBox[]{head_main, body_main, body_hip, tail_1, tail_2};
         chainSwing(bodyParts, globalSpeed * 1.4F, globalDegree * 1.2F, -4, limbSwing, limbSwingAmount * 0.3F);
-        float onGround = Math.min(0.8F, limbSwingAmount * (newt.isOnGround() ? 2 : 1));
+        float onGround = Math.min(0.8F, limbSwingAmount * (newt.onGround() ? 2 : 1));
         if (newt.isInWater()) {
             flap(arm_left, globalSpeed, globalDegree, false, 0.8F, 1f, limbSwing, limbSwingAmount);
             flap(leg_left, globalSpeed, globalDegree * 0.8f, false, 1.6F, 1f, limbSwing, limbSwingAmount);

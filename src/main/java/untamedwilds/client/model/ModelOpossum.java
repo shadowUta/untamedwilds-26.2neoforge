@@ -282,7 +282,7 @@ public class ModelOpossum extends AdvancedEntityModel<EntityOpossum> {
         }
 
         // Pitch/Yaw handler
-        if (opossum.isInWater() && !opossum.isOnGround()) {
+        if (opossum.isInWater() && !opossum.onGround()) {
             this.setRotateAngle(body_main, opossum.getXRot() * ((float) Math.PI / 180F), 0, 0);
         }
 

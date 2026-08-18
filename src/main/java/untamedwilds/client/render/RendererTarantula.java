@@ -11,7 +11,7 @@ import untamedwilds.entity.arthropod.EntityTarantula;
 
 import javax.annotation.Nonnull;
 
-public class RendererTarantula extends MobRenderer<EntityTarantula, ModelTarantula> {
+public class RendererTarantula extends UntamedMobRenderer<EntityTarantula> {
 
     private static final ModelTarantula TARANTULA_MODEL = new ModelTarantula();
 

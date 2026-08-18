@@ -22,6 +22,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShovelItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import untamedwilds.config.ConfigGamerules;
 import untamedwilds.entity.ComplexMob;
 import untamedwilds.entity.INewSkins;
@@ -38,7 +40,6 @@ public class EntityGiantClam extends ComplexMob implements ISpecies, INewSkins {
 
     public EntityGiantClam(EntityType<? extends ComplexMob> type, Level worldIn) {
         super(type, worldIn);
-        this.entityData.define(CLAM_OPEN, false);
         this.setPathfindingMalus(PathType.WATER, 0.0F);
     }
 
@@ -52,9 +53,9 @@ public class EntityGiantClam extends ComplexMob implements ISpecies, INewSkins {
                 .add(Attributes.ARMOR, 12D);
     }
 
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        //this.entityData.define(CLAM_OPEN, true);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(CLAM_OPEN, false);
         //this.entityCollisionReduction = 1F;
     }
 
@@ -62,13 +63,13 @@ public class EntityGiantClam extends ComplexMob implements ISpecies, INewSkins {
     public void baseTick() {
         int i = this.getAirSupply();
         super.baseTick();
-        if (this.isAlive() && !this.isInWaterOrBubble()) {
+        if (this.isAlive() && !this.isInWater()) {
             --i;
             this.setAirSupply(i);
 
             if (this.getAirSupply() == -20) {
                 this.setAirSupply(0);
-                this.hurt(DamageSource.DRY_OUT, 2.0F);
+                this.hurt(this.damageSources().dryOut(), 2.0F);
             }
         }
         else {
@@ -80,18 +81,18 @@ public class EntityGiantClam extends ComplexMob implements ISpecies, INewSkins {
         super.aiStep();
         // The following locks the X and Z position to zero, preventing the entity from being pushed
         this.setDeltaMovement(0, this.getDeltaMovement().get(Direction.Axis.Y), 0);
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide()) {
             if (this.isInWater() && this.isOpen() && this.getRandom().nextFloat() > 0.99) {
-                ((ServerLevel) this.level).sendParticles(ParticleTypes.BUBBLE_COLUMN_UP, this.getPosition(0).x, this.getPosition(0).y + 0.2, this.getPosition(0).z, 1, random.nextFloat() * 0.2, random.nextFloat() * 0.2, random.nextFloat() * 0.2, 0);
+            ((ServerLevel) this.level()).sendParticles(ParticleTypes.BUBBLE_COLUMN_UP, this.getPosition(0).x, this.getPosition(0).y + 0.2, this.getPosition(0).z, 1, random.nextFloat() * 0.2, random.nextFloat() * 0.2, random.nextFloat() * 0.2, 0);
             }
             if (this.tickCount % 1000 == 0) {
                 if (this.wantsToBreed()) {
                     this.breed();
                 }
             }
-            this.setOpen(this.level.isDay());
+            this.setOpen(this.level().getSkyDarken() < 4);
         }
-        if (this.level.isClientSide) {
+        if (this.level().isClientSide()) {
             if (!this.isOpen() && this.closeProgress < 200) {
                 this.closeProgress++;
             } else if (this.isOpen() && this.closeProgress > 0) {
@@ -104,7 +105,7 @@ public class EntityGiantClam extends ComplexMob implements ISpecies, INewSkins {
      * A nearby Giant Clam of the same species, being hermaphrodites, they do not take Gender into account */
     public boolean wantsToBreed() {
         if (ConfigGamerules.naturalBreeding.get() && this.getAge() == 0 && EntityUtils.hasFullHealth(this)) {
-            List<EntityGiantClam> list = this.level.getEntitiesOfClass(EntityGiantClam.class, this.getBoundingBox().inflate(12.0D, 6.0D, 12.0D));
+            List<EntityGiantClam> list = this.level().getEntitiesOfClass(EntityGiantClam.class, this.getBoundingBox().inflate(12.0D, 6.0D, 12.0D));
             list.removeIf(input -> input == this || input.getAge() != 0 || input.getVariant() != this.getVariant());
             if (list.size() >= 1) {
                 this.setAge(this.getPregnancyTime());
@@ -128,13 +129,13 @@ public class EntityGiantClam extends ComplexMob implements ISpecies, INewSkins {
 
         if (itemstack.getItem() instanceof ShovelItem && this.isAlive() && hand == InteractionHand.MAIN_HAND) {
             if (this.random.nextInt(4) == 0) {
-                this.level.playSound(null, this.blockPosition(), SoundEvents.SHIELD_BLOCK, SoundSource.BLOCKS, 1.0F, 0.8F);
+                this.level().playSound(null, this.blockPosition(), SoundEvents.SHIELD_BLOCK.value(), SoundSource.BLOCKS, 1.0F, 0.8F);
                 EntityUtils.turnEntityIntoItem(this, "spawn_giant_clam");
-                return InteractionResult.sidedSuccess(this.level.isClientSide);
+                return InteractionResult.SUCCESS;
             }
             else {
-                this.level.playSound(null, this.blockPosition(), SoundEvents.SHULKER_HURT_CLOSED, SoundSource.BLOCKS, 1.0F, 0.8F);
-                EntityUtils.spawnParticlesOnEntity(this.level, this, ParticleTypes.SMOKE, 3, 1);
+                this.playSound(SoundEvents.SHULKER_HURT_CLOSED, 1.0F, 0.8F);
+                EntityUtils.spawnParticlesOnEntity(this.level(), this, ParticleTypes.SMOKE, 3, 1);
             }
         }
         return super.mobInteract(player, hand);
@@ -144,13 +145,13 @@ public class EntityGiantClam extends ComplexMob implements ISpecies, INewSkins {
     private boolean isOpen(){ return (this.entityData.get(CLAM_OPEN)); }
     private void setOpen(boolean open){ this.entityData.set(CLAM_OPEN, open); }
 
-    public void addAdditionalSaveData(CompoundTag compound){ // Write NBT Tags
+    public void addAdditionalSaveData(ValueOutput compound){ // Write NBT Tags
         super.addAdditionalSaveData(compound);
         compound.putBoolean("isOpen", this.isOpen());
     }
 
-    public void readAdditionalSaveData(CompoundTag compound){ // Read NBT Tags
+    public void readAdditionalSaveData(ValueInput compound){ // Read NBT Tags
         super.readAdditionalSaveData(compound);
-        this.setOpen(compound.getBoolean("isOpen"));
+        this.setOpen(compound.getBooleanOr("isOpen", false));
     }
 }

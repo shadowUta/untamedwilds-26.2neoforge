@@ -1,15 +1,15 @@
 package untamedwilds.util;
 
 import net.minecraft.resources.Identifier;
-import net.minecraftforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 import untamedwilds.UntamedWilds;
 import untamedwilds.world.FaunaHandler;
 
 import java.util.List;
 
-@Mod.EventBusSubscriber(modid = UntamedWilds.MOD_ID)
+@EventBusSubscriber(modid = UntamedWilds.MOD_ID)
 public class SpawnDataListenerEvent {
 
     public static final JSONLoader<SpawnDataHolder> SPAWN_DATA_HOLDER = new JSONLoader<>("spawn_tables", SpawnDataHolder.CODEC);
@@ -25,8 +25,8 @@ public class SpawnDataListenerEvent {
     public static SpawnDataHolder UNDERGROUND;
 
     @SubscribeEvent
-    public static void onAddReloadListeners(AddReloadListenerEvent event) {
-        event.addListener(SPAWN_DATA_HOLDER);
+    public static void onAddReloadListeners(AddServerReloadListenersEvent event) {
+        event.addListener(Identifier.fromNamespaceAndPath(UntamedWilds.MOD_ID, "spawn_data"), SPAWN_DATA_HOLDER);
         registerData();
     }
 

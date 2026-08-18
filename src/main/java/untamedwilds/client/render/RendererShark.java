@@ -11,7 +11,7 @@ import untamedwilds.entity.fish.EntityShark;
 
 import javax.annotation.Nonnull;
 
-public class RendererShark extends MobRenderer<EntityShark, EntityModel<EntityShark>> {
+public class RendererShark extends UntamedMobRenderer<EntityShark> {
 
     private static final ModelShark SHARK_MODEL = new ModelShark();
 

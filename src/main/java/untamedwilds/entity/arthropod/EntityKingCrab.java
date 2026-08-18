@@ -51,10 +51,13 @@ public class EntityKingCrab extends ComplexMobAmphibious implements ISpecies, IN
         EAT_LEFT = Animation.create(56);
         EAT_RIGHT = Animation.create(56);
         EAT_BOTH = Animation.create(80);
-        this.maxUpStep = 1;
     }
 
     @Override
+    public float maxUpStep() {
+        return 1;
+    }
+
     public static AttributeSupplier.Builder registerAttributes() {
         return LivingEntity.createLivingAttributes()
                 .add(Attributes.ATTACK_DAMAGE, 3.0D)
@@ -78,7 +81,7 @@ public class EntityKingCrab extends ComplexMobAmphibious implements ISpecies, IN
         return 0.0F;
     }
 
-    public boolean wantsToBeOnLand() { return this.level.isRainingAt(this.blockPosition()); }
+    public boolean wantsToBeOnLand() { return this.level().isRainingAt(this.blockPosition()); }
 
     public boolean wantsToBeInWater() { return true; }
 
@@ -91,7 +94,7 @@ public class EntityKingCrab extends ComplexMobAmphibious implements ISpecies, IN
     public void aiStep() {
         super.aiStep();
         AnimationHandler.INSTANCE.updateAnimations(this);
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide()) {
             if (this.tickCount % 1000 == 0) {
                 if (this.wantsToBreed() && !this.isMale()) {
                     this.breed();
@@ -100,10 +103,10 @@ public class EntityKingCrab extends ComplexMobAmphibious implements ISpecies, IN
             if (this.isInWater()) {
                 this.setDeltaMovement(this.getDeltaMovement().add(0.0D, -0.005D, 0.0D));
             }
-            if (this.level.getGameTime() % 4000 == 0) {
+            if (this.level().getGameTime() % 4000 == 0) {
                 this.heal(1.0F);
             }
-            if (this.isInWater() && this.getAnimation() == NO_ANIMATION && this.getTarget() == null && this.level.getBlockState(this.blockPosition().below()).is(BlockTags.MINEABLE_WITH_SHOVEL)) {
+            if (this.isInWater() && this.getAnimation() == NO_ANIMATION && this.getTarget() == null && this.level().getBlockState(this.blockPosition().below()).is(BlockTags.MINEABLE_WITH_SHOVEL)) {
                 if (this.getCommandInt() == 0) {
                     int i = this.random.nextInt(3000);
                     if (i > 2940 && i < 2960)
@@ -116,12 +119,12 @@ public class EntityKingCrab extends ComplexMobAmphibious implements ISpecies, IN
             }
             if (this.getAnimation() != NO_ANIMATION) {
                 if (((this.getAnimation() == EAT_LEFT || this.getAnimation() == EAT_RIGHT) && (this.getAnimationTick() == 20)) || (this.getAnimation() == EAT_BOTH && (this.getAnimationTick() == 20 || this.getAnimationTick() == 44))) {
-                    ((ServerLevel)this.level).sendParticles(new BlockParticleOption(ParticleTypes.FALLING_DUST, this.level.getBlockState(this.blockPosition().below())), this.getX(), this.getY(), this.getZ(), 3, 0.0D, 0.0D, 0.0D, 0.15F);
+                    ((ServerLevel)this.level()).sendParticles(new BlockParticleOption(ParticleTypes.FALLING_DUST, this.level().getBlockState(this.blockPosition().below())), this.getX(), this.getY(), this.getZ(), 3, 0.0D, 0.0D, 0.0D, 0.15F);
                     this.playSound(SoundEvents.SHOVEL_FLATTEN, 0.2F, 0.7F);
                 }
             }
         }
-        if (this.level.isClientSide()) {
+        if (this.level().isClientSide()) {
 
         }
     }
@@ -130,7 +133,7 @@ public class EntityKingCrab extends ComplexMobAmphibious implements ISpecies, IN
      * A nearby Tarantula of the opposite gender and the same species */
     public boolean wantsToBreed() {
         if (ConfigGamerules.naturalBreeding.get() && this.isInWater() && this.getAge() == 0 && EntityUtils.hasFullHealth(this)) {
-            List<EntityKingCrab> list = this.level.getEntitiesOfClass(EntityKingCrab.class, this.getBoundingBox().inflate(6.0D, 4.0D, 6.0D));
+            List<EntityKingCrab> list = this.level().getEntitiesOfClass(EntityKingCrab.class, this.getBoundingBox().inflate(6.0D, 4.0D, 6.0D));
             list.removeIf(input -> EntityUtils.isInvalidPartner(this, input, false));
             if (list.size() >= 1) {
                 this.setAge(this.getPregnancyTime());
@@ -154,7 +157,7 @@ public class EntityKingCrab extends ComplexMobAmphibious implements ISpecies, IN
         if (hand == InteractionHand.MAIN_HAND) {
             if (itemstack.getItem().equals(Items.WATER_BUCKET) && this.isAlive()) {
                 EntityUtils.mutateEntityIntoItem(this, player, hand, "bucket_king_crab", itemstack);
-                return InteractionResult.sidedSuccess(this.level.isClientSide);
+                return InteractionResult.SUCCESS;
             }
         }
         return super.mobInteract(player, hand);

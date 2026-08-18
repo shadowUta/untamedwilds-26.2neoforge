@@ -12,6 +12,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.*;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BonemealableBlock;
@@ -24,12 +25,13 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.common.CommonHooks;
+import net.minecraft.tags.ItemTags;
 import untamedwilds.init.ModBlock;
 import untamedwilds.init.ModItems;
 import untamedwilds.init.ModTags.ModBlockTags;
 
 import javax.annotation.Nullable;
-import java.util.Random;
 
 public class TitanArumBlock extends Block implements BonemealableBlock, IPostGenUpdate {
    protected static final VoxelShape SHAPE_NORMAL = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
@@ -55,7 +57,7 @@ public class TitanArumBlock extends Block implements BonemealableBlock, IPostGen
       if (state.getValue(PROPERTY_AGE) == 0) {
          return SHAPE_CORM;
       }
-      Vec3 vector3d = state.getOffset(worldIn, pos);
+      Vec3 vector3d = state.getOffset(pos);
       VoxelShape shape = state.getValue(PROPERTY_AGE) == 1 && state.getValue(PROPERTY_STAGE) == 1 ? SHAPE_NORMAL : SHAPE_SPATHE;
       return shape.move(vector3d.x, vector3d.y, vector3d.z);
    }
@@ -77,7 +79,7 @@ public class TitanArumBlock extends Block implements BonemealableBlock, IPostGen
       return null;
    }
 
-   public void tick(BlockState state, ServerLevel worldIn, BlockPos pos, Random rand) {
+   public void tick(BlockState state, ServerLevel worldIn, BlockPos pos, RandomSource rand) {
       if (!state.canSurvive(worldIn, pos)) {
          worldIn.destroyBlock(pos, true);
       }
@@ -91,9 +93,9 @@ public class TitanArumBlock extends Block implements BonemealableBlock, IPostGen
       if (state.getValue(PROPERTY_STAGE) == 0 && random.nextInt(8) == 0) {
          if (worldIn.isEmptyBlock(pos.above()) && worldIn.getLightEmission(pos.above()) >= 9) {
             int i = this.getNumReedBlocksBelow(worldIn, pos) + 1;
-            if (i < 4 && net.minecraftforge.common.ForgeHooks.onCropsGrowPre(worldIn, pos, state, random.nextInt(3) == 0)) {
+            if (i < 4 && CommonHooks.canCropGrow(worldIn, pos, state, random.nextInt(3) == 0)) {
                this.grow(state, worldIn, pos, random, i);
-               net.minecraftforge.common.ForgeHooks.onCropsGrowPost(worldIn, pos, state);
+               CommonHooks.fireCropGrowPost(worldIn, pos, state);
             }
          }
       }
@@ -114,15 +116,15 @@ public class TitanArumBlock extends Block implements BonemealableBlock, IPostGen
       return worldIn.getBlockState(pos.below()).is(ModBlockTags.REEDS_PLANTABLE_ON) || worldIn.getBlockState(pos.below()).getBlock() == ModBlock.TITAN_ARUM.get();
    }
 
-   public BlockState updateShape(BlockState stateIn, Direction facing, BlockState facingState, LevelAccessor worldIn, BlockPos currentPos, BlockPos facingPos) {
+   public BlockState updateShape(BlockState stateIn, LevelAccessor worldIn, ScheduledTickAccess tickAccess, BlockPos currentPos, Direction facing, BlockPos facingPos, BlockState facingState, RandomSource random) {
       if (!stateIn.canSurvive(worldIn, currentPos)) {
          worldIn.scheduleTick(currentPos, this, 1);
       }
 
-      return super.updateShape(stateIn, facing, facingState, worldIn, currentPos, facingPos);
+      return super.updateShape(stateIn, worldIn, tickAccess, currentPos, facing, facingPos, facingState, random);
    }
 
-   public boolean isValidBonemealTarget(BlockGetter worldIn, BlockPos pos, BlockState state, boolean isClient) {
+   public boolean isValidBonemealTarget(LevelReader worldIn, BlockPos pos, BlockState state) {
       int i = this.getNumReedBlocksAbove(worldIn, pos);
       int j = this.getNumReedBlocksBelow(worldIn, pos);
       return i + j + 1 < 4 && worldIn.getBlockState(pos.above(i)).getValue(PROPERTY_STAGE) != 1;
@@ -171,7 +173,7 @@ public class TitanArumBlock extends Block implements BonemealableBlock, IPostGen
    }
 
    public float getDestroyProgress(BlockState state, Player player, BlockGetter worldIn, BlockPos pos) {
-      return player.getMainHandItem().canPerformAction(net.minecraftforge.common.ToolActions.SWORD_DIG) ? 1.0F : super.getDestroyProgress(state, player, worldIn, pos);
+      return player.getMainHandItem().is(ItemTags.SWORDS) ? 1.0F : super.getDestroyProgress(state, player, worldIn, pos);
    }
 
    protected int getNumReedBlocksAbove(BlockGetter worldIn, BlockPos pos) {
@@ -195,8 +197,7 @@ public class TitanArumBlock extends Block implements BonemealableBlock, IPostGen
       areaeffectcloudentity.setRadiusOnUse(-0.2F);
       areaeffectcloudentity.setWaitTime(10);
       areaeffectcloudentity.setRadiusPerTick(-areaeffectcloudentity.getRadius() / ((float)areaeffectcloudentity.getDuration() * 0.5F));
-      areaeffectcloudentity.setFixedColor(5599028);
-      areaeffectcloudentity.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 80, 0, true, false));
+      areaeffectcloudentity.addEffect(new MobEffectInstance(MobEffects.NAUSEA, 80, 0, true, false));
 
       worldIn.addFreshEntity(areaeffectcloudentity);
    }

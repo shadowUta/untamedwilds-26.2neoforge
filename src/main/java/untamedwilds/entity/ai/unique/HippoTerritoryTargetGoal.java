@@ -2,6 +2,7 @@ package untamedwilds.entity.ai.unique;
 
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
+import net.minecraft.server.level.ServerLevel;
 import untamedwilds.entity.ComplexMob;
 import untamedwilds.entity.ai.target.HuntMobTarget;
 
@@ -16,7 +17,9 @@ public class HippoTerritoryTargetGoal<T extends LivingEntity> extends HuntMobTar
                 return false;
             }
             else {
-                return TargetingConditions.forCombat().test(creature, entity) && this.canAttack(entity, TargetingConditions.DEFAULT);
+                return creature.level() instanceof ServerLevel serverLevel
+                        && TargetingConditions.forCombat().test(serverLevel, creature, entity)
+                        && this.canAttack(entity, TargetingConditions.DEFAULT);
             }
         };
     }

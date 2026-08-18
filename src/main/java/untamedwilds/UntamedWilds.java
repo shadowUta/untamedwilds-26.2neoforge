@@ -12,7 +12,9 @@ import org.apache.logging.log4j.Logger;
 import untamedwilds.compat.CompatBridge;
 import untamedwilds.config.ConfigBase;
 import untamedwilds.init.*;
+import untamedwilds.util.ModCreativeModeTab;
 import untamedwilds.world.UntamedWildsBiomeModifier;
+import untamedwilds.network.UntamedInstance;
 
 @Mod(value = UntamedWilds.MOD_ID)
 public class UntamedWilds {
@@ -31,9 +33,11 @@ public class UntamedWilds {
         modContainer.registerConfig(ModConfig.Type.COMMON, ConfigBase.common_config);
         eventBus.addListener(this::setupCommon);
         eventBus.addListener(this::setupClient);
+        eventBus.addListener(UntamedInstance::registerMessages);
         ModBlock.BLOCKS.register(eventBus);
         ModBlock.TILE_ENTITIES.register(eventBus);
         ModItems.ITEMS.register(eventBus);
+        ModCreativeModeTab.TABS.register(eventBus);
         ModEntity.ENTITIES.register(eventBus);
         ModItems.registerSpawnItems();
         UntamedWildsBiomeModifier.BIOME_MODIFIER_SERIALIZERS.register(eventBus);

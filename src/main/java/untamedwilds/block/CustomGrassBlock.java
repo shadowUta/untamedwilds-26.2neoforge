@@ -1,6 +1,7 @@
 package untamedwilds.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffect;
@@ -14,18 +15,16 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-import java.util.Random;
-
 public class CustomGrassBlock extends FlowerBlock implements BonemealableBlock {
     protected static final float AABB_OFFSET = 6.0F;
     protected static final VoxelShape SHAPE = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 13.0D, 14.0D);
 
-    public CustomGrassBlock(MobEffect p_53512_, int p_53513_, BlockBehaviour.Properties p_53514_) {
+    public CustomGrassBlock(Holder<MobEffect> p_53512_, int p_53513_, BlockBehaviour.Properties p_53514_) {
         super(p_53512_, p_53513_, p_53514_);
     }
 
     public VoxelShape getShape(BlockState p_53517_, BlockGetter p_53518_, BlockPos p_53519_, CollisionContext p_53520_) {
-        Vec3 vec3 = p_53517_.getOffset(p_53518_, p_53519_);
+        Vec3 vec3 = p_53517_.getOffset(p_53519_);
         return SHAPE.move(vec3.x, vec3.y, vec3.z);
     }
 
@@ -33,7 +32,8 @@ public class CustomGrassBlock extends FlowerBlock implements BonemealableBlock {
         return BlockBehaviour.OffsetType.XZ;
     }
 
-    public boolean isValidBonemealTarget(BlockGetter p_153797_, BlockPos p_153798_, BlockState p_153799_, boolean p_153800_) {
+    @Override
+    public boolean isValidBonemealTarget(net.minecraft.world.level.LevelReader p_153797_, BlockPos p_153798_, BlockState p_153799_) {
         return p_153797_.getBlockState(p_153798_.above()).isAir();
     }
 

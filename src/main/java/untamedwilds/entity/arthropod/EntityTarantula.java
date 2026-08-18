@@ -51,10 +51,14 @@ public class EntityTarantula extends ComplexMob implements ISpecies, INewSkins {
 
     public EntityTarantula(EntityType<? extends EntityTarantula> type, Level worldIn) {
         super(type, worldIn);
-        this.entityData.define(CLIMBING, false);
     }
 
     @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(CLIMBING, false);
+    }
+
     public static AttributeSupplier.Builder registerAttributes() {
         return LivingEntity.createLivingAttributes()
                 .add(Attributes.ATTACK_DAMAGE, 1.0D)
@@ -83,23 +87,23 @@ public class EntityTarantula extends ComplexMob implements ISpecies, INewSkins {
 
     public void aiStep() {
         super.aiStep();
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide()) {
             if (this.tickCount % 1000 == 0) {
                 if (this.wantsToBreed() && !this.isMale()) {
                     this.breed();
                 }
             }
-            if (this.level.getGameTime() % 4000 == 0) {
+            if (this.level().getGameTime() % 4000 == 0) {
                 this.heal(1.0F);
             }
             this.setAngry(this.getTarget() != null);
             this.setClimbing(this.horizontalCollision && nextToClimbableBlock(this));
-            if (!this.isOnGround() && !this.isClimbing() && this.getDeltaMovement().y() < 0 && nextToClimbableBlock(this)){
+            if (!this.onGround() && !this.isClimbing() && this.getDeltaMovement().y() < 0 && nextToClimbableBlock(this)){
                 this.setDeltaMovement(this.getDeltaMovement().multiply(0, 0.5, 0));
                 this.setClimbing(true);
             }
         }
-        if (this.level.isClientSide()) {
+        if (this.level().isClientSide()) {
             if (this.isAngry() && this.aggroProgress < 40)
                 this.aggroProgress++;
             else if (!this.isAngry() && this.aggroProgress > 0)
@@ -111,7 +115,7 @@ public class EntityTarantula extends ComplexMob implements ISpecies, INewSkins {
                 this.climbProgress--;
 
             if (this.climbProgress % 20 != 0 && this.invertClimbing != (this.getDeltaMovement().y() < 0))
-                this.invertClimbing = !this.isOnGround() && this.getDeltaMovement().y() < 0;
+                this.invertClimbing = !this.onGround() && this.getDeltaMovement().y() < 0;
         }
     }
 
@@ -123,7 +127,7 @@ public class EntityTarantula extends ComplexMob implements ISpecies, INewSkins {
      * A nearby Tarantula of the opposite gender and the same species */
     public boolean wantsToBreed() {
         if (ConfigGamerules.naturalBreeding.get() && !this.isSleeping() && this.getAge() == 0 && EntityUtils.hasFullHealth(this)) {
-            List<EntityTarantula> list = this.level.getEntitiesOfClass(EntityTarantula.class, this.getBoundingBox().inflate(6.0D, 4.0D, 6.0D));
+            List<EntityTarantula> list = this.level().getEntitiesOfClass(EntityTarantula.class, this.getBoundingBox().inflate(6.0D, 4.0D, 6.0D));
             list.removeIf(input -> EntityUtils.isInvalidPartner(this, input, false));
             if (list.size() >= 1) {
                 this.setAge(this.getPregnancyTime());
@@ -148,7 +152,7 @@ public class EntityTarantula extends ComplexMob implements ISpecies, INewSkins {
         if (itemstack.getItem() == Items.GLASS_BOTTLE && this.isAlive()) {
             EntityUtils.turnEntityIntoItem(this, "bottle_tarantula");
             itemstack.shrink(1);
-            return InteractionResult.sidedSuccess(this.level.isClientSide);
+            return InteractionResult.SUCCESS;
         }
         return super.mobInteract(player, hand);
     }
@@ -157,9 +161,9 @@ public class EntityTarantula extends ComplexMob implements ISpecies, INewSkins {
         return false;
     }
 
-    public boolean doHurtTarget(Entity entityIn) {
+    public boolean doHurtTarget(ServerLevel level, Entity entityIn) {
         float f = (float)this.getAttribute(Attributes.ATTACK_DAMAGE).getValue();
-        boolean flag = entityIn.hurt(DamageSource.mobAttack(this), f);
+        boolean flag = entityIn.hurtServer(level, level.damageSources().mobAttack(this), f);
         if (flag) {
             if (entityIn instanceof LivingEntity) {
                 ((LivingEntity)entityIn).addEffect(new MobEffectInstance(MobEffects.POISON, 80, 0));
@@ -182,12 +186,14 @@ public class EntityTarantula extends ComplexMob implements ISpecies, INewSkins {
     }
 
     public static boolean nextToClimbableBlock(EntityTarantula entityIn) {
-        Level world = entityIn.getLevel();
-        BlockPos pos_1 = entityIn.blockPosition().offset(Math.cos(Math.toRadians(entityIn.getYRot() + 90)) * 1.2, 0, Math.sin(Math.toRadians(entityIn.getYRot() + 90)) * 1.2);
-        BlockPos pos_2 = entityIn.blockPosition().offset(Math.cos(Math.toRadians(entityIn.getYRot() + 90)) * -1.2, 0, Math.sin(Math.toRadians(entityIn.getYRot() + 90)) * -1.2);
+        Level world = entityIn.level();
+        BlockPos origin = entityIn.blockPosition();
+        double angle = Math.toRadians(entityIn.getYRot() + 90);
+        BlockPos pos_1 = BlockPos.containing(origin.getX() + Math.cos(angle) * 1.2, origin.getY(), origin.getZ() + Math.sin(angle) * 1.2);
+        BlockPos pos_2 = BlockPos.containing(origin.getX() - Math.cos(angle) * 1.2, origin.getY(), origin.getZ() - Math.sin(angle) * 1.2);
         BlockState block_1 = world.getBlockState(pos_1);
         BlockState block_2 = world.getBlockState(pos_2);
-        return block_1.isCollisionShapeFullBlock(world, pos_1) || block_2.isCollisionShapeFullBlock(world, pos_2);
+        return block_1.isSolidRender() || block_2.isSolidRender();
     }
 
     public void setClimbing(boolean p_33820_) {

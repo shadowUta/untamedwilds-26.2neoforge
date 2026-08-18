@@ -15,6 +15,8 @@ import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import untamedwilds.entity.ComplexMob;
 import untamedwilds.entity.ComplexMobTerrestrial;
 import untamedwilds.entity.INewSkins;
@@ -74,9 +76,9 @@ public class EntityAardvark extends ComplexMobTerrestrial implements ISpecies, I
 
     @Override
     public void aiStep() {
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide()) {
             this.setAngry(this.getTarget() != null);
-            if (this.level.getGameTime() % 1000 == 0) {
+            if (this.level().getGameTime() % 1000 == 0) {
                 this.addHunger(-10);
                 if (!this.isStarving()) {
                     this.heal(1.0F);
@@ -92,7 +94,7 @@ public class EntityAardvark extends ComplexMobTerrestrial implements ISpecies, I
                     this.setSitting(false);
                 }
                 if (i > 2980 && !this.isInWater() && this.getHunger() < 60 && this.canMove() && this.getAnimation() == NO_ANIMATION) {
-                    if ((this.lastDugPos == null || this.distanceToSqr(this.lastDugPos.getX(), this.getY(), this.lastDugPos.getZ()) > 50) && this.level.getBlockState(this.blockPosition().below()).is(BlockTags.MINEABLE_WITH_SHOVEL)) {
+                    if ((this.lastDugPos == null || this.distanceToSqr(this.lastDugPos.getX(), this.getY(), this.lastDugPos.getZ()) > 50) && this.level().getBlockState(this.blockPosition().below()).is(BlockTags.MINEABLE_WITH_SHOVEL)) {
                         this.setAnimation(WORK_DIG);
                         this.lastDugPos = this.blockPosition();
                     }
@@ -100,17 +102,17 @@ public class EntityAardvark extends ComplexMobTerrestrial implements ISpecies, I
             }
 
             if (this.getAnimation() == WORK_DIG && this.getAnimationTick() % 8 == 0) {
-                ((ServerLevel)this.level).sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, this.level.getBlockState(this.blockPosition().below())), this.getX(), this.getY(), this.getZ(), 20, 0.0D, 0.0D, 0.0D, 0.15F);
+                ((ServerLevel)this.level()).sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, this.level().getBlockState(this.blockPosition().below())), this.getX(), this.getY(), this.getZ(), 20, 0.0D, 0.0D, 0.0D, 0.15D);
                 this.playSound(SoundEvents.SHOVEL_FLATTEN, 0.8F, 0.6F);
                 if (this.getAnimationTick() == 64) {
                     int rand = this.random.nextInt(6);
                     if (rand == 0) {
-                        List<ItemStack> result = EntityUtils.getItemFromLootTable(ModLootTables.LOOT_DIGGING, this.level);
+                        List<ItemStack> result = EntityUtils.getItemFromLootTable(ModLootTables.LOOT_DIGGING, this.level());
                         for (ItemStack itemstack : result)
-                            this.spawnAtLocation(itemstack);
+                            this.spawnAtLocation((ServerLevel) this.level(), itemstack);
                     }
                     else if (rand == 1) {
-                        this.spawnAtLocation(new ItemStack(ModItems.VEGETABLE_AARDVARK_CUCUMBER.get()));
+                        this.spawnAtLocation((ServerLevel) this.level(), new ItemStack(ModItems.VEGETABLE_AARDVARK_CUCUMBER.get()));
                     }
                 }
             }
@@ -124,12 +126,12 @@ public class EntityAardvark extends ComplexMobTerrestrial implements ISpecies, I
     }
 
     protected float getStandingEyeHeight(Pose poseIn, EntityDimensions sizeIn) {
-        return sizeIn.height * 0.85F;
+        return sizeIn.height() * 0.85F;
     }
 
     @Override
-    public boolean doHurtTarget(Entity entityIn) {
-        boolean flag = super.doHurtTarget(entityIn);
+    public boolean doHurtTarget(ServerLevel level, Entity entityIn) {
+        boolean flag = super.doHurtTarget(level, entityIn);
         if (flag && this.getAnimation() == NO_ANIMATION && !this.isBaby()) {
             this.setAnimation(ATTACK);
             this.setAnimationTick(0);
@@ -144,10 +146,10 @@ public class EntityAardvark extends ComplexMobTerrestrial implements ISpecies, I
 
     @Nullable
     public EntityAardvark getBreedOffspring(ServerLevel serverWorld, AgeableMob ageable) {
-        return create_offspring(new EntityAardvark(ModEntity.AARDVARK.get(), this.level));
+        return create_offspring(new EntityAardvark(ModEntity.AARDVARK.get(), serverWorld));
     }
 
-    public void addAdditionalSaveData(CompoundTag compound){
+    public void addAdditionalSaveData(ValueOutput compound){
         super.addAdditionalSaveData(compound);
         if (this.lastDugPos != null) {
             compound.putInt("DugPosX", this.lastDugPos.getX());
@@ -155,10 +157,10 @@ public class EntityAardvark extends ComplexMobTerrestrial implements ISpecies, I
         }
     }
 
-    public void readAdditionalSaveData(CompoundTag compound) {
+    public void readAdditionalSaveData(ValueInput compound) {
         super.readAdditionalSaveData(compound);
-        if (compound.contains("LastDugPos")) {
-            this.lastDugPos = new BlockPos(compound.getInt("DugPosX"), 0, compound.getInt("DugPosZ"));
+        if (compound.getInt("DugPosX").isPresent() && compound.getInt("DugPosZ").isPresent()) {
+            this.lastDugPos = new BlockPos(compound.getIntOr("DugPosX", 0), 0, compound.getIntOr("DugPosZ", 0));
         }
     }
 }

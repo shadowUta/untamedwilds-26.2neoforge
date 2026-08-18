@@ -11,7 +11,7 @@ import untamedwilds.entity.fish.EntitySunfish;
 
 import javax.annotation.Nonnull;
 
-public class RendererSunfish extends MobRenderer<EntitySunfish, EntityModel<EntitySunfish>> {
+public class RendererSunfish extends UntamedMobRenderer<EntitySunfish> {
 
     private static final ModelSunfish SUNFISH_MODEL = new ModelSunfish();
 

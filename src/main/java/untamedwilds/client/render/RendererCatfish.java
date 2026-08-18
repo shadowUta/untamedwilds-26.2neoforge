@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import untamedwilds.client.model.ModelCatfish;
 import untamedwilds.entity.fish.EntityCatfish;
 
-public class RendererCatfish extends MobRenderer<EntityCatfish, EntityModel<EntityCatfish>> {
+public class RendererCatfish extends UntamedMobRenderer<EntityCatfish> {
 
     private static final ModelCatfish TREVALLY_MODEL = new ModelCatfish();
 

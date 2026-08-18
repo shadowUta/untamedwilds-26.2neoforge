@@ -30,10 +30,25 @@ def generatedCitadelSource = layout.buildDirectory.dir('generated/sources/citade
 def syncCitadelCompat = tasks.register('syncCitadelCompat', Sync) {
     from citadelSourceRoot
     into generatedCitadelSource
+    // Animation contracts used by entities. AnimationHandler is supplied by
+    // writeAnimationHandlerCompat below because the full Citadel message/
+    // proxy graph is outside this source-only compatibility layer.
     include 'com/github/alexthe666/citadel/animation/Animation.java'
     include 'com/github/alexthe666/citadel/animation/AnimationEvent.java'
     include 'com/github/alexthe666/citadel/animation/IAnimatedEntity.java'
     include 'com/github/alexthe666/citadel/animation/IScaleable.java'
+
+    // The complete model implementation required by Untamed Wilds. Keep
+    // AdvancedEntityModel/AdvancedModelBox/ModelAnimator real; do not replace
+    // the renderer with a no-op implementation.
+    include 'com/github/alexthe666/citadel/client/model/AdvancedEntityModel.java'
+    include 'com/github/alexthe666/citadel/client/model/AdvancedModelBox.java'
+    include 'com/github/alexthe666/citadel/client/model/ModelAnimator.java'
+    include 'com/github/alexthe666/citadel/client/model/basic/BasicEntityModel.java'
+    include 'com/github/alexthe666/citadel/client/model/basic/BasicModelPart.java'
+    include 'com/github/alexthe666/citadel/client/model/container/TextureOffset.java'
+    include 'com/github/alexthe666/citadel/client/model/container/Transform.java'
+    include 'com/github/alexthe666/citadel/client/model/TabulaModelRenderUtils.java'
 }
 def animationHandlerCompat = layout.buildDirectory.dir('generated/sources/animationHandlerCompat/java')
 tasks.register('writeAnimationHandlerCompat') {
@@ -42,10 +57,43 @@ tasks.register('writeAnimationHandlerCompat') {
         def file = animationHandlerCompat.get().asFile.toPath().resolve('com/github/alexthe666/citadel/animation/AnimationHandler.java').toFile()
         file.parentFile.mkdirs()
         file.text = '''package com.github.alexthe666.citadel.animation;
-public final class AnimationHandler {
-    public static final AnimationHandler INSTANCE = new AnimationHandler();
-    private AnimationHandler() {}
-    public void updateAnimations(Object entity) {}
+
+import net.minecraft.world.entity.Entity;
+
+/**
+ * Source-only compatibility handler. It retains Citadel's server-side
+ * animation state machine while omitting only Citadel's optional network
+ * message/proxy integration.
+ */
+public enum AnimationHandler {
+    INSTANCE;
+
+    public <T extends Entity & IAnimatedEntity> void updateAnimations(T entity) {
+        Animation animation = entity.getAnimation();
+        if (animation == null) {
+            entity.setAnimation(IAnimatedEntity.NO_ANIMATION);
+            return;
+        }
+        if (animation != IAnimatedEntity.NO_ANIMATION) {
+            if (entity.getAnimationTick() == 0) {
+                AnimationEvent.Start<T> event = new AnimationEvent.Start<>(entity, animation);
+                if (net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(event).isCanceled()) {
+                    return;
+                }
+                animation = event.getAnimation();
+                entity.setAnimation(animation);
+            }
+            if (entity.getAnimationTick() < animation.getDuration()) {
+                entity.setAnimationTick(entity.getAnimationTick() + 1);
+                net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(
+                    new AnimationEvent.Tick<>(entity, animation, entity.getAnimationTick()));
+            }
+            if (entity.getAnimationTick() >= animation.getDuration()) {
+                entity.setAnimationTick(0);
+                entity.setAnimation(IAnimatedEntity.NO_ANIMATION);
+            }
+        }
+    }
 }
 '''
     }
@@ -53,16 +101,9 @@ public final class AnimationHandler {
 sourceSets.main.java.srcDir animationHandlerCompat
 compileJava.dependsOn tasks.named('writeAnimationHandlerCompat')
 sourceSets.main.java.srcDir generatedCitadelSource
-sourceSets.main.java.exclude 'untamedwilds/client/model/**'
-sourceSets.main.java.exclude 'untamedwilds/client/render/**'
-sourceSets.main.java.exclude 'untamedwilds/client/layer/**'
-sourceSets.main.java.exclude 'untamedwilds/network/**'
 sourceSets.main.java.exclude 'untamedwilds/init/ModVillagerTrades.java'
 sourceSets.main.java.exclude 'untamedwilds/package-info.java'
 sourceSets.main.java.exclude 'untamedwilds/item/UntamedSpawnEggItem.java'
-sourceSets.main.java.exclude 'untamedwilds/util/EntityDataListenerEvent.java'
-sourceSets.main.java.exclude 'untamedwilds/util/SpawnDataHolder.java'
-sourceSets.main.java.exclude 'untamedwilds/util/SpawnDataListenerEvent.java'
 sourceSets.main.java.exclude 'untamedwilds/world/UntamedWildsGenerator.java'
 sourceSets.main.java.exclude 'untamedwilds/world/gen/feature/FeatureApexPredators.java'
 sourceSets.main.java.exclude 'untamedwilds/world/gen/feature/FeatureCritters.java'
@@ -76,24 +117,7 @@ sourceSets.main.java.exclude 'untamedwilds/world/gen/feature/FeatureCritterBurro
 sourceSets.main.java.exclude 'untamedwilds/world/gen/treedecorator/TreeOrchidDecorator.java'
 sourceSets.main.java.exclude 'untamedwilds/world/FaunaSpawn.java'
 sourceSets.main.java.exclude 'untamedwilds/network/handler/**'
-sourceSets.main.java.exclude 'untamedwilds/block/blockentity/CritterBurrowBlockEntity.java'
-sourceSets.main.java.exclude 'untamedwilds/block/blockentity/EggBlockEntity.java'
-sourceSets.main.java.exclude 'untamedwilds/block/blockentity/ReptileNestBlockEntity.java'
-sourceSets.main.java.exclude 'untamedwilds/block/CritterBurrowBlock.java'
-sourceSets.main.java.exclude 'untamedwilds/block/NestReptileBlock.java'
-sourceSets.main.java.exclude 'untamedwilds/block/StrangeEggBlock.java'
-sourceSets.main.java.exclude 'untamedwilds/block/CageBlock.java'
-sourceSets.main.java.exclude 'untamedwilds/block/ReedBlock.java'
-sourceSets.main.java.exclude 'untamedwilds/block/LardBlock.java'
-sourceSets.main.java.exclude 'untamedwilds/block/EpyphitePlantBlock.java'
-sourceSets.main.java.exclude 'untamedwilds/block/CarpetBlock.java'
-sourceSets.main.java.exclude 'untamedwilds/block/CustomGrassBlock.java'
-sourceSets.main.java.exclude 'untamedwilds/block/FloatingPlantBlock.java'
-sourceSets.main.java.exclude 'untamedwilds/block/TallGrassBlock.java'
-sourceSets.main.java.exclude 'untamedwilds/block/TallPlantBlock.java'
-sourceSets.main.java.exclude 'untamedwilds/block/TitanArumBlock.java'
 sourceSets.main.java.exclude 'untamedwilds/world/gen/feature/FeatureReedClusters.java'
-sourceSets.main.java.exclude 'untamedwilds/entity/ai/LayEggsOnNestGoal.java'
 sourceSets.main.java.exclude 'untamedwilds/network/handler/**'
 
 repositories {

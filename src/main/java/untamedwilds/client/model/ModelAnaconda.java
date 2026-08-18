@@ -142,7 +142,7 @@ public class ModelAnaconda extends AdvancedEntityModel<EntityAnaconda> {
         limbSwingAmount = 0.5F;
 
         // Pitch/Yaw handler
-        if (anaconda.isInWater() && !anaconda.isOnGround()) {
+        if (anaconda.isInWater() && !anaconda.onGround()) {
             this.setRotateAngle(body_5, anaconda.getXRot() * ((float) Math.PI / 180F), 0, 0);
         }
 
@@ -183,7 +183,7 @@ public class ModelAnaconda extends AdvancedEntityModel<EntityAnaconda> {
             for (EntityAnaconda.EntityAnacondaPart multipart : anaconda.anacondaParts) {
                 if (counter > 0 && counter < 3 && multipart.getParent() == anaconda) {
                     position = multipart.getPosition(0).add(0, difference, 0);
-                    BlockHitResult rayTrace = anaconda.level.clip(new ClipContext(position.add(0, 3, 0), position.add(0, -3, 0), ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, null));
+                    BlockHitResult rayTrace = anaconda.level().clip(new net.minecraft.world.level.ClipContext(position.add(0, 3, 0), position.add(0, -3, 0), net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.ANY, anaconda));
                     Vec3 vec3d = rayTrace.getLocation();
                     difference = vec3d.y() - position.y;
                     float angle = Math.abs(difference) > 0.2 ? (float) Mth.atan2(difference, 0) : 0;

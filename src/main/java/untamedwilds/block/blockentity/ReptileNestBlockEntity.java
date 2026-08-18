@@ -1,10 +1,11 @@
 package untamedwilds.block.blockentity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -18,16 +19,16 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import untamedwilds.config.ConfigGamerules;
 import untamedwilds.config.ConfigMobControl;
 import untamedwilds.entity.ComplexMob;
 import untamedwilds.entity.INeedsPostUpdate;
-import untamedwilds.init.ModBlock;
 import untamedwilds.init.ModEntity;
 import untamedwilds.util.EntityUtils;
-
-import java.util.Random;
 
 public class ReptileNestBlockEntity extends BlockEntity {
 
@@ -36,7 +37,12 @@ public class ReptileNestBlockEntity extends BlockEntity {
     private int eggCount = 4;
 
     public ReptileNestBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlock.TILE_ENTITY_NEST_REPTILE.get(), pos, state);
+        super(getBlockEntityType(), pos, state);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static BlockEntityType<ReptileNestBlockEntity> getBlockEntityType() {
+        return (BlockEntityType<ReptileNestBlockEntity>) BuiltInRegistries.BLOCK_ENTITY_TYPE.getValue(Identifier.parse("untamedwilds:nest_reptile_block_entity"));
     }
 
     public int getSumMobs() { return this.eggCount; }
@@ -53,14 +59,14 @@ public class ReptileNestBlockEntity extends BlockEntity {
                     RandomSource rand = worldIn.getRandom();
                     float offsetX = rand.nextFloat();
                     float offsetZ = rand.nextFloat();
-                    if (this.getEggCount() > 0 && this.getEntityType() != null && worldIn.noCollision(this.getEntityType().getAABB(blockpos.getX() + offsetX, blockpos.getY(), blockpos.getZ() + offsetZ).deflate(this.getEntityType().getWidth() / 4).move(0, 4, 0))) {
+                    if (this.getEggCount() > 0 && this.getEntityType() != null && worldIn.noCollision(this.getEntityType().getDimensions().makeBoundingBox(blockpos.getX() + offsetX, blockpos.getY() + 4, blockpos.getZ() + offsetZ).deflate(this.getEntityType().getWidth() / 4))) {
                         // Turns out that calling EntityType.create(...) will fucking crash the game if it pulls an invalid variant
                         //Entity spawn = this.getEntityType().create(worldIn, null, null, null, blockpos, EntitySpawnReason.CHUNK_GENERATION, true, false);
-                        Entity spawn = this.getEntityType().create(worldIn);
+                        Entity spawn = this.getEntityType().create(worldIn, EntitySpawnReason.BREEDING);
                         if (spawn != null) {
-                            spawn.moveTo(blockpos.getX() + offsetX, blockpos.getY(), blockpos.getZ() + offsetZ, Mth.wrapDegrees(rand.nextFloat() * 360.0F), 0.0F);
+                            spawn.snapTo(blockpos.getX() + offsetX, blockpos.getY(), blockpos.getZ() + offsetZ, Mth.wrapDegrees(rand.nextFloat() * 360.0F), 0.0F);
                             if (spawn instanceof Mob mobSpawn) {
-                                mobSpawn.finalizeSpawn(worldIn, worldIn.getCurrentDifficultyAt(blockpos), EntitySpawnReason.BREEDING, null, null);
+                                mobSpawn.finalizeSpawn(worldIn, worldIn.getCurrentDifficultyAt(blockpos), EntitySpawnReason.BREEDING, null);
                             }
                             if (spawn instanceof ComplexMob entitySpawn) {
                                 entitySpawn.setVariant(EntityUtils.getClampedNumberOfSpecies(this.variant, this.entityType));
@@ -86,7 +92,7 @@ public class ReptileNestBlockEntity extends BlockEntity {
     }
 
     public void trampleOnNest(Level worldIn, BlockPos posIn, BlockState stateIn) {
-        worldIn.playSound(null, posIn, SoundEvents.TURTLE_EGG_BREAK, SoundSource.BLOCKS, 0.7F, 0.9F + worldIn.random.nextFloat() * 0.2F);
+        worldIn.playSound(null, posIn, SoundEvents.TURTLE_EGG_BREAK, SoundSource.BLOCKS, 0.7F, 0.9F + worldIn.getRandom().nextFloat() * 0.2F);
         removeEggs(worldIn, Math.min(worldIn.getRandom().nextInt(2), this.getEggCount() / 2) + 1);
         worldIn.levelEvent(2001, posIn, Block.getId(stateIn));
     }
@@ -120,21 +126,24 @@ public class ReptileNestBlockEntity extends BlockEntity {
         ((ServerLevel)worldIn).sendParticles(particle, x, y, z, 15, d3, d1, d2, 0.12F);
     }
 
-    public void load(CompoundTag compound) {
-        super.load(compound);
-        this.setVariant(compound.getInt("Variant"));
-        this.setEggCount(compound.getInt("Count"));
-        if (compound.contains("EntityType")) {
-            this.setEntityType(EntityType.byString(compound.getString("EntityType")).orElse(null));
-        }
+    @Override
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        this.setVariant(input.getIntOr("Variant", 1));
+        this.setEggCount(input.getIntOr("Count", 4));
+        input.getString("EntityType").map(Identifier::tryParse).map(BuiltInRegistries.ENTITY_TYPE::getValue).ifPresent(this::setEntityType);
     }
 
-    public void saveAdditional(CompoundTag compound) {
-        super.saveAdditional(compound);
-        compound.putInt("Count", this.getEggCount());
-        compound.putInt("Variant", this.getVariant());
-        if (this.getEntityType() != null && this.getEntityType().builtInRegistryHolder().key().location() != null) {
-            compound.putString("EntityType", this.getEntityType().builtInRegistryHolder().key().location().toString());
+    @Override
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        output.putInt("Count", this.getEggCount());
+        output.putInt("Variant", this.getVariant());
+        if (this.getEntityType() != null) {
+            Identifier id = BuiltInRegistries.ENTITY_TYPE.getKey(this.getEntityType());
+            if (id != null) {
+                output.putString("EntityType", id.toString());
+            }
         }
     }
 }

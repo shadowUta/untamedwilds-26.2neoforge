@@ -132,7 +132,7 @@ public class MonsterSpitterLarva extends AdvancedEntityModel<EntitySpitter> {
         }
 
         // Pitch/Yaw handler
-        if (spitter.isInWater() && !spitter.isOnGround()) {
+        if (spitter.isInWater() && !spitter.onGround()) {
             limbSwing = ageInTicks / 3;
             limbSwingAmount = 0.5f;
             this.body_main.rotationPointY += 4; // Model offset to make the Big Cat "sink" in water (while not drowning)

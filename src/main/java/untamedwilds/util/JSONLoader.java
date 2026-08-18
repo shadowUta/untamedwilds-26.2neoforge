@@ -24,10 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.JsonOps;
+import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
@@ -37,12 +35,9 @@ import untamedwilds.UntamedWilds;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
-public class JSONLoader<T> extends SimpleJsonResourceReloadListener {
+public class JSONLoader<T> extends SimpleJsonResourceReloadListener<T> {
 
-    private static final Gson STANDARD_GSON = new Gson();
-    private final Codec<T> codec;
     private final String folderName;
 
     protected Map<Identifier, T> data = new HashMap<>();
@@ -55,22 +50,8 @@ public class JSONLoader<T> extends SimpleJsonResourceReloadListener {
      * @param codec A codec to deserialize the json into your T, see javadocs above class
      */
     public JSONLoader(String folderName, Codec<T> codec) {
-        this(folderName, codec, STANDARD_GSON);
-    }
-
-    /**
-     * As above but with a custom GSON
-     * @param folderName The name of the data folder that we will load from, vanilla folderNames are "recipes", "loot_tables", etc</br>
-     * Jsons will be read from data/all_modids/folderName/all_jsons</br>
-     * folderName can include subfolders, e.g. "some_mod_that_adds_lots_of_data_loaders/cheeses"
-     * @param codec A codec to deserialize the json into your T, see javadocs above class
-     * @param gson A gson for parsing the raw json data into JsonElements. JsonElement-to-T conversion will be done by the codec,
-     * so gson type adapters shouldn't be necessary here
-     */
-    public JSONLoader(String folderName, Codec<T> codec, Gson gson) {
-        super(gson, folderName);
+        super(codec, FileToIdConverter.json(folderName));
         this.folderName = folderName;
-        this.codec = codec;
     }
 
     /**
@@ -84,26 +65,9 @@ public class JSONLoader<T> extends SimpleJsonResourceReloadListener {
     }
 
     @Override
-    protected void apply(Map<Identifier, JsonElement> jsons, ResourceManager resourceManager, ProfilerFiller profiler) {
+    protected void apply(Map<Identifier, T> jsons, ResourceManager resourceManager, ProfilerFiller profiler) {
         UntamedWilds.LOGGER.info("Beginning loading of data for data loader: {}", this.folderName);
-        this.data = this.mapValues(jsons);
+        this.data = new HashMap<>(jsons);
         UntamedWilds.LOGGER.info("Data loader for {} loaded {} jsons", this.folderName, this.data.size());
-    }
-
-    private Map<Identifier, T> mapValues(Map<Identifier, JsonElement> inputs) {
-        Map<Identifier, T> newMap = new HashMap<>();
-
-        for (Entry<Identifier, JsonElement> entry : inputs.entrySet()) {
-            Identifier key = entry.getKey();
-            JsonElement element = entry.getValue();
-            // if we fail to parse json, log an error and continue
-            // if we succeeded, add the resulting T to the map
-            this.codec.decode(JsonOps.INSTANCE, element)
-                    .get()
-                    .ifLeft(result -> newMap.put(key, result.getFirst()))
-                    .ifRight(partial -> UntamedWilds.LOGGER.error("Failed to parse data json for {} due to: {}", key.toString(), partial.message()));
-        }
-
-        return newMap;
     }
 }

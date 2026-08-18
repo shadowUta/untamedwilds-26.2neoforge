@@ -1,13 +1,11 @@
 package untamedwilds.init;
 
-import net.minecraft.core.registries.Registries;
-import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.SpawnEggItem;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -26,13 +24,14 @@ import untamedwilds.entity.mammal.*;
 import untamedwilds.entity.mollusk.EntityGiantClam;
 import untamedwilds.entity.relict.EntitySpitter;
 import untamedwilds.entity.reptile.*;
+import untamedwilds.client.render.*;
 import untamedwilds.world.FaunaHandler;
 
 import java.util.List;
 
 @EventBusSubscriber(modid = UntamedWilds.MOD_ID)
 public class ModEntity {
-    public final static DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(Registries.ENTITY_TYPE, UntamedWilds.MOD_ID);
+    public final static DeferredRegister.Entities ENTITIES = DeferredRegister.createEntities(UntamedWilds.MOD_ID);
     //public static Map<RegistryObject<EntityType<? extends Mob>>, EntityRendererProvider<?>> map = Collections.emptyMap(); 
     
     // Arthropods
@@ -86,11 +85,11 @@ public class ModEntity {
     public static DeferredHolder<EntityType<?>, EntityType<ProjectileSpit>> SPIT = createProjectile(ProjectileSpit::new, "spit", 64, 1, true,0.6F, 0.3f);
 
     private static <T extends Projectile> DeferredHolder<EntityType<?>, EntityType<T>> createProjectile(EntityType.EntityFactory<T> factory, String name, int trackingRange, int updateFrequency, boolean sendsVelocityUpdates, float sizeX, float sizeY) {
-        DeferredHolder<EntityType<?>, EntityType<T>> type = ENTITIES.register(name, () -> EntityType.Builder.of(factory, MobCategory.MISC)
+        DeferredHolder<EntityType<?>, EntityType<T>> type = ENTITIES.registerEntityType(name, factory, MobCategory.MISC, builder -> builder
                 .sized(sizeX, sizeY)
                 .clientTrackingRange(trackingRange)
-                .setShouldReceiveVelocityUpdates(sendsVelocityUpdates)
-                .build(name));
+                .updateInterval(updateFrequency)
+                .setShouldReceiveVelocityUpdates(sendsVelocityUpdates));
 
         return type;
     }
@@ -100,13 +99,13 @@ public class ModEntity {
     }
 
     private static <T extends Mob> DeferredHolder<EntityType<?>, EntityType<T>> createEntity(EntityType.EntityFactory<T> factory, MobCategory classification, String name, int trackingRange, int updateFrequency, boolean sendsVelocityUpdates, float sizeX, float sizeY, int maincolor, int backcolor) {
-        DeferredHolder<EntityType<?>, EntityType<T>> type = ENTITIES.register(name, () -> EntityType.Builder.of(factory, classification)
+        DeferredHolder<EntityType<?>, EntityType<T>> type = ENTITIES.registerEntityType(name, factory, classification, builder -> builder
                 .sized(sizeX, sizeY)
                 .clientTrackingRange(trackingRange)
-                .setShouldReceiveVelocityUpdates(sendsVelocityUpdates)
-                .build(name));
+                .updateInterval(updateFrequency)
+                .setShouldReceiveVelocityUpdates(sendsVelocityUpdates));
 
-        ModItems.ITEMS.register(name + "_spawn_egg", () -> new UntamedSpawnEggItem(type, maincolor, backcolor, new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
+        ModItems.ITEMS.registerItem(name + "_spawn_egg", properties -> new SpawnEggItem(properties.spawnEgg(type.get())));
         return type;
     }
 
@@ -154,7 +153,39 @@ public class ModEntity {
 
     @SubscribeEvent
     public static void onRegisterRenderer(EntityRenderersEvent.RegisterRenderers event) {
-        ENTITIES.getEntries().forEach(holder -> event.registerEntityRenderer(holder.get(), NoopRenderer::new));
+        event.registerEntityRenderer(TARANTULA.get(), RendererTarantula::new);
+        event.registerEntityRenderer(KING_CRAB.get(), RendererKingCrab::new);
+        event.registerEntityRenderer(SNAKE.get(), RendererSnake::new);
+        event.registerEntityRenderer(SOFTSHELL_TURTLE.get(), RendererSoftshellTurtle::new);
+        event.registerEntityRenderer(TORTOISE.get(), RendererTortoise::new);
+        event.registerEntityRenderer(ANACONDA.get(), RendererAnaconda::new);
+        event.registerEntityRenderer(MONITOR.get(), RendererMonitor::new);
+        event.registerEntityRenderer(GIANT_CLAM.get(), RendererGiantClam::new);
+        event.registerEntityRenderer(BEAR.get(), RendererBear::new);
+        event.registerEntityRenderer(BIG_CAT.get(), RendererBigCat::new);
+        event.registerEntityRenderer(HIPPO.get(), RendererHippo::new);
+        event.registerEntityRenderer(AARDVARK.get(), RendererAardvark::new);
+        event.registerEntityRenderer(RHINO.get(), RendererRhino::new);
+        event.registerEntityRenderer(HYENA.get(), RendererHyena::new);
+        event.registerEntityRenderer(BOAR.get(), RendererBoar::new);
+        event.registerEntityRenderer(BISON.get(), RendererBison::new);
+        event.registerEntityRenderer(CAMEL.get(), RendererCamel::new);
+        event.registerEntityRenderer(MANATEE.get(), RendererManatee::new);
+        event.registerEntityRenderer(BALEEN_WHALE.get(), RendererBaleenWhale::new);
+        event.registerEntityRenderer(OPOSSUM.get(), RendererOpossum::new);
+        event.registerEntityRenderer(SUNFISH.get(), RendererSunfish::new);
+        event.registerEntityRenderer(TREVALLY.get(), RendererTrevally::new);
+        event.registerEntityRenderer(AROWANA.get(), RendererArowana::new);
+        event.registerEntityRenderer(SHARK.get(), RendererShark::new);
+        event.registerEntityRenderer(FOOTBALL_FISH.get(), RendererFootballFish::new);
+        event.registerEntityRenderer(WHALE_SHARK.get(), RendererWhaleShark::new);
+        event.registerEntityRenderer(TRIGGERFISH.get(), RendererTriggerfish::new);
+        event.registerEntityRenderer(CATFISH.get(), RendererCatfish::new);
+        event.registerEntityRenderer(SPADEFISH.get(), RendererSpadefish::new);
+        event.registerEntityRenderer(GIANT_SALAMANDER.get(), RendererGiantSalamander::new);
+        event.registerEntityRenderer(NEWT.get(), RendererNewt::new);
+        event.registerEntityRenderer(SPITTER.get(), RendererSpitter::new);
+        event.registerEntityRenderer(SPIT.get(), RendererProjectileSpit::new);
     }
 
     public static void addWorldSpawn(EntityType<?> entityClass, int weightedProb, FaunaHandler.animalType type, int groupCount) {

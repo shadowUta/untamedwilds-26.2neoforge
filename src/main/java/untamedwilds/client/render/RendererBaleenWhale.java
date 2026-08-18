@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import untamedwilds.client.model.ModelBaleenWhale;
 import untamedwilds.entity.mammal.EntityBaleenWhale;
 
-public class RendererBaleenWhale extends MobRenderer<EntityBaleenWhale, EntityModel<EntityBaleenWhale>> {
+public class RendererBaleenWhale extends UntamedMobRenderer<EntityBaleenWhale> {
 
     private static final ModelBaleenWhale WHALE_MODEL = new ModelBaleenWhale();
 

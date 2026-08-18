@@ -24,6 +24,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import untamedwilds.UntamedWilds;
 import untamedwilds.config.ConfigGamerules;
 import untamedwilds.entity.*;
@@ -46,13 +48,13 @@ public class EntityRhino extends ComplexMobTerrestrial implements INewSkins, ISp
         super(type, worldIn);
         ATTACK_THREATEN = Animation.create(50);
         ATTACK_GORE = Animation.create(14);
-        this.maxUpStep = 1F;
         this.turn_speed = 0.2F;
     }
 
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(CHARGING, false);
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(CHARGING, false);
     }
 
     public void registerGoals() {
@@ -67,7 +69,6 @@ public class EntityRhino extends ComplexMobTerrestrial implements INewSkins, ISp
         this.targetSelector.addGoal(2, new ProtectChildrenTarget<>(this, LivingEntity.class, true, input -> !(input instanceof EntityRhino) && getEcoLevel(input) > getEcoLevel(this)));
     }
 
-    @Override
     protected void reassessTameGoals() {
         if (this.isTame()) {
             if (UntamedWilds.DEBUG) {
@@ -87,7 +88,8 @@ public class EntityRhino extends ComplexMobTerrestrial implements INewSkins, ISp
                 .add(Attributes.FOLLOW_RANGE, 24.0D)
                 .add(Attributes.MAX_HEALTH, 60.0D)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 1D)
-                .add(Attributes.ARMOR, 6D);
+                .add(Attributes.ARMOR, 6D)
+                .add(Attributes.STEP_HEIGHT, 1.0D);
     }
 
     public boolean wantsToBreed() {
@@ -99,8 +101,8 @@ public class EntityRhino extends ComplexMobTerrestrial implements INewSkins, ISp
 
     @Override
     public void aiStep() {
-        if (!this.level.isClientSide) {
-            if (this.level.getGameTime() % 1000 == 0) {
+        if (!this.level().isClientSide()) {
+            if (this.level().getGameTime() % 1000 == 0) {
                 this.addHunger(-10);
                 if (!this.isStarving()) {
                     this.heal(1.0F);
@@ -123,23 +125,27 @@ public class EntityRhino extends ComplexMobTerrestrial implements INewSkins, ISp
         super.aiStep();
     }
 
-    public boolean doHurtTarget(Entity entityIn) {
-        boolean flag = super.doHurtTarget(entityIn);
+    @Override
+    public boolean doHurtTarget(ServerLevel level, Entity entityIn) {
+        boolean flag = super.doHurtTarget(level, entityIn);
         if (flag && this.getAnimation() == NO_ANIMATION && !this.isBaby()) {
             Animation anim = chooseAttackAnimation();
             this.setAnimation(anim);
             if (!this.isCharging()) {
                 this.playSound(SoundEvents.ZOGLIN_ATTACK, 1.0F, this.getVoicePitch());
-                HoglinBase.hurtAndThrowTarget(this, (LivingEntity)entityIn);
+                if (entityIn instanceof LivingEntity livingEntity) {
+                    HoglinBase.hurtAndThrowTarget(level, this, livingEntity);
+                }
             }
         }
         return flag;
     }
 
-    public boolean hurt(DamageSource damageSource, float amount) {
+    @Override
+    public boolean hurtServer(ServerLevel level, DamageSource damageSource, float amount) {
         // Retaliate II: Mob will strike back when attacked by any target
         performRetaliation(damageSource, this.getHealth(), amount, false);
-        return super.hurt(damageSource, amount);
+        return super.hurtServer(level, damageSource, amount);
     }
 
     protected void playStepSound(BlockPos pos, BlockState blockIn) {
@@ -150,22 +156,39 @@ public class EntityRhino extends ComplexMobTerrestrial implements INewSkins, ISp
         return ATTACK_GORE;
     }
 
+    @Override
+    public float maxUpStep() {
+        return 1.0F;
+    }
+
+    @Override
+    public void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.putBoolean("Charging", this.isCharging());
+    }
+
+    @Override
+    public void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        this.setCharging(input.getBooleanOr("Charging", false));
+    }
+
     @Nullable
     public EntityRhino getBreedOffspring(ServerLevel serverWorld, AgeableMob ageable) {
-        return create_offspring(new EntityRhino(ModEntity.RHINO.get(), this.level));
+        return create_offspring(new EntityRhino(ModEntity.RHINO.get(), serverWorld));
     }
 
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack itemstack = player.getItemInHand(InteractionHand.MAIN_HAND);
-        if (hand == InteractionHand.MAIN_HAND && !this.level.isClientSide()) {
+        if (hand == InteractionHand.MAIN_HAND && !this.level().isClientSide()) {
 
             if (!this.isTame() && this.isBaby() && EntityUtils.hasFullHealth(this) && this.isFood(itemstack)) {
                 this.playSound(SoundEvents.HORSE_EAT, 1.5F, 0.8F);
                 if (this.getRandom().nextInt(3) == 0) {
                     this.tame(player);
-                    EntityUtils.spawnParticlesOnEntity(this.level, this, ParticleTypes.HEART, 3, 6);
+                    EntityUtils.spawnParticlesOnEntity(this.level(), this, ParticleTypes.HEART, 3, 6);
                 } else {
-                    EntityUtils.spawnParticlesOnEntity(this.level, this, ParticleTypes.SMOKE, 3, 3);
+                    EntityUtils.spawnParticlesOnEntity(this.level(), this, ParticleTypes.SMOKE, 3, 3);
                 }
             }
         }

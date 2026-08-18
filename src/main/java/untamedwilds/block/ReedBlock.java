@@ -15,6 +15,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
@@ -30,12 +31,13 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.common.CommonHooks;
+import net.minecraft.tags.ItemTags;
 import untamedwilds.entity.ComplexMobAquatic;
 import untamedwilds.init.ModBlock;
 import untamedwilds.init.ModTags.ModBlockTags;
 
 import javax.annotation.Nullable;
-import java.util.Random;
 
 public class ReedBlock extends Block implements BonemealableBlock, SimpleWaterloggedBlock {
    protected static final VoxelShape SHAPE_NORMAL = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
@@ -61,7 +63,7 @@ public class ReedBlock extends Block implements BonemealableBlock, SimpleWaterlo
    }
 
    public VoxelShape getShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
-      Vec3 vector3d = state.getOffset(worldIn, pos);
+      Vec3 vector3d = state.getOffset(pos);
       return SHAPE_NORMAL.move(vector3d.x, vector3d.y, vector3d.z);
    }
 
@@ -111,7 +113,7 @@ public class ReedBlock extends Block implements BonemealableBlock, SimpleWaterlo
       }
    }
 
-   public void tick(BlockState state, ServerLevel worldIn, BlockPos pos, Random rand) {
+   public void tick(BlockState state, ServerLevel worldIn, BlockPos pos, RandomSource rand) {
       if (!state.canSurvive(worldIn, pos)) {
          worldIn.destroyBlock(pos, true);
       }
@@ -125,9 +127,9 @@ public class ReedBlock extends Block implements BonemealableBlock, SimpleWaterlo
       if (state.getValue(PROPERTY_STAGE) == 0 && random.nextInt(8) == 0) {
          if (worldIn.isEmptyBlock(pos.above()) && worldIn.getLightEmission(pos.above()) >= 9) {
             int i = this.getNumReedBlocksBelow(worldIn, pos) + 1;
-            if (i < 4 && net.minecraftforge.common.ForgeHooks.onCropsGrowPre(worldIn, pos, state, random.nextInt(3) == 0)) {
+            if (i < 4 && CommonHooks.canCropGrow(worldIn, pos, state, random.nextInt(3) == 0)) {
                this.grow(state, worldIn, pos, random, i);
-               net.minecraftforge.common.ForgeHooks.onCropsGrowPost(worldIn, pos, state);
+               CommonHooks.fireCropGrowPost(worldIn, pos, state);
             }
          }
       }
@@ -137,7 +139,7 @@ public class ReedBlock extends Block implements BonemealableBlock, SimpleWaterlo
       return worldIn.getBlockState(pos.below()).is(ModBlockTags.REEDS_PLANTABLE_ON) || worldIn.getBlockState(pos.below()).getBlock() == ModBlock.COMMON_REED.get();
    }
 
-   public BlockState updateShape(BlockState stateIn, Direction facing, BlockState facingState, LevelAccessor worldIn, BlockPos currentPos, BlockPos facingPos) {
+   public BlockState updateShape(BlockState stateIn, LevelAccessor worldIn, ScheduledTickAccess tickAccess, BlockPos currentPos, Direction facing, BlockPos facingPos, BlockState facingState, RandomSource random) {
       if (stateIn.getValue(WATERLOGGED)) {
          worldIn.scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickDelay(worldIn));
       }
@@ -146,10 +148,10 @@ public class ReedBlock extends Block implements BonemealableBlock, SimpleWaterlo
          worldIn.scheduleTick(currentPos, this, 1);
       }
 
-      return super.updateShape(stateIn, facing, facingState, worldIn, currentPos, facingPos);
+      return super.updateShape(stateIn, worldIn, tickAccess, currentPos, facing, facingPos, facingState, random);
    }
 
-   public boolean isValidBonemealTarget(BlockGetter worldIn, BlockPos pos, BlockState state, boolean isClient) {
+   public boolean isValidBonemealTarget(LevelReader worldIn, BlockPos pos, BlockState state) {
       int i = this.getNumReedBlocksAbove(worldIn, pos);
       int j = this.getNumReedBlocksBelow(worldIn, pos);
       return i + j + 1 < 4 && worldIn.getBlockState(pos.above(i)).getValue(PROPERTY_STAGE) != 1;
@@ -188,7 +190,7 @@ public class ReedBlock extends Block implements BonemealableBlock, SimpleWaterlo
    }
 
    public float getDestroyProgress(BlockState state, Player player, BlockGetter worldIn, BlockPos pos) {
-      return player.getMainHandItem().canPerformAction(net.minecraftforge.common.ToolActions.SWORD_DIG) ? 1.0F : super.getDestroyProgress(state, player, worldIn, pos);
+      return player.getMainHandItem().is(ItemTags.SWORDS) ? 1.0F : super.getDestroyProgress(state, player, worldIn, pos);
    }
 
    public void entityInside(BlockState state, Level worldIn, BlockPos pos, Entity entityIn) {

@@ -23,6 +23,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.NotNull;
 import untamedwilds.UntamedWilds;
 import untamedwilds.config.ConfigGamerules;
@@ -51,14 +53,18 @@ public class EntityBigCat extends ComplexMobTerrestrial implements ISpecies, INe
 
     public EntityBigCat(EntityType<? extends ComplexMob> type, Level worldIn) {
         super(type, worldIn);
-        this.entityData.define(DIMORPHISM, false);
-        this.entityData.define(FLUFFY_TAIL, false);
         ATTACK_POUNCE = Animation.create(42);
         ATTACK_MAUL = Animation.create(22);
         IDLE_TALK = Animation.create(20);
         IDLE_STRETCH = Animation.create(110);
-        this.maxUpStep = 1;
         this.turn_speed = 0.1F;
+    }
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DIMORPHISM, false);
+        builder.define(FLUFFY_TAIL, false);
     }
 
     public void registerGoals() {
@@ -95,7 +101,7 @@ public class EntityBigCat extends ComplexMobTerrestrial implements ISpecies, INe
         if (super.wantsToBreed()) {
             if (!this.isSleeping() && this.getAge() == 0 && EntityUtils.hasFullHealth(this) && this.getHunger() >= 80) {
                 if (ConfigGamerules.hardcoreBreeding.get()) {
-                    List<LivingEntity> list = this.level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(6.0D, 4.0D, 6.0D));
+                    List<LivingEntity> list = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(6.0D, 4.0D, 6.0D));
                     return list.size() < 3;
                 }
                 return true;
@@ -106,7 +112,7 @@ public class EntityBigCat extends ComplexMobTerrestrial implements ISpecies, INe
 
     @Nullable
     public EntityBigCat getBreedOffspring(ServerLevel serverWorld, AgeableMob ageable) {
-        return create_offspring(new EntityBigCat(ModEntity.BIG_CAT.get(), this.level));
+        return create_offspring(new EntityBigCat(ModEntity.BIG_CAT.get(), serverWorld));
     }
 
     public boolean isPushedByFluid() {
@@ -118,14 +124,14 @@ public class EntityBigCat extends ComplexMobTerrestrial implements ISpecies, INe
     }
 
     public void aiStep() {
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide()) {
             if (this.herd == null && EntityUtils.getPackSize(this.getType(), this.getVariant()) > 1) {
                 IPackEntity.initPack(this);
             }
             else if (EntityUtils.getPackSize(this.getType(), this.getVariant()) > 1) {
                 this.herd.tick();
             }
-            if (this.level.getGameTime() % 1000 == 0) {
+            if (this.level().getGameTime() % 1000 == 0) {
                 this.addHunger(-3);
                 if (!this.isStarving()) {
                     this.heal(2.0F);
@@ -170,19 +176,18 @@ public class EntityBigCat extends ComplexMobTerrestrial implements ISpecies, INe
         if (this.getAnimation() == IDLE_TALK && this.getAnimationTick() == 1 && this.getAmbientSound() != null) {
             this.playSound(this.getAmbientSound(), this.getSoundVolume(), this.getVoicePitch());
         }
-        if (this.level.isClientSide && this.isAngry() && this.aggroProgress < 40) {
+        if (this.level().isClientSide() && this.isAngry() && this.aggroProgress < 40) {
             this.aggroProgress++;
-        } else if (this.level.isClientSide && !this.isAngry() && this.aggroProgress > 0) {
+        } else if (this.level().isClientSide() && !this.isAngry() && this.aggroProgress > 0) {
             this.aggroProgress--;
         }
         super.aiStep();
     }
 
     protected void playStepSound(BlockPos pos, BlockState blockIn) {
-        this.playSound(SoundEvents.WOLF_STEP, 0.15F, 1.0F);
+        this.playSound(SoundEvents.WOLF_STEP.value(), 0.15F, 1.0F);
     }
 
-    @Override
     protected void reassessTameGoals() {
         if (this.isTame()) {
             if (UntamedWilds.DEBUG) {
@@ -208,15 +213,15 @@ public class EntityBigCat extends ComplexMobTerrestrial implements ISpecies, INe
 
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack itemstack = player.getItemInHand(InteractionHand.MAIN_HAND);
-        if (hand == InteractionHand.MAIN_HAND && !this.level.isClientSide()) {
+        if (hand == InteractionHand.MAIN_HAND && !this.level().isClientSide()) {
 
             if (!this.isTame() && this.isBaby() && EntityUtils.hasFullHealth(this) && this.isFood(itemstack)) {
                 this.playSound(SoundEvents.HORSE_EAT, 1.5F, 0.8F);
                 if (this.getRandom().nextInt(3) == 0) {
                     this.tame(player);
-                    EntityUtils.spawnParticlesOnEntity(this.level, this, ParticleTypes.HEART, 3, 6);
+                    EntityUtils.spawnParticlesOnEntity(this.level(), this, ParticleTypes.HEART, 3, 6);
                 } else {
-                    EntityUtils.spawnParticlesOnEntity(this.level, this, ParticleTypes.SMOKE, 3, 3);
+                    EntityUtils.spawnParticlesOnEntity(this.level(), this, ParticleTypes.SMOKE, 3, 3);
                 }
             }
         }
@@ -224,8 +229,8 @@ public class EntityBigCat extends ComplexMobTerrestrial implements ISpecies, INe
         return super.mobInteract(player, hand);
     }
 
-    public boolean doHurtTarget(Entity entityIn) {
-        boolean flag = super.doHurtTarget(entityIn);
+    public boolean doHurtTarget(ServerLevel level, Entity entityIn) {
+        boolean flag = super.doHurtTarget(level, entityIn);
         if (flag && this.getAnimation() == NO_ANIMATION && !this.isBaby()) {
             Animation anim = chooseAttackAnimation(entityIn);
             this.setAnimation(anim);
@@ -234,15 +239,15 @@ public class EntityBigCat extends ComplexMobTerrestrial implements ISpecies, INe
         return flag;
     }
 
-    public boolean hurt(DamageSource damageSource, float amount) {
+    public boolean hurtServer(ServerLevel level, DamageSource damageSource, float amount) {
         // Retaliate I: Mob will strike back when attacked by its current target
         float f = this.getHealth();
-        if (!this.level.isClientSide && !this.isNoAi() && this.getTarget() == damageSource.getEntity() && amount < f && (damageSource.getEntity() != null || damageSource.getDirectEntity() != null) && damageSource.getEntity() instanceof LivingEntity && (damageSource.getEntity() instanceof TamableAnimal tamable && tamable.getOwner() != null)) {
+        if (!this.isNoAi() && this.getTarget() == damageSource.getEntity() && amount < f && (damageSource.getEntity() != null || damageSource.getDirectEntity() != null) && damageSource.getEntity() instanceof LivingEntity && (damageSource.getEntity() instanceof TamableAnimal tamable && tamable.getOwner() != null)) {
             if (this.hasLineOfSight(damageSource.getEntity()) && !damageSource.getEntity().isInvulnerable() && this.getAnimation() == NO_ANIMATION) {
-                this.doHurtTarget(damageSource.getEntity());
+                this.doHurtTarget(level, damageSource.getEntity());
             }
         }
-        return super.hurt(damageSource, amount);
+        return super.hurtServer(level, damageSource, amount);
     }
 
     private Animation chooseAttackAnimation(Entity target) {
@@ -259,7 +264,7 @@ public class EntityBigCat extends ComplexMobTerrestrial implements ISpecies, INe
     }
 
     protected float getStandingEyeHeight(Pose poseIn, EntityDimensions sizeIn) {
-        return sizeIn.height * 0.9F;
+        return sizeIn.height() * 0.9F;
     }
 
     @Override
@@ -277,16 +282,16 @@ public class EntityBigCat extends ComplexMobTerrestrial implements ISpecies, INe
     public boolean hasFluffyTail(){ return (this.entityData.get(FLUFFY_TAIL)); }
     private void setFluffyTail(boolean fluffy_tail){ this.entityData.set(FLUFFY_TAIL, fluffy_tail); }
 
-    public void addAdditionalSaveData(CompoundTag compound){
+    public void addAdditionalSaveData(ValueOutput compound){
         super.addAdditionalSaveData(compound);
         compound.putBoolean("hasDimorphism", this.hasDimorphism());
         compound.putBoolean("fluffy", this.hasFluffyTail());
     }
 
-    public void readAdditionalSaveData(CompoundTag compound){
+    public void readAdditionalSaveData(ValueInput compound){
         super.readAdditionalSaveData(compound);
-        this.setDimorphism(compound.getBoolean("hasDimorphism"));
-        this.setFluffyTail(compound.getBoolean("fluffy"));
+        this.setDimorphism(compound.getBooleanOr("hasDimorphism", false));
+        this.setFluffyTail(compound.getBooleanOr("fluffy", false));
     }
 
     public Identifier getTexture() {

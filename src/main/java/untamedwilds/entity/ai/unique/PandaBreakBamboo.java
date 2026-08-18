@@ -25,7 +25,7 @@ public class PandaBreakBamboo extends Goal {
     }
 
     public boolean canUse() {
-        if (!this.taskOwner.isOnGround() || this.taskOwner.getHunger() > 40) {
+        if (!this.taskOwner.onGround() || this.taskOwner.getHunger() > 40) {
             return false;
         }
         if (this.taskOwner.getTarget() != null) {
@@ -64,7 +64,7 @@ public class PandaBreakBamboo extends Goal {
             this.searchCooldown--;
             if (this.searchCooldown == 0) {
                 this.searchCooldown = 100;
-                this.taskOwner.level.destroyBlock(this.targetPos.above(), false);
+                this.taskOwner.level().destroyBlock(this.targetPos.above(), false);
                 this.taskOwner.setAnimation(EntityBear.ATTACK_SWIPE);
                 // TODO: Make the Panda hold the Bamboo and chew it
                 this.taskOwner.addHunger(8);
@@ -90,7 +90,7 @@ public class PandaBreakBamboo extends Goal {
                 for(int k = 0; k <= j; k = k > 0 ? -k : 1 - k) {
                     for(int l = k < j && k > -j ? j : 0; l <= j; l = l > 0 ? -l : 1 - l) {
                         blockpos$mutable.set(blockpos).move(k, i, l);
-                        if (this.taskOwner.level.getBlockState(blockpos$mutable).getBlock() == Blocks.BAMBOO && this.taskOwner.level.getBlockState(blockpos$mutable.above()).getBlock() == Blocks.BAMBOO) {
+                        if (this.taskOwner.level().getBlockState(blockpos$mutable).getBlock() == Blocks.BAMBOO && this.taskOwner.level().getBlockState(blockpos$mutable.above()).getBlock() == Blocks.BAMBOO) {
                             return blockpos$mutable;
                         }
                     }

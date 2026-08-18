@@ -252,7 +252,7 @@ public class ModelAardvark extends AdvancedEntityModel<EntityAardvark> {
         }
 
         // Pitch/Yaw handler
-        if (aardvark.isInWater() && !aardvark.isOnGround()) {
+        if (aardvark.isInWater() && !aardvark.onGround()) {
             float pitch = Mth.clamp(aardvark.getXRot(), -20F, 20.0F) - 10;
             this.setRotateAngle(body_main, (float) (pitch * Math.PI / 180F), 0, 0);
         }

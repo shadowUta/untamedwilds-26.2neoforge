@@ -450,7 +450,7 @@ public class ModelBear extends AdvancedEntityModel<EntityBear> {
         }
 
         // Pitch/Yaw handler
-        if (bear.isInWater() && !bear.isOnGround()) {
+        if (bear.isInWater() && !bear.onGround()) {
             limbSwing = ageInTicks / 3;
             limbSwingAmount = 0.5f;
             this.setRotateAngle(head_face, -0.22759093446006054F, 0.0F, 0.0F);

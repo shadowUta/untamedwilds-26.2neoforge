@@ -11,7 +11,7 @@ import untamedwilds.entity.fish.EntityTrevally;
 
 import javax.annotation.Nonnull;
 
-public class RendererTrevally extends MobRenderer<EntityTrevally, EntityModel<EntityTrevally>> {
+public class RendererTrevally extends UntamedMobRenderer<EntityTrevally> {
 
     private static final ModelTrevally TREVALLY_MODEL = new ModelTrevally();
 

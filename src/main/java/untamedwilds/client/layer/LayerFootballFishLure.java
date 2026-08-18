@@ -1,25 +1,36 @@
 package untamedwilds.client.layer;
 
-import net.minecraft.client.model.EntityModel;
+import com.github.alexthe666.citadel.client.model.basic.BasicEntityModel;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.entity.RenderLayerParent;
-import net.minecraft.client.renderer.entity.layers.EyesLayer;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import untamedwilds.UntamedWilds;
+import untamedwilds.client.render.UntamedLayer;
+import untamedwilds.client.render.UntamedMobRenderer;
+import untamedwilds.entity.fish.EntityFootballFish;
 
 @OnlyIn(Dist.CLIENT)
-public class LayerFootballFishLure<T extends Entity, M extends EntityModel<T>> extends EyesLayer<T, M> {
+public class LayerFootballFishLure<T extends EntityFootballFish> implements UntamedLayer<T> {
 
-    private final RenderType TEXTURE = RenderType.eyes(Identifier.fromNamespaceAndPath(UntamedWilds.MOD_ID, "textures/entity/football_fish/glint.png"));
+    private final RenderType TEXTURE = net.minecraft.client.renderer.rendertype.RenderTypes.eyes(Identifier.fromNamespaceAndPath(UntamedWilds.MOD_ID, "textures/entity/football_fish/glint.png"));
 
-    public LayerFootballFishLure(RenderLayerParent<T, M> rendererIn) {
-        super(rendererIn);
+    public LayerFootballFishLure(UntamedMobRenderer<T> rendererIn) {
     }
 
-    public RenderType renderType() {
+    private RenderType renderType() {
         return TEXTURE;
+    }
+
+    @Override
+    public void submit(UntamedMobRenderer<T> renderer, T entity, EntityRenderState state,
+                       PoseStack pose, SubmitNodeCollector collector) {
+        BasicEntityModel<T> model = renderer.getUntamedModel(entity);
+        collector.submitCustomGeometry(pose, renderType(),
+            (currentPose, vertexConsumer) -> model.renderToBuffer(pose, vertexConsumer, state.lightCoords, 0, -1));
     }
 }

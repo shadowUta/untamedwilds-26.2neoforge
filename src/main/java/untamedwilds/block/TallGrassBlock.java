@@ -7,6 +7,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.*;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -18,11 +19,12 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.common.CommonHooks;
+import net.minecraft.tags.ItemTags;
 import untamedwilds.init.ModBlock;
 import untamedwilds.init.ModTags.ModBlockTags;
 
 import javax.annotation.Nullable;
-import java.util.Random;
 
 public class TallGrassBlock extends Block implements BonemealableBlock, IPostGenUpdate {
    protected static final VoxelShape SHAPE_TRUNK = Block.box(3.0D, 0.0D, 3.0D, 13.0D, 16.0D, 13.0D);
@@ -48,7 +50,7 @@ public class TallGrassBlock extends Block implements BonemealableBlock, IPostGen
    }
 
    public VoxelShape getShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
-      Vec3 vector3d = state.getOffset(worldIn, pos);
+      Vec3 vector3d = state.getOffset(pos);
       VoxelShape shape = (state.getValue(PROPERTY_STAGE) == 1 && state.getValue(PROPERTY_AGE) == 3) ? SHAPE_FLOWERING : SHAPE_TRUNK;
       return shape.move(vector3d.x, vector3d.y, vector3d.z);
    }
@@ -70,7 +72,7 @@ public class TallGrassBlock extends Block implements BonemealableBlock, IPostGen
       return null;
    }
 
-   public void tick(BlockState state, ServerLevel worldIn, BlockPos pos, Random rand) {
+   public void tick(BlockState state, ServerLevel worldIn, BlockPos pos, RandomSource rand) {
       if (!state.canSurvive(worldIn, pos)) {
          worldIn.destroyBlock(pos, true);
       }
@@ -80,13 +82,13 @@ public class TallGrassBlock extends Block implements BonemealableBlock, IPostGen
       return state.getValue(PROPERTY_STAGE) == 0;
    }
 
-   public void randomTick(BlockState state, ServerLevel worldIn, BlockPos pos, Random random) {
+   public void randomTick(BlockState state, ServerLevel worldIn, BlockPos pos, RandomSource random) {
       if (state.getValue(PROPERTY_STAGE) == 0 && random.nextInt(8) == 0) {
          if (worldIn.isEmptyBlock(pos.above()) && worldIn.getLightEmission(pos.above()) >= 9) {
             int i = this.getNumReedBlocksBelow(worldIn, pos) + 1;
-            if (i < 4 && net.minecraftforge.common.ForgeHooks.onCropsGrowPre(worldIn, pos, state, random.nextInt(3) == 0)) {
+            if (i < 4 && CommonHooks.canCropGrow(worldIn, pos, state, random.nextInt(3) == 0)) {
                this.grow(worldIn, pos, i);
-               net.minecraftforge.common.ForgeHooks.onCropsGrowPost(worldIn, pos, state);
+               CommonHooks.fireCropGrowPost(worldIn, pos, state);
             }
          }
       }
@@ -96,15 +98,15 @@ public class TallGrassBlock extends Block implements BonemealableBlock, IPostGen
       return worldIn.getBlockState(pos.below()).is(ModBlockTags.ALOE_PLANTABLE_ON) || worldIn.getBlockState(pos.below()).getBlock() == ModBlock.PAMPAS_GRASS.get();
    }
 
-   public BlockState updateShape(BlockState stateIn, Direction facing, BlockState facingState, LevelAccessor worldIn, BlockPos currentPos, BlockPos facingPos) {
+   public BlockState updateShape(BlockState stateIn, LevelAccessor worldIn, ScheduledTickAccess tickAccess, BlockPos currentPos, Direction facing, BlockPos facingPos, BlockState facingState, RandomSource random) {
       if (!stateIn.canSurvive(worldIn, currentPos)) {
          worldIn.scheduleTick(currentPos, this, 1);
       }
 
-      return super.updateShape(stateIn, facing, facingState, worldIn, currentPos, facingPos);
+      return super.updateShape(stateIn, worldIn, tickAccess, currentPos, facing, facingPos, facingState, random);
    }
 
-   public boolean isValidBonemealTarget(BlockGetter worldIn, BlockPos pos, BlockState state, boolean isClient) {
+   public boolean isValidBonemealTarget(LevelReader worldIn, BlockPos pos, BlockState state) {
       int i = this.getNumReedBlocksAbove(worldIn, pos);
       return worldIn.getBlockState(pos.above(i)).getValue(PROPERTY_STAGE) != 1;
    }
@@ -148,7 +150,7 @@ public class TallGrassBlock extends Block implements BonemealableBlock, IPostGen
    }
 
    public float getDestroyProgress(BlockState state, Player player, BlockGetter worldIn, BlockPos pos) {
-      return player.getMainHandItem().canPerformAction(net.minecraftforge.common.ToolActions.SWORD_DIG) ? 1.0F : super.getDestroyProgress(state, player, worldIn, pos);
+      return player.getMainHandItem().is(ItemTags.SWORDS) ? 1.0F : super.getDestroyProgress(state, player, worldIn, pos);
    }
 
    protected int getNumReedBlocksAbove(BlockGetter worldIn, BlockPos pos) {

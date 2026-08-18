@@ -26,8 +26,6 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import untamedwilds.entity.ComplexMobAquatic;
 
-import java.util.Random;
-
 public class FloatingPlantBlock extends BushBlock implements BonemealableBlock {
     protected static final VoxelShape SHAPE_NORMAL = Block.box(3.0D, 0.0D, 3.0D, 13.0D, 12D, 13.0D);
 
@@ -49,7 +47,7 @@ public class FloatingPlantBlock extends BushBlock implements BonemealableBlock {
     }
 
     public VoxelShape getShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
-        Vec3 vector3d = state.getOffset(worldIn, pos);
+        Vec3 vector3d = state.getOffset(pos);
         return SHAPE_NORMAL.move(vector3d.x, vector3d.y, vector3d.z);
     }
 
@@ -73,7 +71,8 @@ public class FloatingPlantBlock extends BushBlock implements BonemealableBlock {
         return this.isValidGround(worldIn.getBlockState(blockpos), worldIn, blockpos);
     }
 
-    public boolean isValidBonemealTarget(BlockGetter worldIn, BlockPos pos, BlockState state, boolean isClient) {
+    @Override
+    public boolean isValidBonemealTarget(LevelReader worldIn, BlockPos pos, BlockState state) {
         return true;
     }
 

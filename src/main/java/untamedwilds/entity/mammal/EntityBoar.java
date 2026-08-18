@@ -28,6 +28,8 @@ import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import untamedwilds.UntamedWilds;
 import untamedwilds.entity.*;
@@ -55,11 +57,16 @@ public class EntityBoar extends ComplexMobTerrestrial implements ISpecies, INewS
 
     public EntityBoar(EntityType<? extends ComplexMob> type, Level worldIn) {
         super(type, worldIn);
-        this.entityData.define(WARTHOG, false);
         this.turn_speed = 0.6F;
         WORK_DIG = Animation.create(48);
         ATTACK = Animation.create(18);
         TALK = Animation.create(20);
+    }
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(WARTHOG, false);
     }
 
     public void registerGoals() {
@@ -94,7 +101,6 @@ public class EntityBoar extends ComplexMobTerrestrial implements ISpecies, INewS
         return false;
     }
 
-    @Override
     protected void reassessTameGoals() {
         if (this.isTame()) {
             if (UntamedWilds.DEBUG) {
@@ -108,9 +114,9 @@ public class EntityBoar extends ComplexMobTerrestrial implements ISpecies, INewS
 
     @Override
     public void aiStep() {
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide()) {
             this.setAngry(this.getTarget() != null);
-            if (this.level.getGameTime() % 1000 == 0) {
+            if (this.level().getGameTime() % 1000 == 0) {
                 this.addHunger(-10);
                 if (!this.isStarving()) {
                     this.heal(1.0F);
@@ -129,7 +135,7 @@ public class EntityBoar extends ComplexMobTerrestrial implements ISpecies, INewS
                     this.setAnimation(TALK);
                 }
                 if (i > 2980 && !this.isInWater() && this.getHunger() < 60 && this.canMove() && this.getAnimation() == NO_ANIMATION) {
-                    if ((this.lastDugPos == null || this.distanceToSqr(this.lastDugPos.getX(), this.getY(), this.lastDugPos.getZ()) > 50) && this.level.getBlockState(this.blockPosition().below()).is(BlockTags.MINEABLE_WITH_SHOVEL)) {
+                    if ((this.lastDugPos == null || this.distanceToSqr(this.lastDugPos.getX(), this.getY(), this.lastDugPos.getZ()) > 50) && this.level().getBlockState(this.blockPosition().below()).is(BlockTags.MINEABLE_WITH_SHOVEL)) {
                         this.setAnimation(WORK_DIG);
                         this.addHunger(20);
                         this.lastDugPos = this.blockPosition();
@@ -137,12 +143,12 @@ public class EntityBoar extends ComplexMobTerrestrial implements ISpecies, INewS
                 }
             }
             if (this.getAnimation() == WORK_DIG && this.getAnimationTick() % 8 == 0) {
-                ((ServerLevel)this.level).sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, this.level.getBlockState(this.blockPosition().below())), this.getX(), this.getY(), this.getZ(), 20, 0.0D, 0.0D, 0.0D, 0.15F);
+                ((ServerLevel)this.level()).sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, this.level().getBlockState(this.blockPosition().below())), this.getX(), this.getY(), this.getZ(), 20, 0.0D, 0.0D, 0.0D, 0.15F);
                 this.playSound(SoundEvents.SHOVEL_FLATTEN, 0.8F, 0.6F);
                 if (this.getAnimationTick() == 64 && this.random.nextInt(5) == 0) {
-                    List<ItemStack> result = EntityUtils.getItemFromLootTable(ModLootTables.LOOT_DIGGING, this.level);
+                    List<ItemStack> result = EntityUtils.getItemFromLootTable(ModLootTables.LOOT_DIGGING, this.level());
                     for (ItemStack itemstack : result)
-                        this.spawnAtLocation(itemstack);
+                        this.spawnAtLocation((ServerLevel) this.level(), itemstack);
                 }
             }
             if (this.getAnimation() == TALK && this.getAnimationTick() == 1 && this.getAmbientSound() != null) {
@@ -162,20 +168,20 @@ public class EntityBoar extends ComplexMobTerrestrial implements ISpecies, INewS
 
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack itemstack = player.getItemInHand(InteractionHand.MAIN_HAND);
-        if (hand == InteractionHand.MAIN_HAND && !this.level.isClientSide()) {
+        if (hand == InteractionHand.MAIN_HAND && !this.level().isClientSide()) {
             if (!this.isTame() && this.isBaby() && EntityUtils.hasFullHealth(this) && this.isFood(itemstack)) {
                 this.playSound(SoundEvents.HORSE_EAT, 1.5F, 0.8F);
                 if (this.getRandom().nextInt(3) == 0) {
                     this.tame(player);
-                    EntityUtils.spawnParticlesOnEntity(this.level, this, ParticleTypes.HEART, 3, 6);
+                    EntityUtils.spawnParticlesOnEntity(this.level(), this, ParticleTypes.HEART, 3, 6);
                 } else {
-                    EntityUtils.spawnParticlesOnEntity(this.level, this, ParticleTypes.SMOKE, 3, 3);
+                    EntityUtils.spawnParticlesOnEntity(this.level(), this, ParticleTypes.SMOKE, 3, 3);
                 }
             }
             if (!this.isTame() && !this.isBaby() && itemstack.isEmpty()) {
                 this.setSitting(false);
                 this.setSleeping(false);
-                if (!this.level.isClientSide) {
+                if (!this.level().isClientSide()) {
                     player.setYRot(this.getYRot());
                     player.setXRot(this.getXRot());
                     player.startRiding(this);
@@ -187,8 +193,8 @@ public class EntityBoar extends ComplexMobTerrestrial implements ISpecies, INewS
     }
 
     @Override
-    public boolean doHurtTarget(Entity entityIn) {
-        boolean flag = super.doHurtTarget(entityIn);
+    public boolean doHurtTarget(ServerLevel level, Entity entityIn) {
+        boolean flag = super.doHurtTarget(level, entityIn);
         if (flag && this.getAnimation() == NO_ANIMATION && !this.isBaby()) {
             this.setAnimation(ATTACK);
             this.setAnimationTick(0);
@@ -196,10 +202,11 @@ public class EntityBoar extends ComplexMobTerrestrial implements ISpecies, INewS
         return flag;
     }
 
-    public boolean hurt(DamageSource damageSource, float amount) {
+    @Override
+    public boolean hurtServer(ServerLevel level, DamageSource damageSource, float amount) {
         // Retaliate I: Mob will strike back when attacked by its current target
         performRetaliation(damageSource, this.getHealth(), amount, true);
-        return super.hurt(damageSource, amount);
+        return super.hurtServer(level, damageSource, amount);
     }
 
     @Override
@@ -211,7 +218,7 @@ public class EntityBoar extends ComplexMobTerrestrial implements ISpecies, INewS
 
     @Nullable
     public EntityBoar getBreedOffspring(ServerLevel serverWorld, AgeableMob ageable) {
-        return create_offspring(new EntityBoar(ModEntity.BOAR.get(), this.level));
+        return create_offspring(new EntityBoar(ModEntity.BOAR.get(), serverWorld));
     }
 
     @Override
@@ -222,7 +229,7 @@ public class EntityBoar extends ComplexMobTerrestrial implements ISpecies, INewS
     public boolean isWarthog(){ return (this.entityData.get(WARTHOG)); }
     private void setWarthog(boolean warthog){ this.entityData.set(WARTHOG, warthog); }
 
-    public void addAdditionalSaveData(CompoundTag compound){
+    public void addAdditionalSaveData(ValueOutput compound){
         super.addAdditionalSaveData(compound);
         compound.putBoolean("isWarthog", this.isWarthog());
         if (this.lastDugPos != null) {
@@ -231,11 +238,11 @@ public class EntityBoar extends ComplexMobTerrestrial implements ISpecies, INewS
         }
     }
 
-    public void readAdditionalSaveData(CompoundTag compound) {
+    public void readAdditionalSaveData(ValueInput compound) {
         super.readAdditionalSaveData(compound);
-        this.setWarthog(compound.getBoolean("isWarthog"));
-        if (compound.contains("LastDugPos")) {
-            this.lastDugPos = new BlockPos(compound.getInt("DugPosX"), 0, compound.getInt("DugPosZ"));
+        this.setWarthog(compound.getBooleanOr("isWarthog", false));
+        if (compound.getInt("DugPosX").isPresent() && compound.getInt("DugPosZ").isPresent()) {
+            this.lastDugPos = new BlockPos(compound.getIntOr("DugPosX", 0), 0, compound.getIntOr("DugPosZ", 0));
         }
     }
 
@@ -289,7 +296,7 @@ public class EntityBoar extends ComplexMobTerrestrial implements ISpecies, INewS
 
                 this.boar.ejectPassengers();
                 this.boar.setTarget((LivingEntity) entity);
-                this.boar.level.broadcastEntityEvent(this.boar, (byte)6);
+                this.boar.level().broadcastEntityEvent(this.boar, (byte)6);
             }
         }
     }

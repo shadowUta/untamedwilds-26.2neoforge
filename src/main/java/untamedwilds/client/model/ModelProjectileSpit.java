@@ -1,6 +1,6 @@
 package untamedwilds.client.model;
 
-import net.minecraft.client.model.HierarchicalModel;
+import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
@@ -10,13 +10,15 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.world.entity.Entity;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import untamedwilds.client.render.ProjectileSpitRenderState;
 
 @OnlyIn(Dist.CLIENT)
-public class ModelProjectileSpit<T extends Entity> extends HierarchicalModel<T> {
+public class ModelProjectileSpit extends Model<ProjectileSpitRenderState> {
     private static final String MAIN = "main";
     private final ModelPart root;
 
     public ModelProjectileSpit(ModelPart p_170730_) {
+        super(p_170730_, net.minecraft.client.renderer.rendertype.RenderTypes::entityCutout);
         this.root = p_170730_;
     }
 
@@ -28,10 +30,10 @@ public class ModelProjectileSpit<T extends Entity> extends HierarchicalModel<T> 
         return LayerDefinition.create(meshdefinition, 64, 32);
     }
 
-    public void setupAnim(T p_103090_, float p_103091_, float p_103092_, float p_103093_, float p_103094_, float p_103095_) {
+    @Override
+    public void setupAnim(ProjectileSpitRenderState state) {
+        this.root.yRot = state.yRot;
+        this.root.xRot = state.xRot;
     }
 
-    public ModelPart root() {
-        return this.root;
-    }
 }

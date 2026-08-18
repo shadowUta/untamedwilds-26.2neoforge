@@ -2,7 +2,6 @@ package untamedwilds.entity.reptile;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -13,18 +12,23 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import oshi.util.tuples.Pair;
 import untamedwilds.entity.*;
@@ -38,6 +42,8 @@ import untamedwilds.init.ModTags;
 import untamedwilds.util.EntityUtils;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.Method;
+import java.util.EnumSet;
 import java.util.List;
 
 public class EntitySoftshellTurtle extends ComplexMobAmphibious implements ISpecies, INewSkins, INestingMob {
@@ -57,9 +63,9 @@ public class EntitySoftshellTurtle extends ComplexMobAmphibious implements ISpec
         this.head_movement = new Pair<>(0F, 0F);
     }
 
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(HAS_EGG, false);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(HAS_EGG, false);
     }
 
     public static AttributeSupplier.Builder registerAttributes() {
@@ -85,18 +91,21 @@ public class EntitySoftshellTurtle extends ComplexMobAmphibious implements ISpec
         this.targetSelector.addGoal(3, new HuntMobTarget<>(this, LivingEntity.class, true, 30, false, input -> getEcoLevel(input) < getEcoLevel(this)));
     }
 
-    public boolean wantsToBeOnLand() { return this.level.getDayTime() > 4500 && this.level.getDayTime() < 7500; }
+    public boolean wantsToBeOnLand() {
+        long timeOfDay = this.level().getDefaultClockTime() % 24000L;
+        return timeOfDay > 4500L && timeOfDay < 7500L;
+    }
 
-    public boolean wantsToBeInWater() { return !(this.level.getDayTime() > 4500 && this.level.getDayTime() < 7500); }
+    public boolean wantsToBeInWater() { return !this.wantsToBeOnLand(); }
 
     public boolean isPushedByFluid() {
         return false;
     }
 
     public void die(DamageSource cause) {
-        if (cause == DamageSource.ANVIL && !this.isBaby()) {
+        if (cause.is(DamageTypes.FALLING_ANVIL) && !this.isBaby() && !this.level().isClientSide()) {
             // Advancement Trigger: "Unethical Soup"
-            ItemEntity entityitem = this.spawnAtLocation(new ItemStack(ModItems.FOOD_TURTLE_SOUP.get()), 0.2F);
+            ItemEntity entityitem = this.spawnAtLocation((ServerLevel) this.level(), new ItemStack(ModItems.FOOD_TURTLE_SOUP.get()), 0.2F);
             if (entityitem != null) {
                 entityitem.getItem().setCount(1);
             }
@@ -106,15 +115,15 @@ public class EntitySoftshellTurtle extends ComplexMobAmphibious implements ISpec
 
     public void tick() {
         super.tick();
-        if (this.level.isClientSide && this.isInWater() && this.getDeltaMovement().lengthSqr() > 0.03D) {
+        if (this.level().isClientSide() && this.isInWater() && this.getDeltaMovement().lengthSqr() > 0.03D) {
             Vec3 vec3 = this.getViewVector(0.0F);
             float f = Mth.cos(this.getYRot() * ((float)Math.PI / 180F)) * 0.3F;
             float f1 = Mth.sin(this.getYRot() * ((float)Math.PI / 180F)) * 0.3F;
             float f2 = 1.2F - this.random.nextFloat() * 0.7F;
 
             for(int i = 0; i < 2; ++i) {
-                this.level.addParticle(ParticleTypes.DOLPHIN, this.getX() - vec3.x * (double)f2 + (double)f, this.getY() - vec3.y, this.getZ() - vec3.z * (double)f2 + (double)f1, 0.0D, 0.0D, 0.0D);
-                this.level.addParticle(ParticleTypes.DOLPHIN, this.getX() - vec3.x * (double)f2 - (double)f, this.getY() - vec3.y, this.getZ() - vec3.z * (double)f2 - (double)f1, 0.0D, 0.0D, 0.0D);
+                this.level().addParticle(ParticleTypes.DOLPHIN, this.getX() - vec3.x * (double)f2 + (double)f, this.getY() - vec3.y, this.getZ() - vec3.z * (double)f2 + (double)f1, 0.0D, 0.0D, 0.0D);
+                this.level().addParticle(ParticleTypes.DOLPHIN, this.getX() - vec3.x * (double)f2 - (double)f, this.getY() - vec3.y, this.getZ() - vec3.z * (double)f2 - (double)f1, 0.0D, 0.0D, 0.0D);
             }
         }
         if (this.tickCount % 1000 == 0) {
@@ -132,8 +141,8 @@ public class EntitySoftshellTurtle extends ComplexMobAmphibious implements ISpec
     public void aiStep() {
         super.aiStep();
 
-        if (!this.level.isClientSide) {
-            if (this.level.getGameTime() % 4000 == 0) {
+        if (!this.level().isClientSide()) {
+            if (this.level().getGameTime() % 4000 == 0) {
                 this.heal(1.0F);
             }
             if (this.isInWater() && this.getNavigation().isDone()) {
@@ -154,7 +163,7 @@ public class EntitySoftshellTurtle extends ComplexMobAmphibious implements ISpec
     public boolean wantsToBreed() {
         if (super.wantsToBreed()) {
             if (!this.isSleeping() && this.getAge() == 0 && EntityUtils.hasFullHealth(this)) {
-                List<EntitySoftshellTurtle> list = this.level.getEntitiesOfClass(EntitySoftshellTurtle.class, this.getBoundingBox().inflate(6.0D, 4.0D, 6.0D));
+                List<EntitySoftshellTurtle> list = this.level().getEntitiesOfClass(EntitySoftshellTurtle.class, this.getBoundingBox().inflate(6.0D, 4.0D, 6.0D));
                 list.removeIf(input -> EntityUtils.isInvalidPartner(this, input, false));
                 return list.size() >= 1;
             }
@@ -175,7 +184,7 @@ public class EntitySoftshellTurtle extends ComplexMobAmphibious implements ISpec
 
         if (itemstack.isEmpty() && this.isAlive()) {
             EntityUtils.turnEntityIntoItem(this, "spawn_softshell_turtle");
-            return InteractionResult.sidedSuccess(this.level.isClientSide);
+            return this.level().isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
         }
         return super.mobInteract(player, hand);
     }
@@ -202,16 +211,123 @@ public class EntitySoftshellTurtle extends ComplexMobAmphibious implements ISpec
 
     @Override
     public boolean isValidNestBlock(BlockPos pos) {
-        return this.level.isEmptyBlock(pos) && this.level.getBlockState(pos.below()).is(ModTags.ModBlockTags.VALID_REPTILE_NEST) && this.getNestType().defaultBlockState().canSurvive(this.level, pos);
+        return this.level().isEmptyBlock(pos) && this.level().getBlockState(pos.below()).is(ModTags.ModBlockTags.VALID_REPTILE_NEST) && this.getNestType().defaultBlockState().canSurvive(this.level(), pos);
     }
 
-    public void addAdditionalSaveData(CompoundTag compound){
-        super.addAdditionalSaveData(compound);
-        compound.putBoolean("has_egg", this.wantsToLayEggs());
+    public void addAdditionalSaveData(ValueOutput output){
+        super.addAdditionalSaveData(output);
+        output.putBoolean("has_egg", this.wantsToLayEggs());
     }
 
-    public void readAdditionalSaveData(CompoundTag compound){
-        super.readAdditionalSaveData(compound);
-        this.setEggStatus(compound.getBoolean("has_egg"));
+    public void readAdditionalSaveData(ValueInput input){
+        super.readAdditionalSaveData(input);
+        this.setEggStatus(input.getBooleanOr("has_egg", false));
+    }
+
+    private static final class LayEggsOnNestGoal extends Goal {
+        private final EntitySoftshellTurtle turtle;
+        private BlockPos target;
+        private boolean buildNest;
+        private int buildTicks;
+
+        private LayEggsOnNestGoal(EntitySoftshellTurtle turtle) {
+            this.turtle = turtle;
+            this.setFlags(EnumSet.of(Flag.MOVE, Flag.JUMP));
+        }
+
+        @Override
+        public boolean canUse() {
+            if (!this.turtle.wantsToLayEggs() || this.turtle.level().isClientSide()) {
+                return false;
+            }
+            this.target = this.findNestSite();
+            return this.target != null;
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            return this.target != null && this.turtle.wantsToLayEggs();
+        }
+
+        @Override
+        public void start() {
+            this.buildTicks = this.buildNest ? 400 + this.turtle.getRandom().nextInt(300) : 0;
+            this.moveToTarget();
+        }
+
+        @Override
+        public void tick() {
+            if (this.target == null) {
+                return;
+            }
+            if (this.turtle.distanceToSqr(Vec3.atCenterOf(this.target)) > 2.25D) {
+                if (this.turtle.tickCount % 20 == 0) {
+                    this.moveToTarget();
+                }
+                return;
+            }
+            if (this.buildNest && --this.buildTicks > 0) {
+                if (this.buildTicks % 30 == 0) {
+                    this.turtle.playSound(SoundEvents.SHOVEL_FLATTEN, 0.8F, 0.6F);
+                }
+                return;
+            }
+            ServerLevel level = (ServerLevel)this.turtle.level();
+            if (this.buildNest) {
+                level.setBlockAndUpdate(this.target, this.turtle.getNestType().defaultBlockState());
+            }
+            BlockEntity nest = level.getBlockEntity(this.target);
+            if (nest != null && this.writeNestData(nest)) {
+                level.updateNeighbourForOutputSignal(this.target, level.getBlockState(this.target).getBlock());
+                this.turtle.setEggStatus(false);
+            }
+            this.stop();
+        }
+
+        @Override
+        public void stop() {
+            this.turtle.getNavigation().stop();
+            this.target = null;
+            this.buildNest = false;
+        }
+
+        private void moveToTarget() {
+            this.turtle.getNavigation().moveTo(this.target.getX() + 0.5D, this.target.getY(), this.target.getZ() + 0.5D, 1.0D);
+        }
+
+        private BlockPos findNestSite() {
+            BlockPos origin = this.turtle.blockPosition();
+            for (BlockPos pos : BlockPos.betweenClosed(origin.offset(-16, -4, -16), origin.offset(16, 4, 16))) {
+                if (this.turtle.level().getBlockState(pos).is(this.turtle.getNestType()) && this.turtle.level().getBlockEntity(pos) != null) {
+                    this.buildNest = false;
+                    return pos.immutable();
+                }
+            }
+            for (int attempt = 0; attempt < 20; ++attempt) {
+                BlockPos pos = origin.offset(this.turtle.getRandom().nextInt(17) - 8, this.turtle.getRandom().nextInt(5) - 2, this.turtle.getRandom().nextInt(17) - 8);
+                if (this.turtle.isValidNestBlock(pos)) {
+                    this.buildNest = true;
+                    return pos.immutable();
+                }
+            }
+            return null;
+        }
+
+        private boolean writeNestData(BlockEntity nest) {
+            try {
+                Method setEntityType = nest.getClass().getMethod("setEntityType", EntityType.class);
+                Method setVariant = nest.getClass().getMethod("setVariant", int.class);
+                Method getEggCount = nest.getClass().getMethod("getEggCount");
+                Method setEggCount = nest.getClass().getMethod("setEggCount", int.class);
+                setEntityType.invoke(nest, this.turtle.getType());
+                setVariant.invoke(nest, this.turtle.getVariant());
+                int eggs = (int)getEggCount.invoke(nest);
+                setEggCount.invoke(nest, eggs + this.turtle.getOffspring());
+                nest.setChanged();
+                return true;
+            } catch (ReflectiveOperationException exception) {
+                return false;
+            }
+        }
     }
 }

@@ -12,6 +12,7 @@ import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.fish.WaterAnimal;
 import net.minecraft.world.entity.player.Player;
@@ -36,23 +37,26 @@ public class ChumItem extends Item {
         super(builder);
     }
 
-    public int getUseDuration(ItemStack stack) { return 40; }
+    @Override
+    public int getUseDuration(ItemStack stack, LivingEntity entity) { return 40; }
 
+    @Override
     public ItemUseAnimation getUseAnimation(ItemStack stack) {
         return ItemUseAnimation.EAT;
     }
 
+    @Override
     public InteractionResult use(Level worldIn, Player playerIn, InteractionHand handIn) {
         BlockHitResult blockraytraceresult = getPlayerPOVHitResult(worldIn, playerIn, ClipContext.Fluid.SOURCE_ONLY);
         if (worldIn.getFluidState(blockraytraceresult.getBlockPos()).is(FluidTags.WATER)) {
             ItemStack itemstack = playerIn.getItemInHand(handIn);
-            playerIn.getCooldowns().addCooldown(this, 30);
+            playerIn.getCooldowns().addCooldown(itemstack, 30);
             worldIn.playSound(playerIn, playerIn.blockPosition(), SoundEvents.FISHING_BOBBER_SPLASH, SoundSource.NEUTRAL, 1F, 1F);
-            if (!worldIn.isClientSide) {Vec3 pos = blockraytraceresult.getLocation();
+            if (!worldIn.isClientSide()) {Vec3 pos = blockraytraceresult.getLocation();
                 for (int i = 0; i < 6;  i++) {
-                    double d2 = worldIn.random.nextGaussian() * 0.03D;
-                    double d3 = worldIn.random.nextGaussian() * 0.03D;
-                    double d4 = worldIn.random.nextGaussian() * 0.03D;
+                    double d2 = worldIn.getRandom().nextGaussian() * 0.03D;
+                    double d3 = worldIn.getRandom().nextGaussian() * 0.03D;
+                    double d4 = worldIn.getRandom().nextGaussian() * 0.03D;
                     ((ServerLevel)worldIn).sendParticles(ModParticles.CHUM_DISPERSE.get(), pos.x, pos.y - 0.1F, pos.z, 1, d2, d3, d4, 0.02D);
                 }
                 ModAdvancementTriggers.BAIT_BASIC.trigger((ServerPlayer) playerIn);

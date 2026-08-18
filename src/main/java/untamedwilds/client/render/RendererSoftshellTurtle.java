@@ -11,7 +11,7 @@ import untamedwilds.entity.reptile.EntitySoftshellTurtle;
 
 import javax.annotation.Nonnull;
 
-public class RendererSoftshellTurtle extends MobRenderer<EntitySoftshellTurtle, EntityModel<EntitySoftshellTurtle>> {
+public class RendererSoftshellTurtle extends UntamedMobRenderer<EntitySoftshellTurtle> {
 
     private static final ModelTurtleSoftshell SOFTSHELL_TURTLE_MODEL = new ModelTurtleSoftshell();
 

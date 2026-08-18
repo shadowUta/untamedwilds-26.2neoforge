@@ -11,7 +11,7 @@ import untamedwilds.entity.amphibian.EntityGiantSalamander;
 
 import javax.annotation.Nonnull;
 
-public class RendererGiantSalamander extends MobRenderer<EntityGiantSalamander, EntityModel<EntityGiantSalamander>> {
+public class RendererGiantSalamander extends UntamedMobRenderer<EntityGiantSalamander> {
 
     private static final ModelGiantSalamander GIANT_SALAMANDER_MODEL = new ModelGiantSalamander();
 

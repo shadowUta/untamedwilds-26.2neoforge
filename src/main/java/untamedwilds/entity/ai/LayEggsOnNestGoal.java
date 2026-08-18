@@ -7,18 +7,18 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.ai.goal.MoveToBlockGoal;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import untamedwilds.block.blockentity.ReptileNestBlockEntity;
 import untamedwilds.entity.ComplexMob;
 import untamedwilds.entity.INestingMob;
 import untamedwilds.init.ModBlock;
 
-import javax.annotation.Nullable;
+import java.lang.reflect.Method;
 import java.util.EnumSet;
-import java.util.Random;
 
 public class LayEggsOnNestGoal extends MoveToBlockGoal {
     private final ComplexMob taskOwner;
@@ -30,13 +30,13 @@ public class LayEggsOnNestGoal extends MoveToBlockGoal {
     public LayEggsOnNestGoal(ComplexMob entityIn) {
         super(entityIn, 1, 16, 4);
         this.taskOwner = entityIn;
-        this.world = entityIn.level;
+        this.world = entityIn.level();
         this.setFlags(EnumSet.of(Flag.MOVE, Flag.JUMP));
     }
 
     @Override
     public boolean canUse() {
-        if (!(this.taskOwner instanceof INestingMob) || !((INestingMob)taskOwner).wantsToLayEggs())
+        if (this.taskOwner.level().isClientSide() || !(this.taskOwner instanceof INestingMob) || !((INestingMob)taskOwner).wantsToLayEggs())
             return false;
         if (this.nextStartTick > 0) {
             --this.nextStartTick;
@@ -79,16 +79,16 @@ public class LayEggsOnNestGoal extends MoveToBlockGoal {
             if (this.needsToBuildNest) {
                 --this.nestBuildingTicks;
                 if (this.nestBuildingTicks % 30 == 0) {
-                    ((ServerLevel)this.taskOwner.level).sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, this.taskOwner.level.getBlockState(this.blockPos.below())), this.taskOwner.getX(), this.taskOwner.getY(), this.taskOwner.getZ(), 20, 0.0D, 0.0D, 0.0D, 0.15F);
+                    if (this.taskOwner.level() instanceof ServerLevel serverLevel) {
+                        serverLevel.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, serverLevel.getBlockState(this.blockPos.below())), this.taskOwner.getX(), this.taskOwner.getY(), this.taskOwner.getZ(), 20, 0.0D, 0.0D, 0.0D, 0.15F);
+                    }
                     this.taskOwner.playSound(SoundEvents.SHOVEL_FLATTEN, 0.8F, 0.6F);
                 }
                 if (this.nestBuildingTicks <= 0) {
-                    this.world.setBlock(this.blockPos, ModBlock.NEST_REPTILE.get().defaultBlockState(), 2);
-                    ReptileNestBlockEntity te = (ReptileNestBlockEntity) world.getBlockEntity(this.blockPos);
-                    if (te != null) {
-                        te.setEntityType(this.taskOwner.getType());
-                        te.setVariant(this.taskOwner.getVariant());
-                        te.setEggCount(0);
+                    this.world.setBlockAndUpdate(this.blockPos, ModBlock.NEST_REPTILE.value().defaultBlockState());
+                    BlockEntity nest = this.world.getBlockEntity(this.blockPos);
+                    if (nest != null) {
+                        this.writeNestData(nest, 0);
                     }
                     this.needsToBuildNest = false;
                 }
@@ -100,14 +100,13 @@ public class LayEggsOnNestGoal extends MoveToBlockGoal {
         }
     }
 
-    @Nullable
     public boolean checkForNewNest() {
         RandomSource random = this.taskOwner.getRandom();
         BlockPos blockpos = this.taskOwner.blockPosition();
         for(int i = 0; i < 10; ++i) {
             BlockPos blockpos1 = blockpos.offset(random.nextInt(8) - 4, random.nextInt(4) - 2, random.nextInt(8) - 4);
-            if (((INestingMob)this.taskOwner).isValidNestBlock(blockpos1) && this.isValidTarget(this.mob.level, blockpos1)) {
-                this.nestBuildingTicks = 400 + this.taskOwner.getRandom().nextInt(300);
+            if (((INestingMob)this.taskOwner).isValidNestBlock(blockpos1) && this.isValidTarget(this.mob.level(), blockpos1)) {
+                this.nestBuildingTicks = 400 + random.nextInt(300);
                 this.blockPos = blockpos1;
                 return true;
             }
@@ -117,20 +116,49 @@ public class LayEggsOnNestGoal extends MoveToBlockGoal {
     }
 
     private void addEggsToNest() {
-        BlockState blockstate = taskOwner.level.getBlockState(this.blockPos);
-        if (blockstate.is(ModBlock.NEST_REPTILE.get())) {
-            if (taskOwner.level.getBlockEntity(this.blockPos) instanceof ReptileNestBlockEntity nest) {
-                //UntamedWilds.LOGGER.info("Adding eggs to existing nest");
-                if (((INestingMob)this.taskOwner).wantsToLayEggs())
-                    nest.setEggCount(nest.getEggCount() + this.taskOwner.getOffspring());
-                taskOwner.level.updateNeighbourForOutputSignal(this.blockPos, blockstate.getBlock());
+        Level level = this.taskOwner.level();
+        BlockState blockstate = level.getBlockState(this.blockPos);
+        if (blockstate.is(ModBlock.NEST_REPTILE.value())) {
+            BlockEntity nest = level.getBlockEntity(this.blockPos);
+            if (nest != null && ((INestingMob)this.taskOwner).wantsToLayEggs()) {
+                if (this.addEggs(nest, this.taskOwner.getOffspring())) {
+                    level.updateNeighbourForOutputSignal(this.blockPos, blockstate.getBlock());
+                    nest.setChanged();
+                }
                 ((INestingMob)taskOwner).setEggStatus(false);
             }
         }
     }
 
+    private boolean writeNestData(BlockEntity nest, int eggCount) {
+        try {
+            Method setEntityType = nest.getClass().getMethod("setEntityType", EntityType.class);
+            Method setVariant = nest.getClass().getMethod("setVariant", int.class);
+            Method setEggCount = nest.getClass().getMethod("setEggCount", int.class);
+            setEntityType.invoke(nest, this.taskOwner.getType());
+            setVariant.invoke(nest, this.taskOwner.getVariant());
+            setEggCount.invoke(nest, eggCount);
+            nest.setChanged();
+            return true;
+        } catch (ReflectiveOperationException exception) {
+            return false;
+        }
+    }
+
+    private boolean addEggs(BlockEntity nest, int eggCount) {
+        try {
+            Method getEggCount = nest.getClass().getMethod("getEggCount");
+            Method setEggCount = nest.getClass().getMethod("setEggCount", int.class);
+            int currentEggCount = (int)getEggCount.invoke(nest);
+            setEggCount.invoke(nest, currentEggCount + eggCount);
+            return true;
+        } catch (ReflectiveOperationException exception) {
+            return false;
+        }
+    }
+
     private boolean isWithinXZDist(BlockPos blockpos, Vec3 positionVec, double distance) {
-        return blockpos.distSqr(new BlockPos(positionVec.x(), blockpos.getY(), positionVec.z())) < distance * distance;
+        return blockpos.distSqr(BlockPos.containing(positionVec.x(), blockpos.getY(), positionVec.z())) < distance * distance;
     }
 
     protected boolean isReachedTarget() {
@@ -143,6 +171,16 @@ public class LayEggsOnNestGoal extends MoveToBlockGoal {
             //((ServerLevel)this.taskOwner.level).sendParticles(ParticleTypes.HAPPY_VILLAGER, pos.getX(), pos.getY(), pos.getZ(), 20, 0.0D, 0.0D, 0.0D, 0.15F);
             return ((INestingMob)this.taskOwner).isValidNestBlock(pos);
         }
-        return worldIn.getBlockState(pos).is(ModBlock.NEST_REPTILE.get()) && worldIn.getBlockEntity(pos) instanceof ReptileNestBlockEntity && ((ReptileNestBlockEntity) worldIn.getBlockEntity(pos)).getVariant() == this.taskOwner.getVariant();
+        BlockEntity nest = worldIn.getBlockEntity(pos);
+        return worldIn.getBlockState(pos).is(ModBlock.NEST_REPTILE.value()) && nest != null && this.hasMatchingVariant(nest);
+    }
+
+    private boolean hasMatchingVariant(BlockEntity nest) {
+        try {
+            Method getVariant = nest.getClass().getMethod("getVariant");
+            return (int)getVariant.invoke(nest) == this.taskOwner.getVariant();
+        } catch (ReflectiveOperationException exception) {
+            return false;
+        }
     }
 }

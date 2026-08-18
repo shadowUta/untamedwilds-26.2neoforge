@@ -19,6 +19,7 @@ import net.minecraft.world.entity.ai.control.SmoothSwimmingMoveControl;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gamerules.GameRules;
 import untamedwilds.config.ConfigGamerules;
 import untamedwilds.entity.*;
 import untamedwilds.entity.ai.SmartMateGoal;
@@ -39,10 +40,15 @@ public class EntityManatee extends ComplexMobAquatic implements ISpecies, INewSk
 
     public EntityManatee(EntityType<? extends ComplexMob> type, Level worldIn) {
         super(type, worldIn);
-        this.entityData.define(IS_EATING, false);
         this.moveControl = new SmoothSwimmingMoveControl(this, 30, 10, 0.02F, 0.1F, true);
         this.lookControl = new SmartSwimmerLookControl(this, 30);
         this.turn_speed = 0.1F;
+    }
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(IS_EATING, false);
     }
 
     public static AttributeSupplier.Builder registerAttributes() {
@@ -66,11 +72,11 @@ public class EntityManatee extends ComplexMobAquatic implements ISpecies, INewSk
 
     public void aiStep() {
         super.aiStep();
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide()) {
             if (this.isEating()) {
                 this.setDeltaMovement(this.getDeltaMovement().add(0, -0.01F, 0));
             }
-            if (this.level.getGameTime() % 4000 == 0) {
+            if (this.level().getGameTime() % 4000 == 0) {
                 this.heal(1.0F);
             }
         }
@@ -113,7 +119,7 @@ public class EntityManatee extends ComplexMobAquatic implements ISpecies, INewSk
      * A nearby Manatee */
     public boolean wantsToBreed() {
         if (ConfigGamerules.naturalBreeding.get() && this.getAge() == 0 && EntityUtils.hasFullHealth(this)) {
-            List<EntityManatee> list = this.level.getEntitiesOfClass(EntityManatee.class, this.getBoundingBox().inflate(12.0D, 8.0D, 12.0D));
+            List<EntityManatee> list = this.level().getEntitiesOfClass(EntityManatee.class, this.getBoundingBox().inflate(12.0D, 8.0D, 12.0D));
             list.removeIf(input -> EntityUtils.isInvalidPartner(this, input, false));
             if (list.size() >= 1) {
                 this.setAge(this.getPregnancyTime());
@@ -127,7 +133,7 @@ public class EntityManatee extends ComplexMobAquatic implements ISpecies, INewSk
     @Nullable
     @Override
     public AgeableMob getBreedOffspring(ServerLevel serverWorld, AgeableMob ageableEntity) {
-        return create_offspring(new EntityManatee(ModEntity.MANATEE.get(), this.level));
+        return create_offspring(new EntityManatee(ModEntity.MANATEE.get(), this.level()));
     }
 
     @Override
@@ -173,7 +179,7 @@ public class EntityManatee extends ComplexMobAquatic implements ISpecies, INewSk
             int Y = 8;
             //List<BlockPos> inventories = new ArrayList<>();
             for (BlockPos blockpos : BlockPos.MutableBlockPos.betweenClosed(roomCenter.offset(-X, -Y, -X), roomCenter.offset(X, 0, X))) {
-                if (this.taskOwner.level.getBlockState(blockpos).is(ModTags.ModBlockTags.GRAZEABLE_ALGAE) && random.nextInt(2) == 0) {
+                if (this.taskOwner.level().getBlockState(blockpos).is(ModTags.ModBlockTags.GRAZEABLE_ALGAE) && random.nextInt(2) == 0) {
                     return blockpos;
                 }
             }
@@ -208,10 +214,10 @@ public class EntityManatee extends ComplexMobAquatic implements ISpecies, INewSk
                     this.taskOwner.setIsEating(true);
                     this.eatingCounter = this.taskOwner.getRandom().nextInt(40) + 20;
                     this.taskOwner.getNavigation().stop();
-                    Level worldIn = this.taskOwner.getLevel();
+                    Level worldIn = this.taskOwner.level();
                     this.taskOwner.getLookControl().setLookAt(this.targetPos.getX(), this.targetPos.getY(), this.targetPos.getZ());
                     if (worldIn.getBlockState(this.targetPos).is(ModTags.ModBlockTags.GRAZEABLE_ALGAE)) {
-                        if (net.minecraftforge.event.ForgeEventFactory.getMobGriefingEvent(worldIn, this.taskOwner)) {
+                        if (worldIn instanceof ServerLevel serverLevel && serverLevel.getGameRules().get(GameRules.MOB_GRIEFING)) {
                             //worldIn.globalLevelEvent(2001, this.targetPos, Block.getId(Blocks.SEAGRASS.defaultBlockState()));
                             if (ConfigGamerules.grazerGriefing.get()) {
                                 worldIn.destroyBlock(this.targetPos, false);
@@ -219,7 +225,7 @@ public class EntityManatee extends ComplexMobAquatic implements ISpecies, INewSk
                         }
                     }
                     this.taskOwner.ate();
-                    this.taskOwner.playSound(SoundEvents.GENERIC_EAT, 1F, 1);
+                    this.taskOwner.playSound(SoundEvents.GENERIC_EAT.value(), 1F, 1);
                     this.taskComplete = true;
                 }
             }

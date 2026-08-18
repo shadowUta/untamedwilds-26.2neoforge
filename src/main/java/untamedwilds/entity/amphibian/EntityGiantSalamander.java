@@ -73,7 +73,7 @@ public class EntityGiantSalamander extends ComplexMobAmphibious implements ISpec
         return 0.0F;
     }
 
-    public boolean wantsToBeOnLand() { return this.level.isRainingAt(this.blockPosition()); }
+    public boolean wantsToBeOnLand() { return this.level().isRainingAt(this.blockPosition()); }
 
     public boolean wantsToBeInWater() { return true; }
 
@@ -84,16 +84,16 @@ public class EntityGiantSalamander extends ComplexMobAmphibious implements ISpec
     public void aiStep() {
         super.aiStep();
 
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide()) {
             if (this.isInWater()) {
                 this.setDeltaMovement(this.getDeltaMovement().add(0.0D, -0.003D, 0.0D));
                 if (!this.isNotMoving() && this.random.nextInt(5) == 0 && this.getDeltaMovement().horizontalDistance() > 0.08) {
                     Vec3 testpos = this.position().add(Math.cos(Math.toRadians(this.getYRot()+ 90)) * -0.8, 0, Math.sin(Math.toRadians(this.getYRot() + 90)) * -0.8);
-                    BlockPos testblockpos = new BlockPos(testpos);
-                    if (level.getBlockState(new BlockPos(testblockpos.below())).is(BlockTags.MINEABLE_WITH_SHOVEL))
-                        ((ServerLevel)this.level).sendParticles(new BlockParticleOption(ParticleTypes.FALLING_DUST, this.level.getBlockState(testblockpos.below())), testpos.x, testpos.y + 0.2, testpos.z, 2, random.nextFloat() * 0.2, random.nextFloat() * 0.2, random.nextFloat() * 0.2, 0);
+                    BlockPos testblockpos = BlockPos.containing(testpos);
+                    if (this.level().getBlockState(testblockpos.below()).is(BlockTags.MINEABLE_WITH_SHOVEL))
+                        ((ServerLevel)this.level()).sendParticles(new BlockParticleOption(ParticleTypes.FALLING_DUST, this.level().getBlockState(testblockpos.below())), testpos.x, testpos.y + 0.2, testpos.z, 2, random.nextFloat() * 0.2, random.nextFloat() * 0.2, random.nextFloat() * 0.2, 0);
                     else
-                        ((ServerLevel)this.level).sendParticles(ParticleTypes.UNDERWATER, testpos.x, testpos.y + 0.2, testpos.z, 2, random.nextFloat() * 0.2, random.nextFloat() * 0.2, random.nextFloat() * 0.2, 0);
+                        ((ServerLevel)this.level()).sendParticles(ParticleTypes.UNDERWATER, testpos.x, testpos.y + 0.2, testpos.z, 2, random.nextFloat() * 0.2, random.nextFloat() * 0.2, random.nextFloat() * 0.2, 0);
                 }
             }
 
@@ -102,7 +102,7 @@ public class EntityGiantSalamander extends ComplexMobAmphibious implements ISpec
                     this.breed();
                 }
             }
-            if (this.level.getGameTime() % 4000 == 0) {
+            if (this.level().getGameTime() % 4000 == 0) {
                 this.heal(1.0F);
             }
         }
@@ -124,7 +124,7 @@ public class EntityGiantSalamander extends ComplexMobAmphibious implements ISpec
     public boolean wantsToBreed() {
         if (super.wantsToBreed()) {
             if (!this.isSleeping() && this.getAge() == 0 && EntityUtils.hasFullHealth(this)) {
-                List<EntityGiantSalamander> list = this.level.getEntitiesOfClass(EntityGiantSalamander.class, this.getBoundingBox().inflate(6.0D, 4.0D, 6.0D));
+                List<EntityGiantSalamander> list = this.level().getEntitiesOfClass(EntityGiantSalamander.class, this.getBoundingBox().inflate(6.0D, 4.0D, 6.0D));
                 list.removeIf(input -> EntityUtils.isInvalidPartner(this, input, false));
                 if (list.size() >= 1) {
                     this.setAge(this.getPregnancyTime());
@@ -136,14 +136,14 @@ public class EntityGiantSalamander extends ComplexMobAmphibious implements ISpec
         return false;
     }
 
-    public boolean doHurtTarget(Entity entityIn) {
+    public boolean doHurtTarget(ServerLevel level, Entity entityIn) {
         float f = (float)this.getAttribute(Attributes.ATTACK_DAMAGE).getValue();
-        boolean flag = entityIn.hurt(DamageSource.mobAttack(this), f);
+        boolean flag = entityIn.hurtServer(level, level.damageSources().mobAttack(this), f);
         if (flag) {
             if (entityIn instanceof LivingEntity && entityIn.getBbWidth() * entityIn.getBbHeight() < 0.4F && !(entityIn instanceof TamableAnimal && ((TamableAnimal) entityIn).isTame())) {
                 this.setAnimation(ATTACK_SWALLOW);
-                this.level.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.BEEHIVE_ENTER, SoundSource.BLOCKS, 1.0F, 1.0F);
-                EntityUtils.spawnParticlesOnEntity(this.level, (LivingEntity)entityIn, ParticleTypes.POOF, 6, 2);
+                this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.BEEHIVE_ENTER, SoundSource.BLOCKS, 1.0F, 1.0F);
+                EntityUtils.spawnParticlesOnEntity(this.level(), (LivingEntity)entityIn, ParticleTypes.POOF, 6, 2);
                 this.setDeltaMovement(new Vec3(entityIn.getX() - this.getX(), entityIn.getY() - this.getY(), entityIn.getZ() - this.getZ()).scale(0.15F));
                 this.huntingCooldown = 12000;
                 entityIn.remove(RemovalReason.KILLED);
@@ -166,7 +166,7 @@ public class EntityGiantSalamander extends ComplexMobAmphibious implements ISpec
         if (hand == InteractionHand.MAIN_HAND) {
             if (itemstack.getItem().equals(Items.WATER_BUCKET) && this.isAlive()) {
                 EntityUtils.mutateEntityIntoItem(this, player, hand, "bucket_giant_salamander", itemstack);
-                return InteractionResult.sidedSuccess(this.level.isClientSide);
+                return InteractionResult.CONSUME;
             }
         }
         return super.mobInteract(player, hand);

@@ -39,9 +39,13 @@ public class EntityHippo extends ComplexMobAmphibious implements INewSkins, ISpe
         IDLE_TALK = Animation.create(20);
         EAT = Animation.create(48);
         ATTACK = Animation.create(24);
-        this.maxUpStep = 1F;
         this.isAmphibious = true;
         this.turn_speed = 0.3F;
+    }
+
+    @Override
+    public float maxUpStep() {
+        return 1F;
     }
 
     public void registerGoals() {
@@ -77,11 +81,11 @@ public class EntityHippo extends ComplexMobAmphibious implements INewSkins, ISpe
 
     @Override
     public void aiStep() {
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide()) {
             if (this.isInWater() && this.getTarget() == null) {
                 this.setDeltaMovement(this.getDeltaMovement().add(0.0D, -0.01D, 0.0D));
             }
-            if (this.level.getGameTime() % 1000 == 0) {
+            if (this.level().getGameTime() % 1000 == 0) {
                 this.addHunger(-10);
                 if (!this.isStarving()) {
                     this.heal(1.0F);
@@ -110,8 +114,8 @@ public class EntityHippo extends ComplexMobAmphibious implements INewSkins, ISpe
             }
             if (this.getAnimation() == ATTACK && this.getTarget() != null && this.getBoundingBox().inflate(1.2F, 1.0F, 1.2F).contains(this.getTarget().getPosition(0)) && (this.getAnimationTick() > 8)) {
                 LivingEntity target = this.getTarget();
-                this.getTarget().hurt(DamageSource.mobAttack(this), (float) this.getAttribute(Attributes.ATTACK_DAMAGE).getValue());
-                EntityUtils.destroyBoat(this.level, target);
+                this.getTarget().hurtServer((ServerLevel) this.level(), this.level().damageSources().mobAttack(this), (float) this.getAttribute(Attributes.ATTACK_DAMAGE).getValue());
+                EntityUtils.destroyBoat(this.level(), target);
             }
             this.setAngry(this.getTarget() != null);
         }
@@ -120,9 +124,9 @@ public class EntityHippo extends ComplexMobAmphibious implements INewSkins, ISpe
                 this.playSound(this.getAmbientSound(), this.getSoundVolume(), this.getVoicePitch());
             }
         }
-        if (this.level.isClientSide && this.isAngry() && this.angryProgress < 40) {
+        if (this.level().isClientSide() && this.isAngry() && this.angryProgress < 40) {
             this.angryProgress += 4;
-        } else if (this.level.isClientSide && !this.isAngry() && this.angryProgress > 0) {
+        } else if (this.level().isClientSide() && !this.isAngry() && this.angryProgress > 0) {
             this.angryProgress -= 4;
         }
         super.aiStep();
@@ -138,8 +142,8 @@ public class EntityHippo extends ComplexMobAmphibious implements INewSkins, ISpe
         return !this.isActive();
     }
 
-    public boolean doHurtTarget(Entity entityIn) {
-        boolean flag = super.doHurtTarget(entityIn);
+    public boolean doHurtTarget(ServerLevel level, Entity entityIn) {
+        boolean flag = super.doHurtTarget(level, entityIn);
         if (flag && this.getAnimation() == NO_ANIMATION && !this.isBaby()) {
             Animation anim = chooseAttackAnimation();
             this.setAnimation(anim);
@@ -147,10 +151,10 @@ public class EntityHippo extends ComplexMobAmphibious implements INewSkins, ISpe
         return flag;
     }
 
-    public boolean hurt(DamageSource damageSource, float amount) {
+    public boolean hurtServer(ServerLevel level, DamageSource damageSource, float amount) {
         // Retaliate I: Mob will strike back when attacked by its current target
         performRetaliation(damageSource, this.getHealth(), amount, true);
-        return super.hurt(damageSource, amount);
+        return super.hurtServer(level, damageSource, amount);
     }
 
     private Animation chooseAttackAnimation() {
@@ -159,7 +163,7 @@ public class EntityHippo extends ComplexMobAmphibious implements INewSkins, ISpe
 
     @Nullable
     public EntityHippo getBreedOffspring(ServerLevel serverWorld, AgeableMob ageable) {
-        return create_offspring(new EntityHippo(ModEntity.HIPPO.get(), this.level));
+        return create_offspring(new EntityHippo(ModEntity.HIPPO.get(), serverWorld));
     }
 
     @Override

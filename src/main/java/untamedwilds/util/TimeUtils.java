@@ -1,7 +1,6 @@
 package untamedwilds.util;
 
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
 
 // A set of functions relating Time conversion between Ticks, Days and Months
@@ -22,9 +21,9 @@ public abstract class TimeUtils {
         if (d > 7) {
             int m = d/7;
             d -= m * 7;
-            return MutableComponent.create( new TranslatableContents("untamedwilds.timeutils.weeks", m, d)).getString();
+            return Component.translatable("untamedwilds.timeutils.weeks", m, d).getString();
         }
-        return MutableComponent.create( new TranslatableContents("untamedwilds.timeutils.days", d)).getString();
+        return Component.translatable("untamedwilds.timeutils.days", d).getString();
     }
 
     // No concept of month outside of Serene Seasons

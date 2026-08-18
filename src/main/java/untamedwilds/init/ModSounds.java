@@ -3,7 +3,6 @@ package untamedwilds.init;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
-import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -15,7 +14,7 @@ public class ModSounds {
 
     public static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(Registries.SOUND_EVENT, UntamedWilds.MOD_ID);
 
-    public static final DeferredHolder<SoundEvent, SoundEvent> ENTITY_ATTACK_BITE = registerSound("entity.generic.bite");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ENTITY_ATTACK_BITE = registerDeferredSound("entity.generic.bite");
 
     public static final SoundEvent ENTITY_HIPPO_AMBIENT = registerSound("entity.hippo.ambient");
 
@@ -67,8 +66,14 @@ public class ModSounds {
     public static final SoundEvent ENTITY_SNAKE_HISS = registerSound("entity.snake.warning");
     public static final SoundEvent ENTITY_SNAKE_RATTLE = registerSound("entity.snake.rattle");
 
-    private static DeferredHolder<SoundEvent, SoundEvent> registerSound(String soundName) {
+    private static DeferredHolder<SoundEvent, SoundEvent> registerDeferredSound(String soundName) {
+        return SOUNDS.register(soundName, SoundEvent::createVariableRangeEvent);
+    }
+
+    private static SoundEvent registerSound(String soundName) {
         Identifier location = Identifier.fromNamespaceAndPath(UntamedWilds.MOD_ID, soundName);
-        return ModSounds.SOUNDS.register(soundName, () -> new SoundEvent(location));
+        SoundEvent sound = SoundEvent.createVariableRangeEvent(location);
+        SOUNDS.register(soundName, () -> sound);
+        return sound;
     }
 }

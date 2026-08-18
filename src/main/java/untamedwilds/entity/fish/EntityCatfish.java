@@ -56,7 +56,7 @@ public class EntityCatfish extends ComplexMobAquatic implements ISpecies, INewSk
     }
 
     public void aiStep() {
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide()) {
             if (this.isInWater()) {
                 this.setDeltaMovement(this.getDeltaMovement().add(0.0D, -0.003D, 0.0D));
             }
@@ -66,7 +66,7 @@ public class EntityCatfish extends ComplexMobAquatic implements ISpecies, INewSk
                     this.breed();
                 }
             }
-            if (this.level.getGameTime() % 4000 == 0) {
+            if (this.level().getGameTime() % 4000 == 0) {
                 this.heal(1.0F);
             }
         }
@@ -85,7 +85,7 @@ public class EntityCatfish extends ComplexMobAquatic implements ISpecies, INewSk
         if (hand == InteractionHand.MAIN_HAND) {
             if (itemstack.getItem().equals(Items.WATER_BUCKET) && this.isAlive()) {
                 EntityUtils.mutateEntityIntoItem(this, player, hand, "bucket_catfish", itemstack);
-                return InteractionResult.sidedSuccess(this.level.isClientSide);
+                return InteractionResult.SUCCESS;
             }
         }
         return super.mobInteract(player, hand);
@@ -95,7 +95,7 @@ public class EntityCatfish extends ComplexMobAquatic implements ISpecies, INewSk
      * A nearby Trevally of different gender */
     public boolean wantsToBreed() {
         if (ConfigGamerules.naturalBreeding.get() && this.getAge() == 0 && EntityUtils.hasFullHealth(this)) {
-            List<EntityCatfish> list = this.level.getEntitiesOfClass(EntityCatfish.class, this.getBoundingBox().inflate(12.0D, 8.0D, 12.0D));
+            List<EntityCatfish> list = this.level().getEntitiesOfClass(EntityCatfish.class, this.getBoundingBox().inflate(12.0D, 8.0D, 12.0D));
             list.removeIf(input -> EntityUtils.isInvalidPartner(this, input, false));
             if (list.size() >= 1) {
                 this.setAge(this.getPregnancyTime());

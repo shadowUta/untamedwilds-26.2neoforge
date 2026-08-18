@@ -12,7 +12,7 @@ import untamedwilds.entity.mollusk.EntityGiantClam;
 
 import javax.annotation.Nonnull;
 
-public class RendererGiantClam extends MobRenderer<EntityGiantClam, EntityModel<EntityGiantClam>> {
+public class RendererGiantClam extends UntamedMobRenderer<EntityGiantClam> {
 
     private static final ModelGiantClam GIANT_CLAM_MODEL = new ModelGiantClam();
 

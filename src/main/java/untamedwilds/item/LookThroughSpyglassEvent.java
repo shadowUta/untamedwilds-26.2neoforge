@@ -1,9 +1,9 @@
 package untamedwilds.item;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.PlainTextContents.LiteralContents;
-import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -18,7 +18,6 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
 import untamedwilds.UntamedWilds;
 import untamedwilds.config.ConfigGamerules;
 import untamedwilds.entity.ComplexMob;
@@ -30,15 +29,15 @@ import untamedwilds.init.ModAdvancementTriggers;
 public class LookThroughSpyglassEvent {
 
     @SubscribeEvent
-    public static void lookAtEntityThroughSpyglassEvent(LivingEntityUseItemEvent event) {
+    public static void lookAtEntityThroughSpyglassEvent(LivingEntityUseItemEvent.Tick event) {
         ItemStack usedItem = event.getItem();
         Entity entity = event.getEntity();
-        if (ConfigGamerules.spyglassBehaviorChange.get() && !entity.getLevel().isClientSide && entity instanceof Player playerIn && playerIn.tickCount % 20 == 0 && usedItem.getItem().equals(Items.SPYGLASS)) {
+        if (ConfigGamerules.spyglassBehaviorChange.get() && !entity.level().isClientSide() && entity instanceof Player playerIn && playerIn.tickCount % 20 == 0 && usedItem.is(Items.SPYGLASS)) {
             HitResult hitresult = raycast(playerIn, ConfigGamerules.spyglassCheckRange.get(), true);
             if (hitresult.getType() == HitResult.Type.ENTITY) {
                 EntityHitResult entityHitResult = (EntityHitResult) hitresult;
                 if (entityHitResult.getEntity() instanceof LivingEntity livingEntityHitResult) {
-                    displayEntityData(livingEntityHitResult, playerIn, playerIn.getLevel());
+                    displayEntityData(livingEntityHitResult, playerIn);
 
                     // TODO: Hardcoded list of "observing" advancements
                     if (entityHitResult.getEntity() instanceof EntitySpitter)
@@ -52,7 +51,7 @@ public class LookThroughSpyglassEvent {
         Vec3 startPos = origin.getEyePosition(1F);
         Vec3 rotation = origin.getViewVector(1F);
         Vec3 endPos = startPos.add(rotation.x * maxDistance, rotation.y * maxDistance, rotation.z * maxDistance);
-        HitResult hitResult = origin.level.clip(new ClipContext(startPos, endPos, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, origin));
+        HitResult hitResult = origin.level().clip(new ClipContext(startPos, endPos, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, origin));
 
         if (hitResult.getType() != HitResult.Type.MISS)
             endPos = hitResult.getLocation();
@@ -66,7 +65,7 @@ public class LookThroughSpyglassEvent {
         return hitResult;
     }
 
-    private static void displayEntityData(LivingEntity target, Player playerIn, Level world) {
+    private static void displayEntityData(LivingEntity target, Player playerIn) {
         MutableComponent name = MutableComponent.create(new LiteralContents(""));
         if (target instanceof ComplexMob entity) {
             String entityName = entity instanceof ISpecies ? ((ISpecies) entity).getSpeciesName() : entity.getName().getString();
@@ -75,7 +74,7 @@ public class LookThroughSpyglassEvent {
             if (ConfigGamerules.scientificNames.get()) {
                 String useVarName = entity instanceof ISpecies ? "_" + ((ISpecies) entity).getRawSpeciesName(entity.getVariant()) : "";
                 name.append("(");
-                name.append(MutableComponent.create(new TranslatableContents(entity.getType().getDescriptionId() + useVarName + ".sciname")).withStyle(ChatFormatting.ITALIC));
+                name.append(Component.translatable(entity.getType().getDescriptionId() + useVarName + ".sciname").withStyle(ChatFormatting.ITALIC));
                 name.append(") ");
             }
             if (!entity.isMale() && entity.getAge() > 0 && !ConfigGamerules.easyBreeding.get()) {
@@ -96,7 +95,7 @@ public class LookThroughSpyglassEvent {
             name.append(getThreatLevel(target, playerIn));
             name.append(")");
         }
-        playerIn.displayClientMessage(name, true);
+        playerIn.sendOverlayMessage(name);
     }
 
     private static MutableComponent getHealthState(int health) {

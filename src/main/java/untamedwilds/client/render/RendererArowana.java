@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import untamedwilds.client.model.ModelArowana;
 import untamedwilds.entity.fish.EntityArowana;
 
-public class RendererArowana extends MobRenderer<EntityArowana, EntityModel<EntityArowana>> {
+public class RendererArowana extends UntamedMobRenderer<EntityArowana> {
 
     private static final ModelArowana AROWANA_MODEL = new ModelArowana();
 

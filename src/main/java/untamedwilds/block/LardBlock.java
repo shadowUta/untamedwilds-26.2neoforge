@@ -4,9 +4,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -20,49 +19,35 @@ public class LardBlock extends Block {
     protected static final VoxelShape SHAPE = Block.box(1.0D, 0.0D, 1.0D, 15.0D, 15.0D, 15.0D);
 
     public LardBlock(Block.Properties properties) {
-        super(properties);
+        super(properties.bounceRestitution(1.0F));
     }
 
+    @Override
     public VoxelShape getCollisionShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
         return SHAPE;
     }
 
-    public void fallOn(Level worldIn, BlockState state, BlockPos pos, Entity entityIn, float fallDistance) {
+    @Override
+    public void fallOn(Level worldIn, BlockState state, BlockPos pos, Entity entityIn, double fallDistance) {
         entityIn.playSound(SoundEvents.HONEY_BLOCK_SLIDE, 1.0F, 1.0F);
-        if (!worldIn.isClientSide) {
+        if (!worldIn.isClientSide()) {
             worldIn.broadcastEntityEvent(entityIn, (byte)54);
         }
 
-        if (entityIn.causeFallDamage(fallDistance, 0.2F, DamageSource.FALL)) {
+        if (entityIn.causeFallDamage(fallDistance, 0.2F, worldIn.damageSources().fall())) {
             entityIn.playSound(this.soundType.getFallSound(), this.soundType.getVolume() * 0.5F, this.soundType.getPitch() * 0.75F);
         }
     }
 
-    public void updateEntityAfterFallOn(BlockGetter getter, Entity entityIn) {
-        if (entityIn.isSuppressingBounce()) {
-            super.updateEntityAfterFallOn(getter, entityIn);
-        } else {
-            //showJumpParticles(entityIn);
-            this.bounceUp(entityIn);
-        }
-
-    }
-
-    private void bounceUp(Entity p_56404_) {
-        Vec3 vec3 = p_56404_.getDeltaMovement();
-        if (vec3.y < 0.0D) {
-            double d0 = p_56404_ instanceof LivingEntity ? 1.0D : 0.8D;
-            p_56404_.setDeltaMovement(vec3.x, -vec3.y * d0, vec3.z);
-        }
-    }
-
-    public void entityInside(BlockState state, Level worldIn, BlockPos pos, Entity entityIn) {
+    @Override
+    protected void entityInside(BlockState state, Level worldIn, BlockPos pos, Entity entityIn,
+                                InsideBlockEffectApplier effectApplier, boolean isPrecise) {
         if (this.isSlidingDown(pos, entityIn)) {
             this.doSlideMovement(entityIn);
             showSlideParticles(entityIn, worldIn, pos);
         }
 
-        super.entityInside(state, worldIn, pos, entityIn);
+        super.entityInside(state, worldIn, pos, entityIn, effectApplier, isPrecise);
     }
 
     private void doSlideMovement(Entity entityIn) {
@@ -78,7 +63,7 @@ public class LardBlock extends Block {
     }
 
     private boolean isSlidingDown(BlockPos p_54008_, Entity p_54009_) {
-        if (p_54009_.isOnGround()) {
+        if (p_54009_.onGround()) {
             return false;
         } else if (p_54009_.getY() > (double)p_54008_.getY() + 0.9375D - 1.0E-7D) {
             return false;
@@ -101,11 +86,11 @@ public class LardBlock extends Block {
     }
 
     private static void showParticles(Entity entity, Level world, BlockPos pos, int p_53990_) {
-        if (entity.level.isClientSide) {
+        if (entity.level().isClientSide()) {
             BlockState blockstate = world.getBlockState(pos);
 
             for(int i = 0; i < p_53990_; ++i) {
-                entity.level.addParticle(new BlockParticleOption(ParticleTypes.BLOCK, blockstate), entity.getX(), entity.getY(), entity.getZ(), 0.0D, 0.0D, 0.0D);
+                entity.level().addParticle(new BlockParticleOption(ParticleTypes.BLOCK, blockstate), entity.getX(), entity.getY(), entity.getZ(), 0.0D, 0.0D, 0.0D);
             }
         }
     }

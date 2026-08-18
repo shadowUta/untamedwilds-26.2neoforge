@@ -12,7 +12,7 @@ import untamedwilds.entity.mammal.EntityHyena;
 
 import javax.annotation.Nonnull;
 
-public class RendererHyena extends MobRenderer<EntityHyena, EntityModel<EntityHyena>> {
+public class RendererHyena extends UntamedMobRenderer<EntityHyena> {
 
     private static final ModelHyena HYENA_MODEL = new ModelHyena();
 

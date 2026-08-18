@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import untamedwilds.client.model.ModelKingCrab;
 import untamedwilds.entity.arthropod.EntityKingCrab;
 
-public class RendererKingCrab extends MobRenderer<EntityKingCrab, ModelKingCrab> {
+public class RendererKingCrab extends UntamedMobRenderer<EntityKingCrab> {
 
     private static final ModelKingCrab KING_CRAB_MODEL = new ModelKingCrab();
 

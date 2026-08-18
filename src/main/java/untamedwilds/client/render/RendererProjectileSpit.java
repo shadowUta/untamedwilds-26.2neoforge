@@ -1,45 +1,50 @@
 package untamedwilds.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Vector3f;
-import net.minecraft.client.model.LlamaSpitModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.projectile.LlamaSpit;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import untamedwilds.client.model.ModelProjectileSpit;
 import untamedwilds.entity.ProjectileSpit;
 
 @OnlyIn(Dist.CLIENT)
-public class RendererProjectileSpit extends EntityRenderer<ProjectileSpit> {
+public class RendererProjectileSpit extends EntityRenderer<ProjectileSpit, ProjectileSpitRenderState> {
     private static final Identifier LLAMA_SPIT_LOCATION = Identifier.withDefaultNamespace("textures/entity/llama/spit.png");
-    private final ModelProjectileSpit<ProjectileSpit> model;
+    private final ModelProjectileSpit model;
 
     public RendererProjectileSpit(EntityRendererProvider.Context p_174296_) {
         super(p_174296_);
-        this.model = new ModelProjectileSpit<>(p_174296_.bakeLayer(ModelLayers.LLAMA_SPIT));
+        this.model = new ModelProjectileSpit(p_174296_.bakeLayer(ModelLayers.LLAMA_SPIT));
     }
 
-    public void render(ProjectileSpit p_115373_, float p_115374_, float p_115375_, PoseStack p_115376_, MultiBufferSource p_115377_, int p_115378_) {
+    public void submit(ProjectileSpitRenderState state, PoseStack p_115376_, SubmitNodeCollector p_115377_, CameraRenderState camera) {
         p_115376_.pushPose();
         p_115376_.translate(0.0D, (double)0.15F, 0.0D);
-        p_115376_.mulPose(Vector3f.YP.rotationDegrees(Mth.lerp(p_115375_, p_115373_.yRotO, p_115373_.getYRot()) - 90.0F));
-        p_115376_.mulPose(Vector3f.ZP.rotationDegrees(Mth.lerp(p_115375_, p_115373_.xRotO, p_115373_.getXRot())));
-        this.model.setupAnim(p_115373_, p_115375_, 0.0F, -0.1F, 0.0F, 0.0F);
-        VertexConsumer vertexconsumer = p_115377_.getBuffer(this.model.renderType(LLAMA_SPIT_LOCATION));
-        this.model.renderToBuffer(p_115376_, vertexconsumer, p_115378_, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+        this.model.setupAnim(state);
+        p_115377_.submitModel(this.model, state, p_115376_, RenderTypes.entityCutout(LLAMA_SPIT_LOCATION), state.lightCoords, 0, -1, null, state.outlineColor, null);
         p_115376_.popPose();
-        super.render(p_115373_, p_115374_, p_115375_, p_115376_, p_115377_, p_115378_);
     }
 
-    public Identifier getTextureLocation(ProjectileSpit p_115371_) {
+    @Override
+    public ProjectileSpitRenderState createRenderState() {
+        return new ProjectileSpitRenderState();
+    }
+
+    @Override
+    public void extractRenderState(ProjectileSpit entity, ProjectileSpitRenderState state, float partialTick) {
+        super.extractRenderState(entity, state, partialTick);
+        state.yRot = Mth.lerp(partialTick, entity.yRotO, entity.getYRot()) - 90.0F;
+        state.xRot = Mth.lerp(partialTick, entity.xRotO, entity.getXRot());
+    }
+
+    public Identifier getTextureLocation(ProjectileSpitRenderState state) {
         return LLAMA_SPIT_LOCATION;
     }
 }

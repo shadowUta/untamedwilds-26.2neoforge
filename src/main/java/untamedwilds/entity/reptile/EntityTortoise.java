@@ -1,7 +1,6 @@
 package untamedwilds.entity.reptile;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -11,7 +10,9 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -22,6 +23,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import untamedwilds.entity.*;
 import untamedwilds.entity.ai.*;
 import untamedwilds.entity.ai.unique.TortoiseHideInShellGoal;
@@ -42,9 +45,9 @@ public class EntityTortoise extends ComplexMobTerrestrial implements ISpecies, I
         this.ticksToSit = 20;
     }
 
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(HAS_EGG, false);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(HAS_EGG, false);
     }
 
     public static AttributeSupplier.Builder registerAttributes() {
@@ -70,9 +73,9 @@ public class EntityTortoise extends ComplexMobTerrestrial implements ISpecies, I
     }
 
     public void die(DamageSource cause) {
-        if (cause == DamageSource.ANVIL && !this.isBaby()) {
+        if (cause.is(DamageTypes.FALLING_ANVIL) && !this.isBaby() && this.level() instanceof ServerLevel serverLevel) {
             // Advancement Trigger: "Unethical Soup"
-            ItemEntity entityitem = this.spawnAtLocation(new ItemStack(ModItems.FOOD_TURTLE_SOUP.get()), 0.2F);
+            ItemEntity entityitem = this.spawnAtLocation(serverLevel, new ItemStack(ModItems.FOOD_TURTLE_SOUP.get()));
             if (entityitem != null) {
                 entityitem.getItem().setCount(1);
             }
@@ -83,8 +86,8 @@ public class EntityTortoise extends ComplexMobTerrestrial implements ISpecies, I
     public void aiStep() {
         super.aiStep();
 
-        if (!this.level.isClientSide) {
-            if (this.level.getGameTime() % 4000 == 0) {
+        if (!this.level().isClientSide()) {
+            if (this.level().getGameTime() % 4000 == 0) {
                 this.heal(1.0F);
             }
         }
@@ -95,7 +98,7 @@ public class EntityTortoise extends ComplexMobTerrestrial implements ISpecies, I
     public boolean wantsToBreed() {
         if (super.wantsToBreed()) {
             if (!this.isSleeping() && this.getAge() == 0 && EntityUtils.hasFullHealth(this)) {
-                List<EntityTortoise> list = this.level.getEntitiesOfClass(EntityTortoise.class, this.getBoundingBox().inflate(6.0D, 4.0D, 6.0D));
+                List<EntityTortoise> list = this.level().getEntitiesOfClass(EntityTortoise.class, this.getBoundingBox().inflate(6.0D, 4.0D, 6.0D));
                 list.removeIf(input -> EntityUtils.isInvalidPartner(this, input, false));
                 return list.size() >= 1;
             }
@@ -116,17 +119,22 @@ public class EntityTortoise extends ComplexMobTerrestrial implements ISpecies, I
 
         if (itemstack.isEmpty() && this.isAlive()) {
             EntityUtils.turnEntityIntoItem(this, "spawn_tortoise");
-            return InteractionResult.sidedSuccess(this.level.isClientSide);
+            return this.level().isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
         }
 
         return super.mobInteract(player, hand);
     }
 
-    public boolean hurt(DamageSource source, float amount) {
-        if (source != DamageSource.FALL && this.sitProgress > 0) {
+    public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
+        if (!source.is(DamageTypes.FALL) && this.sitProgress > 0) {
             amount = amount * 0.2F;
         }
-        return super.hurt(source, amount);
+        return super.hurtServer(level, source, amount);
+    }
+
+    @Override
+    public boolean doHurtTarget(ServerLevel level, Entity target) {
+        return super.doHurtTarget(level, target);
     }
 
     protected void playStepSound(BlockPos pos, BlockState blockIn) {
@@ -151,16 +159,16 @@ public class EntityTortoise extends ComplexMobTerrestrial implements ISpecies, I
 
     @Override
     public boolean isValidNestBlock(BlockPos pos) {
-        return this.level.isEmptyBlock(pos) && this.level.getBlockState(pos.below()).is(ModTags.ModBlockTags.VALID_REPTILE_NEST) && this.getNestType().defaultBlockState().canSurvive(this.level, pos);
+        return this.level().isEmptyBlock(pos) && this.level().getBlockState(pos.below()).is(ModTags.ModBlockTags.VALID_REPTILE_NEST) && this.getNestType().defaultBlockState().canSurvive(this.level(), pos);
     }
 
-    public void addAdditionalSaveData(CompoundTag compound){
-        super.addAdditionalSaveData(compound);
-        compound.putBoolean("has_egg", this.wantsToLayEggs());
+    public void addAdditionalSaveData(ValueOutput output){
+        super.addAdditionalSaveData(output);
+        output.putBoolean("has_egg", this.wantsToLayEggs());
     }
 
-    public void readAdditionalSaveData(CompoundTag compound){
-        super.readAdditionalSaveData(compound);
-        this.setEggStatus(compound.getBoolean("has_egg"));
+    public void readAdditionalSaveData(ValueInput input){
+        super.readAdditionalSaveData(input);
+        this.setEggStatus(input.getBooleanOr("has_egg", false));
     }
 }

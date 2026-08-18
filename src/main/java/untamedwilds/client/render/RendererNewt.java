@@ -11,7 +11,7 @@ import untamedwilds.entity.amphibian.EntityNewt;
 
 import javax.annotation.Nonnull;
 
-public class RendererNewt extends MobRenderer<EntityNewt, EntityModel<EntityNewt>> {
+public class RendererNewt extends UntamedMobRenderer<EntityNewt> {
 
     private static final ModelNewt NEWT_MODEL = new ModelNewt();
 

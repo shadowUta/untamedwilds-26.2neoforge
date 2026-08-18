@@ -3,7 +3,6 @@ package untamedwilds.entity.relict;
 import com.github.alexthe666.citadel.animation.Animation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -24,6 +23,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import untamedwilds.UntamedWilds;
 import untamedwilds.config.ConfigGamerules;
 import untamedwilds.entity.*;
@@ -65,10 +66,11 @@ public class EntitySpitter extends ComplexMobTerrestrial implements ISpecies, IN
         this.turn_speed = 0.3F;
     }
 
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(CAN_GROW, false);
-        this.entityData.define(HAS_EGG, false);
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(CAN_GROW, false);
+        builder.define(HAS_EGG, false);
     }
 
     public void registerGoals() {
@@ -107,7 +109,7 @@ public class EntitySpitter extends ComplexMobTerrestrial implements ISpecies, IN
     public boolean wantsToBreed() {
         if (super.wantsToBreed()) {
             if (!this.isSleeping() && this.getAge() == 0 && EntityUtils.hasFullHealth(this)) {
-                List<EntitySpitter> list = this.level.getEntitiesOfClass(EntitySpitter.class, this.getBoundingBox().inflate(32.0D, 12.0D, 32.0D));
+                List<EntitySpitter> list = this.level().getEntitiesOfClass(EntitySpitter.class, this.getBoundingBox().inflate(32.0D, 12.0D, 32.0D));
                 return list.size() < 6;
             }
         }
@@ -115,7 +117,7 @@ public class EntitySpitter extends ComplexMobTerrestrial implements ISpecies, IN
     }
 
     @Override
-    public float getStepHeight() {
+    public float maxUpStep() {
         return 1;
     }
 
@@ -130,7 +132,7 @@ public class EntitySpitter extends ComplexMobTerrestrial implements ISpecies, IN
 
     public boolean wantsToGrow() {
         if (this.isBaby()) {
-            List<EntitySpitter> list = this.level.getEntitiesOfClass(EntitySpitter.class, this.getBoundingBox().inflate(32.0D, 16.0D, 32.0D));
+            List<EntitySpitter> list = this.level().getEntitiesOfClass(EntitySpitter.class, this.getBoundingBox().inflate(32.0D, 16.0D, 32.0D));
             for (EntitySpitter spitter : list) {
                 if (spitter.getGender() == this.getGender() && (!spitter.isBaby() || spitter.getWantsToGrow()))
                     return false;
@@ -142,7 +144,7 @@ public class EntitySpitter extends ComplexMobTerrestrial implements ISpecies, IN
 
     @Nullable
     public EntitySpitter getBreedOffspring(ServerLevel serverWorld, AgeableMob ageable) {
-        return create_offspring(new EntitySpitter(ModEntity.SPITTER.get(), this.level));
+        return create_offspring(new EntitySpitter(ModEntity.SPITTER.get(), this.level()));
     }
 
     public boolean isPushedByFluid() {
@@ -154,7 +156,7 @@ public class EntitySpitter extends ComplexMobTerrestrial implements ISpecies, IN
     }
 
     public void aiStep() {
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide()) {
             if (this.tickCount % 600 == 0) {
                 if (!this.getWantsToGrow())
                     this.setWantsToGrow(this.wantsToGrow());
@@ -162,8 +164,8 @@ public class EntitySpitter extends ComplexMobTerrestrial implements ISpecies, IN
                     for(int k = 0; k < 3; ++k) {
                         BlockState state = ModBlock.EGG_SPITTER.get().defaultBlockState();
                         BlockPos blockpos = this.blockPosition().offset(this.random.nextInt(3) - 1, 1 - this.random.nextInt(3), this.random.nextInt(3) - 1);
-                        if (this.getLevel().isInWorldBounds(blockpos) && this.getLevel().getBlockState(blockpos).is(Blocks.WATER) && state.canSurvive(this.getLevel(), blockpos)) {
-                            this.getLevel().setBlock(blockpos, state, 2);
+                        if (this.level().isInWorldBounds(blockpos) && this.level().getBlockState(blockpos).is(Blocks.WATER) && state.canSurvive(this.level(), blockpos)) {
+                            this.level().setBlock(blockpos, state, 2);
                             this.setEggStatus(false);
                         }
                     }
@@ -171,7 +173,7 @@ public class EntitySpitter extends ComplexMobTerrestrial implements ISpecies, IN
             }
 
             // Boosted Regeneration
-            if (this.level.getGameTime() % 500 == 0) {
+            if (this.level().getGameTime() % 500 == 0) {
                 this.addHunger(-3);
                 if (!this.isStarving()) {
                     this.heal(2.0F);
@@ -213,9 +215,9 @@ public class EntitySpitter extends ComplexMobTerrestrial implements ISpecies, IN
         if (this.getAnimation() == IDLE_TALK && this.getAnimationTick() == 1 && this.getAmbientSound() != null) {
             this.playSound(this.getAmbientSound(), this.getSoundVolume(), this.getVoicePitch());
         }
-        if (this.level.isClientSide && this.isAngry() && this.aggroProgress < 40) {
+        if (this.level().isClientSide() && this.isAngry() && this.aggroProgress < 40) {
             this.aggroProgress++;
-        } else if (this.level.isClientSide && !this.isAngry() && this.aggroProgress > 0) {
+        } else if (this.level().isClientSide() && !this.isAngry() && this.aggroProgress > 0) {
             this.aggroProgress--;
         }
         super.aiStep();
@@ -225,7 +227,6 @@ public class EntitySpitter extends ComplexMobTerrestrial implements ISpecies, IN
         this.playSound(SoundEvents.HOGLIN_STEP, 0.15F, 1.0F);
     }
 
-    @Override
     protected void reassessTameGoals() {
         if (this.isTame()) {
             if (UntamedWilds.DEBUG) {
@@ -239,15 +240,15 @@ public class EntitySpitter extends ComplexMobTerrestrial implements ISpecies, IN
 
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack itemstack = player.getItemInHand(InteractionHand.MAIN_HAND);
-        if (hand == InteractionHand.MAIN_HAND && !this.level.isClientSide()) {
+        if (hand == InteractionHand.MAIN_HAND && !this.level().isClientSide()) {
 
             if (!this.isTame() && this.isBaby() && EntityUtils.hasFullHealth(this) && this.isFood(itemstack)) {
                 this.playSound(SoundEvents.HORSE_EAT, 1.5F, 0.8F);
                 if (this.getRandom().nextInt(3) == 0) {
                     this.tame(player);
-                    EntityUtils.spawnParticlesOnEntity(this.level, this, ParticleTypes.HEART, 3, 6);
+                    EntityUtils.spawnParticlesOnEntity(this.level(), this, ParticleTypes.HEART, 3, 6);
                 } else {
-                    EntityUtils.spawnParticlesOnEntity(this.level, this, ParticleTypes.SMOKE, 3, 3);
+                    EntityUtils.spawnParticlesOnEntity(this.level(), this, ParticleTypes.SMOKE, 3, 3);
                 }
             }
         }
@@ -255,8 +256,9 @@ public class EntitySpitter extends ComplexMobTerrestrial implements ISpecies, IN
         return super.mobInteract(player, hand);
     }
 
-    public boolean doHurtTarget(Entity entityIn) {
-        boolean flag = super.doHurtTarget(entityIn);
+    @Override
+    public boolean doHurtTarget(ServerLevel level, Entity entityIn) {
+        boolean flag = super.doHurtTarget(level, entityIn);
         if (flag && this.getAnimation() == NO_ANIMATION && !this.isBaby()) {
             Animation anim = chooseAttackAnimation();
             this.setAnimation(anim);
@@ -265,15 +267,16 @@ public class EntitySpitter extends ComplexMobTerrestrial implements ISpecies, IN
         return flag;
     }
 
-    public boolean hurt(DamageSource damageSource, float amount) {
+    @Override
+    public boolean hurtServer(ServerLevel level, DamageSource damageSource, float amount) {
         // Retaliate I: Mob will strike back when attacked by its current target
         float f = this.getHealth();
-        if (!this.level.isClientSide && !this.isNoAi() && this.getTarget() == damageSource.getEntity() && amount < f && (damageSource.getEntity() != null || damageSource.getDirectEntity() != null) && damageSource.getEntity() instanceof LivingEntity && (damageSource.getEntity() instanceof TamableAnimal tamable && tamable.getOwner() != null)) {
+        if (!this.isNoAi() && this.getTarget() == damageSource.getEntity() && amount < f && (damageSource.getEntity() != null || damageSource.getDirectEntity() != null) && damageSource.getEntity() instanceof LivingEntity && (damageSource.getEntity() instanceof TamableAnimal tamable && tamable.getOwner() != null)) {
             if (this.hasLineOfSight(damageSource.getEntity()) && !damageSource.getEntity().isInvulnerable() && this.getAnimation() == NO_ANIMATION) {
-                this.doHurtTarget(damageSource.getEntity());
+                this.doHurtTarget(level, damageSource.getEntity());
             }
         }
-        return super.hurt(damageSource, amount);
+        return super.hurtServer(level, damageSource, amount);
     }
 
     private Animation chooseAttackAnimation() {
@@ -295,7 +298,7 @@ public class EntitySpitter extends ComplexMobTerrestrial implements ISpecies, IN
     }
 
     protected float getStandingEyeHeight(Pose poseIn, EntityDimensions sizeIn) {
-        return sizeIn.height * 0.9F;
+        return sizeIn.height() * 0.9F;
     }
 
     public boolean getWantsToGrow(){ return (this.entityData.get(CAN_GROW)); }
@@ -310,20 +313,22 @@ public class EntitySpitter extends ComplexMobTerrestrial implements ISpecies, IN
         this.entityData.set(HAS_EGG, status);
     }
 
-    public void addAdditionalSaveData(CompoundTag compound){
+    @Override
+    public void addAdditionalSaveData(ValueOutput compound){
         super.addAdditionalSaveData(compound);
         compound.putBoolean("canGrow", this.getWantsToGrow());
         compound.putBoolean("has_egg", this.wantsToLayEggs());
     }
 
-    public void readAdditionalSaveData(CompoundTag compound){
+    @Override
+    public void readAdditionalSaveData(ValueInput compound){
         super.readAdditionalSaveData(compound);
-        this.setWantsToGrow(compound.getBoolean("canGrow"));
-        this.setEggStatus(compound.getBoolean("has_egg"));
+        this.setWantsToGrow(compound.getBooleanOr("canGrow", false));
+        this.setEggStatus(compound.getBooleanOr("has_egg", false));
     }
 
     public void performRangedAttack(LivingEntity entityIn, float p_33318_) {
-        ProjectileSpit camel_spit = new ProjectileSpit(this.level, this, new MobEffectInstance(MobEffects.POISON, 100, 0));
+        ProjectileSpit camel_spit = new ProjectileSpit(this.level(), this, new MobEffectInstance(MobEffects.POISON, 100, 0));
         double d0 = entityIn.getX() - this.getX();
         double d1 = entityIn.getY(0.3333333333333333D) - camel_spit.getY();
         double d2 = entityIn.getZ() - this.getZ();
@@ -331,9 +336,9 @@ public class EntitySpitter extends ComplexMobTerrestrial implements ISpecies, IN
         camel_spit.shoot(d0, d1 + d3, d2, 1.5F, 6.0F);
         this.getLookControl().setLookAt(entityIn);
         if (!this.isSilent()) {
-            this.level.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.LLAMA_SPIT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
+            this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.LLAMA_SPIT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
         }
-        this.level.addFreshEntity(camel_spit);
+        this.level().addFreshEntity(camel_spit);
     }
 
     @Override
@@ -343,7 +348,7 @@ public class EntitySpitter extends ComplexMobTerrestrial implements ISpecies, IN
 
     @Override
     public boolean isValidNestBlock(BlockPos pos) {
-        return this.level.isEmptyBlock(pos) && this.level.getBlockState(pos.below()).is(ModTags.ModBlockTags.VALID_REPTILE_NEST) && this.getNestType().defaultBlockState().canSurvive(this.level, pos);
+        return this.level().isEmptyBlock(pos) && this.level().getBlockState(pos.below()).is(ModTags.ModBlockTags.VALID_REPTILE_NEST) && this.getNestType().defaultBlockState().canSurvive(this.level(), pos);
     }
 
     @Override

@@ -116,7 +116,7 @@ public class ModelTurtleSoftshell extends AdvancedEntityModel<EntitySoftshellTur
             progressRotation(leg_left, turtle.lurkingProgress, 0, (float) Math.toRadians(-62.61F), (float) Math.toRadians(60F), 60);
             progressRotation(leg_right, turtle.lurkingProgress, 0, (float) Math.toRadians(62.61F), (float) Math.toRadians(-60F), 60);
         }*/
-        if (turtle.isInWater() && !turtle.isOnGround()) {
+        if (turtle.isInWater() && !turtle.onGround()) {
             float pitch = Mth.clamp(turtle.getXRot(), -45F, 45.0F) - 10;
             this.setRotateAngle(main_body, (float) (pitch * Math.PI / 180F), 0, 0);
             //this.setRotateAngle(main_body, (float) (turtle.getDeltaMovement().getY() * -30 * Math.PI / 180F), 0, 0);
@@ -134,7 +134,7 @@ public class ModelTurtleSoftshell extends AdvancedEntityModel<EntitySoftshellTur
         swing(leg_right, globalSpeed, globalDegree * 1.2f, false, 2.4F, 0.1f, limbSwing / 2, limbSwingAmount);
 
         if (turtle.isInWater()) {
-            if (!turtle.isOnGround())
+            if (!turtle.onGround())
                 swing(hand_left, globalSpeed, globalDegree * 0.8f, false, 0, 0.1f, limbSwing / 2, limbSwingAmount);
             flap(hand_left, globalSpeed, globalDegree * 1.4f, false, 0, 0.1f, limbSwing / 2, limbSwingAmount);
             swing(hand_left, globalSpeed, globalDegree * 1.4f, false, 0, 0.1f, limbSwing / 2, limbSwingAmount);

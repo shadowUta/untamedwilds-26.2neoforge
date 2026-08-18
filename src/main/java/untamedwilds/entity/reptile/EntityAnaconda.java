@@ -26,6 +26,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.entity.PartEntity;
@@ -65,9 +67,9 @@ public class EntityAnaconda extends ComplexMobAmphibious implements ISpecies, IN
         }
     }
 
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(HAS_EGG, false);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(HAS_EGG, false);
     }
 
     private void setPartPosition(EntityAnacondaPart part, double offsetX, double offsetY, double offsetZ) {
@@ -114,13 +116,13 @@ public class EntityAnaconda extends ComplexMobAmphibious implements ISpecies, IN
 
     public void aiStep() {
         super.aiStep();
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide()) {
             if (this.tickCount % 1000 == 0) {
                 if (this.random.nextInt(40) == 0) {
-                    this.spawnAtLocation(new ItemStack(ModItems.MATERIAL_SNAKE_SKIN.get()), 0.2F);
+                    this.spawnAtLocation((ServerLevel) this.level(), new ItemStack(ModItems.MATERIAL_SNAKE_SKIN.get()), 0.2F);
                 }
             }
-            if (this.level.getGameTime() % 4000 == 0) {
+            if (this.level().getGameTime() % 4000 == 0) {
                 this.heal(1.0F);
             }
             if (this.getAnimation() == NO_ANIMATION && this.getTarget() == null && !this.isSleeping()) {
@@ -225,7 +227,7 @@ public class EntityAnaconda extends ComplexMobAmphibious implements ISpecies, IN
     public boolean wantsToBreed() {
         if (super.wantsToBreed()) {
             if (!this.isSleeping() && this.getAge() == 0 && EntityUtils.hasFullHealth(this)) {
-                List<EntityAnaconda> list = this.level.getEntitiesOfClass(EntityAnaconda.class, this.getBoundingBox().inflate(6.0D, 4.0D, 6.0D));
+                List<EntityAnaconda> list = this.level().getEntitiesOfClass(EntityAnaconda.class, this.getBoundingBox().inflate(6.0D, 4.0D, 6.0D));
                 list.removeIf(input -> EntityUtils.isInvalidPartner(this, input, false));
                 return list.size() >= 1;
             }
@@ -247,19 +249,19 @@ public class EntityAnaconda extends ComplexMobAmphibious implements ISpecies, IN
     @Override
     public EntityAnaconda getBreedOffspring(ServerLevel serverWorld, AgeableMob ageable) {
         if (!this.isEggLayer()) {
-            return create_offspring(new EntityAnaconda(ModEntity.ANACONDA.get(), this.level));
+            return create_offspring(new EntityAnaconda(ModEntity.ANACONDA.get(), this.level()));
             //EntityUtils.dropEggs(this, "egg_large_snake_" + getRawSpeciesName(this.getVariant()).toLowerCase(), 4);
         }
         return null;
     }
 
-    public boolean doHurtTarget(Entity entityIn) {
+    public boolean doHurtTarget(ServerLevel level, Entity entityIn) {
         float f = (float)this.getAttribute(Attributes.ATTACK_DAMAGE).getValue();
-        boolean flag = entityIn.hurt(DamageSource.mobAttack(this), f);
+        boolean flag = entityIn.hurtServer(level, level.damageSources().mobAttack(this), f);
         if (flag) {
             if (this.huntingCooldown == 0 && entityIn instanceof LivingEntity && !(entityIn instanceof Player) && entityIn.getBbWidth() * entityIn.getBbHeight() < 1.2F && (entityIn instanceof TamableAnimal && !((TamableAnimal) entityIn).isTame())) {
-                this.level.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.BEEHIVE_ENTER, SoundSource.BLOCKS, 1.0F, 1.0F);
-                EntityUtils.spawnParticlesOnEntity(this.level, (LivingEntity)entityIn, ParticleTypes.POOF, 6, 2);
+                this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.BEEHIVE_ENTER, SoundSource.BLOCKS, 1.0F, 1.0F);
+                EntityUtils.spawnParticlesOnEntity(this.level(), (LivingEntity)entityIn, ParticleTypes.POOF, 6, 2);
                 this.setDeltaMovement(new Vec3(entityIn.getX() - this.getX(), entityIn.getY() - this.getY(), entityIn.getZ() - this.getZ()).scale(0.15F));
                 this.huntingCooldown = 144000; // Large Snakes will spend the next 6 days idling after eating prey
                 entityIn.remove(RemovalReason.KILLED);
@@ -269,8 +271,8 @@ public class EntityAnaconda extends ComplexMobAmphibious implements ISpecies, IN
         return false;
     }
 
-    public boolean attackEntityPartFrom(EntityAnacondaPart anaconda_part, DamageSource source, float amount) {
-        return this.hurt(source, amount);
+    public boolean attackEntityPartFrom(ServerLevel level, EntityAnacondaPart anaconda_part, DamageSource source, float amount) {
+        return this.hurtServer(level, source, amount);
     }
 
     // Flags Parameters
@@ -299,17 +301,17 @@ public class EntityAnaconda extends ComplexMobAmphibious implements ISpecies, IN
 
     @Override
     public boolean isValidNestBlock(BlockPos pos) {
-        return this.level.isEmptyBlock(pos) && this.level.getBlockState(pos.below()).is(ModTags.ModBlockTags.VALID_REPTILE_NEST) && this.getNestType().defaultBlockState().canSurvive(this.level, pos);
+        return this.level().isEmptyBlock(pos) && this.level().getBlockState(pos.below()).is(ModTags.ModBlockTags.VALID_REPTILE_NEST) && this.getNestType().defaultBlockState().canSurvive(this.level(), pos);
     }
 
-    public void addAdditionalSaveData(CompoundTag compound){
-        super.addAdditionalSaveData(compound);
-        compound.putBoolean("has_egg", this.wantsToLayEggs());
+    public void addAdditionalSaveData(ValueOutput output){
+        super.addAdditionalSaveData(output);
+        output.putBoolean("has_egg", this.wantsToLayEggs());
     }
 
-    public void readAdditionalSaveData(CompoundTag compound){
-        super.readAdditionalSaveData(compound);
-        this.setEggStatus(compound.getBoolean("has_egg"));
+    public void readAdditionalSaveData(ValueInput input){
+        super.readAdditionalSaveData(input);
+        this.setEggStatus(input.getBooleanOr("has_egg", false));
     }
 
     @Override
@@ -331,7 +333,7 @@ public class EntityAnaconda extends ComplexMobAmphibious implements ISpecies, IN
         }
 
         protected void collideWithNearbyEntities() {
-            List<Entity> entities = this.level.getEntities(this, this.getBoundingBox().inflate(0.20000000298023224D, 0.0D, 0.20000000298023224D));
+            List<Entity> entities = this.level().getEntities(this, this.getBoundingBox().inflate(0.20000000298023224D, 0.0D, 0.20000000298023224D));
             Entity parent = this.getParent();
             if (parent != null) {
                 entities.stream().filter(entity -> entity != parent && !(entity instanceof EntityAnacondaPart && ((EntityAnacondaPart) entity).getParent() == parent) && entity.isPushable()).forEach(entity -> entity.push(parent));
@@ -350,18 +352,18 @@ public class EntityAnaconda extends ComplexMobAmphibious implements ISpecies, IN
             return true;
         }
 
-        public boolean hurt(DamageSource source, float amount) {
-            return !this.isInvulnerableTo(source) && this.getParent().attackEntityPartFrom(this, source, amount);
+        public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
+            return this.getParent().attackEntityPartFrom(level, this, source, amount);
         }
 
         @Override
-        protected void defineSynchedData() { }
+        protected void defineSynchedData(SynchedEntityData.Builder builder) { }
 
         @Override
-        protected void readAdditionalSaveData(CompoundTag compound) { }
+        protected void readAdditionalSaveData(net.minecraft.world.level.storage.ValueInput input) { }
 
         @Override
-        protected void addAdditionalSaveData(CompoundTag compound) { }
+        protected void addAdditionalSaveData(net.minecraft.world.level.storage.ValueOutput output) { }
 
         public boolean is(Entity entityIn) {
             return this == entityIn || this.getParent() == entityIn;
@@ -371,7 +373,7 @@ public class EntityAnaconda extends ComplexMobAmphibious implements ISpecies, IN
             throw new UnsupportedOperationException();
         }
 
-        public EntityDimensions getSize(Pose poseIn) {
+        public EntityDimensions getDimensions(Pose poseIn) {
             return this.size.scale(scale);
         }
     }

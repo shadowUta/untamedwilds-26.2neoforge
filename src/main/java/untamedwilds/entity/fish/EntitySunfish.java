@@ -49,19 +49,19 @@ public class EntitySunfish extends ComplexMobAquatic implements ISpecies, INewSk
 
     public void aiStep() {
         super.aiStep();
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide()) {
             if (this.tickCount % 1000 == 0) {
                 if (this.wantsToBreed() && !this.isMale()) {
                     this.breed();
                 }
             }
-            if (this.level.getGameTime() % 4000 == 0) {
+            if (this.level().getGameTime() % 4000 == 0) {
                 this.heal(1.0F);
             }
         }
-        if (this.level.isClientSide && !level.isWaterAt(this.blockPosition().above(2)) && this.baskProgress < 100) {
+        if (this.level().isClientSide() && !this.level().isWaterAt(this.blockPosition().above(2)) && this.baskProgress < 100) {
             this.baskProgress++;
-        } else if (this.level.isClientSide && level.isWaterAt(this.blockPosition().above(2)) && this.baskProgress > 0) {
+        } else if (this.level().isClientSide() && this.level().isWaterAt(this.blockPosition().above(2)) && this.baskProgress > 0) {
             this.baskProgress--;
         }
     }
@@ -70,7 +70,7 @@ public class EntitySunfish extends ComplexMobAquatic implements ISpecies, INewSk
      * A nearby Sunfish */
     public boolean wantsToBreed() {
         if (ConfigGamerules.naturalBreeding.get() && this.getAge() == 0 && EntityUtils.hasFullHealth(this)) {
-            List<EntitySunfish> list = this.level.getEntitiesOfClass(EntitySunfish.class, this.getBoundingBox().inflate(12.0D, 8.0D, 12.0D));
+            List<EntitySunfish> list = this.level().getEntitiesOfClass(EntitySunfish.class, this.getBoundingBox().inflate(12.0D, 8.0D, 12.0D));
             list.removeIf(input -> EntityUtils.isInvalidPartner(this, input, false));
             if (list.size() >= 1) {
                 this.setAge(this.getPregnancyTime());

@@ -1,0 +1,906 @@
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by net.rubygrapefruit.platform.internal.NativeLibraryLoader in an unnamed module (file:/C:/Users/YANGJIANPING/.gradle/wrapper/dists/gradle-9.2.1-bin/2t0n5ozlw9xmuyvbp7dnzaxug/gradle-9.2.1/lib/native-platform-0.22-milestone-29.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+> Task :createMinecraftArtifacts UP-TO-DATE
+> Task :syncCitadelCompat UP-TO-DATE
+
+> Task :compileJava FAILED
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\AlgaeBlock.java:22: error: package net.minecraftforge.common does not exist
+public class AlgaeBlock extends BushBlock implements BonemealableBlock, LiquidBlockContainer, net.minecraftforge.common.IForgeShearable {
+                                                                                                                       ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\AnemoneBlock.java:10: error: cannot find symbol
+import net.minecraft.world.entity.animal.TropicalFish;
+                                        ^
+  symbol:   class TropicalFish
+  location: package net.minecraft.world.entity.animal
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\CageBlock.java:5: error: cannot find symbol
+import net.minecraft.core.BlockSource;
+                         ^
+  symbol:   class BlockSource
+  location: package net.minecraft.core
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\CageBlock.java:219: error: cannot find symbol
+        public ItemStack dispense(BlockSource source, ItemStack stack) {
+                                  ^
+  symbol:   class BlockSource
+  location: class DispenserBehaviorTrapCage
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\CageBlock.java:230: error: cannot find symbol
+        protected void playDispenseSound(BlockSource source) {
+                                         ^
+  symbol:   class BlockSource
+  location: class DispenserBehaviorTrapCage
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\EpyphitePlantBlock.java:14: error: cannot find symbol
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
+                                                       ^
+  symbol:   class DirectionProperty
+  location: package net.minecraft.world.level.block.state.properties
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\EpyphitePlantBlock.java:23: error: cannot find symbol
+    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+                        ^
+  symbol:   class DirectionProperty
+  location: class EpyphitePlantBlock
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\FloatingPlantBlock.java:10: error: cannot find symbol
+import net.minecraft.world.entity.animal.WaterAnimal;
+                                        ^
+  symbol:   class WaterAnimal
+  location: package net.minecraft.world.entity.animal
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\FloatingPlantBlock.java:22: error: cannot find symbol
+import net.minecraft.world.level.material.Material;
+                                         ^
+  symbol:   class Material
+  location: package net.minecraft.world.level.material
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\ReedBlock.java:11: error: cannot find symbol
+import net.minecraft.world.entity.animal.WaterAnimal;
+                                        ^
+  symbol:   class WaterAnimal
+  location: package net.minecraft.world.entity.animal
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\ReedBlock.java:13: error: cannot find symbol
+import net.minecraft.world.item.SwordItem;
+                               ^
+  symbol:   class SwordItem
+  location: package net.minecraft.world.item
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\TallPlantBlock.java:10: error: cannot find symbol
+import net.minecraft.world.item.SwordItem;
+                               ^
+  symbol:   class SwordItem
+  location: package net.minecraft.world.item
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\TitanArumBlock.java:3: error: cannot find symbol
+import com.mojang.math.Vector3f;
+                      ^
+  symbol:   class Vector3f
+  location: package com.mojang.math
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\UndergrowthBlock.java:24: error: package net.minecraftforge.common does not exist
+public class UndergrowthBlock extends BushBlock implements BonemealableBlock, net.minecraftforge.common.IForgeShearable {
+                                                                                                       ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\UndergrowthPoisonousBlock.java:31: error: package net.minecraftforge.common does not exist
+public class UndergrowthPoisonousBlock extends UndergrowthBlock implements BonemealableBlock, IPostGenUpdate, net.minecraftforge.common.IForgeShearable {
+                                                                                                                                       ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\layer\LayerFootballFishLure.java:4: error: cannot find symbol
+import net.minecraft.client.renderer.RenderType;
+                                    ^
+  symbol:   class RenderType
+  location: package net.minecraft.client.renderer
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\layer\LayerFootballFishLure.java:16: error: cannot find symbol
+    private final RenderType TEXTURE = RenderType.eyes(Identifier.fromNamespaceAndPath(UntamedWilds.MOD_ID, "textures/entity/football_fish/glint.png"));
+                  ^
+  symbol:   class RenderType
+  location: class LayerFootballFishLure<T,M>
+  where T,M are type-variables:
+    T extends Entity declared in class LayerFootballFishLure
+    M extends EntityModel<T> declared in class LayerFootballFishLure
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\layer\LayerFootballFishLure.java:22: error: cannot find symbol
+    public RenderType renderType() {
+           ^
+  symbol:   class RenderType
+  location: class LayerFootballFishLure<T,M>
+  where T,M are type-variables:
+    T extends Entity declared in class LayerFootballFishLure
+    M extends EntityModel<T> declared in class LayerFootballFishLure
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\build\generated\sources\citadelCompat\java\com\github\alexthe666\citadel\client\model\basic\BasicEntityModel.java:6: error: cannot find symbol
+import net.minecraft.client.renderer.RenderType;
+                                    ^
+  symbol:   class RenderType
+  location: package net.minecraft.client.renderer
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\build\generated\sources\citadelCompat\java\com\github\alexthe666\citadel\client\model\basic\BasicEntityModel.java:7: error: cannot find symbol
+import net.minecraft.resources.ResourceLocation;
+                              ^
+  symbol:   class ResourceLocation
+  location: package net.minecraft.resources
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\ComplexMob.java:3: error: cannot find symbol
+import net.minecraft.Util;
+                    ^
+  symbol:   class Util
+  location: package net.minecraft
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\ComplexMob.java:7: error: cannot find symbol
+import net.minecraft.network.chat.contents.LiteralContents;
+                                          ^
+  symbol:   class LiteralContents
+  location: package net.minecraft.network.chat.contents
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\ComplexMob.java:22: error: cannot find symbol
+import net.minecraft.world.damagesource.EntityDamageSource;
+                                       ^
+  symbol:   class EntityDamageSource
+  location: package net.minecraft.world.damagesource
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\build\generated\sources\citadelCompat\java\com\github\alexthe666\citadel\client\model\basic\BasicEntityModel.java:20: error: cannot find symbol
+    protected BasicEntityModel(Function<ResourceLocation, RenderType> p_102613_) {
+                                        ^
+  symbol:   class ResourceLocation
+  location: class BasicEntityModel<T>
+  where T is a type-variable:
+    T extends Entity declared in class BasicEntityModel
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\build\generated\sources\citadelCompat\java\com\github\alexthe666\citadel\client\model\basic\BasicEntityModel.java:20: error: cannot find symbol
+    protected BasicEntityModel(Function<ResourceLocation, RenderType> p_102613_) {
+                                                          ^
+  symbol:   class RenderType
+  location: class BasicEntityModel<T>
+  where T is a type-variable:
+    T extends Entity declared in class BasicEntityModel
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\ComplexMobAquatic.java:47: error: cannot find symbol
+    public MobType getMobType() {
+           ^
+  symbol:   class MobType
+  location: class ComplexMobAquatic
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\arthropod\EntityKingCrab.java:17: error: cannot find symbol
+import net.minecraft.world.entity.MobType;
+                                 ^
+  symbol:   class MobType
+  location: package net.minecraft.world.entity
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\arthropod\EntityKingCrab.java:59: error: cannot find symbol
+    public MobType getMobType() {
+           ^
+  symbol:   class MobType
+  location: class EntityKingCrab
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\model\ModelProjectileSpit.java:3: error: cannot find symbol
+import net.minecraft.client.model.HierarchicalModel;
+                                 ^
+  symbol:   class HierarchicalModel
+  location: package net.minecraft.client.model
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\model\ModelProjectileSpit.java:15: error: cannot find symbol
+public class ModelProjectileSpit<T extends Entity> extends HierarchicalModel<T> {
+                                                           ^
+  symbol: class HierarchicalModel
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\arthropod\EntityTarantula.java:21: error: package net.minecraft.world.entity.animal.horse does not exist
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
+                                              ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\arthropod\EntityTarantula.java:22: error: cannot find symbol
+import net.minecraft.world.entity.monster.Spider;
+                                         ^
+  symbol:   class Spider
+  location: package net.minecraft.world.entity.monster
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\arthropod\EntityTarantula.java:58: error: cannot find symbol
+    public MobType getMobType() {
+           ^
+  symbol:   class MobType
+  location: class EntityTarantula
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\fish\EntityTriggerfish.java:20: error: cannot find symbol
+import net.minecraft.world.entity.animal.TropicalFish;
+                                        ^
+  symbol:   class TropicalFish
+  location: package net.minecraft.world.entity.animal
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererAardvark.java:5: error: cannot find symbol
+import net.minecraft.client.renderer.MultiBufferSource;
+                                    ^
+  symbol:   class MultiBufferSource
+  location: package net.minecraft.client.renderer
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererAardvark.java:13: error: wrong number of type arguments; required 3
+public class RendererAardvark extends MobRenderer<EntityAardvark, EntityModel<EntityAardvark>> {
+                                                 ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererAardvark.java:22: error: cannot find symbol
+    public void render(EntityAardvark entityIn, float entityYaw, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn) {
+                                                                                                              ^
+  symbol:   class MultiBufferSource
+  location: class RendererAardvark
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererAnaconda.java:12: error: wrong number of type arguments; required 3
+public class RendererAnaconda extends MobRenderer<EntityAnaconda, EntityModel<EntityAnaconda>> {
+                                                 ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererArowana.java:12: error: wrong number of type arguments; required 3
+public class RendererArowana extends MobRenderer<EntityArowana, EntityModel<EntityArowana>> {
+                                                ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererBaleenWhale.java:12: error: wrong number of type arguments; required 3
+public class RendererBaleenWhale extends MobRenderer<EntityBaleenWhale, EntityModel<EntityBaleenWhale>> {
+                                                    ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererBear.java:4: error: cannot find symbol
+import net.minecraft.client.renderer.MultiBufferSource;
+                                    ^
+  symbol:   class MultiBufferSource
+  location: package net.minecraft.client.renderer
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererBear.java:14: error: wrong number of type arguments; required 3
+public class RendererBear extends MobRenderer<EntityBear, EntityModel<EntityBear>> {
+                                             ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererBear.java:24: error: cannot find symbol
+    public void render(EntityBear entityIn, float entityYaw, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn) {
+                                                                                                          ^
+  symbol:   class MultiBufferSource
+  location: class RendererBear
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererBigCat.java:4: error: cannot find symbol
+import net.minecraft.client.renderer.MultiBufferSource;
+                                    ^
+  symbol:   class MultiBufferSource
+  location: package net.minecraft.client.renderer
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererBigCat.java:14: error: wrong number of type arguments; required 3
+public class RendererBigCat extends MobRenderer<EntityBigCat, EntityModel<EntityBigCat>> {
+                                               ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererBigCat.java:24: error: cannot find symbol
+    public void render(EntityBigCat entityIn, float entityYaw, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn) {
+                                                                                                            ^
+  symbol:   class MultiBufferSource
+  location: class RendererBigCat
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererBison.java:4: error: cannot find symbol
+import net.minecraft.client.renderer.MultiBufferSource;
+                                    ^
+  symbol:   class MultiBufferSource
+  location: package net.minecraft.client.renderer
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererBison.java:16: error: wrong number of type arguments; required 3
+public class RendererBison extends MobRenderer<EntityBison, EntityModel<EntityBison>> {
+                                              ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererBison.java:26: error: cannot find symbol
+    public void render(EntityBison entityIn, float entityYaw, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn) {
+                                                                                                           ^
+  symbol:   class MultiBufferSource
+  location: class RendererBison
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererBoar.java:5: error: cannot find symbol
+import net.minecraft.client.renderer.MultiBufferSource;
+                                    ^
+  symbol:   class MultiBufferSource
+  location: package net.minecraft.client.renderer
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererBoar.java:15: error: wrong number of type arguments; required 3
+public class RendererBoar extends MobRenderer<EntityBoar, EntityModel<EntityBoar>> {
+                                             ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererBoar.java:26: error: cannot find symbol
+    public void render(EntityBoar entityIn, float entityYaw, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn) {
+                                                                                                          ^
+  symbol:   class MultiBufferSource
+  location: class RendererBoar
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererCamel.java:5: error: cannot find symbol
+import net.minecraft.client.renderer.MultiBufferSource;
+                                    ^
+  symbol:   class MultiBufferSource
+  location: package net.minecraft.client.renderer
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererCamel.java:14: error: wrong number of type arguments; required 3
+public class RendererCamel extends MobRenderer<EntityCamel, EntityModel<EntityCamel>> {
+                                              ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererCamel.java:24: error: cannot find symbol
+    public void render(EntityCamel entityIn, float entityYaw, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn) {
+                                                                                                           ^
+  symbol:   class MultiBufferSource
+  location: class RendererCamel
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererCatfish.java:12: error: wrong number of type arguments; required 3
+public class RendererCatfish extends MobRenderer<EntityCatfish, EntityModel<EntityCatfish>> {
+                                                ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererFootballFish.java:15: error: wrong number of type arguments; required 3
+public class RendererFootballFish extends MobRenderer<EntityFootballFish, EntityModel<EntityFootballFish>> {
+                                                     ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererGiantClam.java:15: error: wrong number of type arguments; required 3
+public class RendererGiantClam extends MobRenderer<EntityGiantClam, EntityModel<EntityGiantClam>> {
+                                                  ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererGiantSalamander.java:14: error: wrong number of type arguments; required 3
+public class RendererGiantSalamander extends MobRenderer<EntityGiantSalamander, EntityModel<EntityGiantSalamander>> {
+                                                        ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererHippo.java:4: error: cannot find symbol
+import net.minecraft.client.renderer.MultiBufferSource;
+                                    ^
+  symbol:   class MultiBufferSource
+  location: package net.minecraft.client.renderer
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererHippo.java:16: error: wrong number of type arguments; required 3
+public class RendererHippo extends MobRenderer<EntityHippo, EntityModel<EntityHippo>> {
+                                              ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererHippo.java:26: error: cannot find symbol
+    public void render(EntityHippo entityIn, float entityYaw, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn) {
+                                                                                                           ^
+  symbol:   class MultiBufferSource
+  location: class RendererHippo
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererHyena.java:15: error: wrong number of type arguments; required 3
+public class RendererHyena extends MobRenderer<EntityHyena, EntityModel<EntityHyena>> {
+                                              ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererKingCrab.java:11: error: wrong number of type arguments; required 3
+public class RendererKingCrab extends MobRenderer<EntityKingCrab, ModelKingCrab> {
+                                                 ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererManatee.java:5: error: cannot find symbol
+import net.minecraft.client.renderer.MultiBufferSource;
+                                    ^
+  symbol:   class MultiBufferSource
+  location: package net.minecraft.client.renderer
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererManatee.java:13: error: wrong number of type arguments; required 3
+public class RendererManatee extends MobRenderer<EntityManatee, EntityModel<EntityManatee>> {
+                                                ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererMonitor.java:12: error: wrong number of type arguments; required 3
+public class RendererMonitor extends MobRenderer<EntityMonitor, EntityModel<EntityMonitor>> {
+                                                ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererNewt.java:14: error: wrong number of type arguments; required 3
+public class RendererNewt extends MobRenderer<EntityNewt, EntityModel<EntityNewt>> {
+                                             ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererOpossum.java:5: error: cannot find symbol
+import net.minecraft.client.renderer.MultiBufferSource;
+                                    ^
+  symbol:   class MultiBufferSource
+  location: package net.minecraft.client.renderer
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererOpossum.java:13: error: wrong number of type arguments; required 3
+public class RendererOpossum extends MobRenderer<EntityOpossum, EntityModel<EntityOpossum>> {
+                                                ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererOpossum.java:22: error: cannot find symbol
+    public void render(EntityOpossum entityIn, float entityYaw, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn) {
+                                                                                                             ^
+  symbol:   class MultiBufferSource
+  location: class RendererOpossum
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererProjectileSpit.java:5: error: cannot find symbol
+import com.mojang.math.Vector3f;
+                      ^
+  symbol:   class Vector3f
+  location: package com.mojang.math
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererProjectileSpit.java:6: error: cannot find symbol
+import net.minecraft.client.model.LlamaSpitModel;
+                                 ^
+  symbol:   class LlamaSpitModel
+  location: package net.minecraft.client.model
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererProjectileSpit.java:8: error: cannot find symbol
+import net.minecraft.client.renderer.MultiBufferSource;
+                                    ^
+  symbol:   class MultiBufferSource
+  location: package net.minecraft.client.renderer
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererProjectileSpit.java:21: error: wrong number of type arguments; required 2
+public class RendererProjectileSpit extends EntityRenderer<ProjectileSpit> {
+                                                          ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererProjectileSpit.java:30: error: cannot find symbol
+    public void render(ProjectileSpit p_115373_, float p_115374_, float p_115375_, PoseStack p_115376_, MultiBufferSource p_115377_, int p_115378_) {
+                                                                                                        ^
+  symbol:   class MultiBufferSource
+  location: class RendererProjectileSpit
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererRhino.java:4: error: cannot find symbol
+import net.minecraft.client.renderer.MultiBufferSource;
+                                    ^
+  symbol:   class MultiBufferSource
+  location: package net.minecraft.client.renderer
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererRhino.java:16: error: wrong number of type arguments; required 3
+public class RendererRhino extends MobRenderer<EntityRhino, EntityModel<EntityRhino>> {
+                                              ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererRhino.java:26: error: cannot find symbol
+    public void render(EntityRhino entityIn, float entityYaw, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn) {
+                                                                                                           ^
+  symbol:   class MultiBufferSource
+  location: class RendererRhino
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererShark.java:14: error: wrong number of type arguments; required 3
+public class RendererShark extends MobRenderer<EntityShark, EntityModel<EntityShark>> {
+                                              ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererSnake.java:14: error: wrong number of type arguments; required 3
+public class RendererSnake extends MobRenderer<EntitySnake, EntityModel<EntitySnake>> {
+                                              ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererSoftshellTurtle.java:14: error: wrong number of type arguments; required 3
+public class RendererSoftshellTurtle extends MobRenderer<EntitySoftshellTurtle, EntityModel<EntitySoftshellTurtle>> {
+                                                        ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererSpadefish.java:12: error: wrong number of type arguments; required 3
+public class RendererSpadefish extends MobRenderer<EntitySpadefish, EntityModel<EntitySpadefish>> {
+                                                  ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererSpitter.java:5: error: cannot find symbol
+import net.minecraft.client.renderer.MultiBufferSource;
+                                    ^
+  symbol:   class MultiBufferSource
+  location: package net.minecraft.client.renderer
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererSpitter.java:14: error: wrong number of type arguments; required 3
+public class RendererSpitter extends MobRenderer<EntitySpitter, EntityModel<EntitySpitter>> {
+                                                ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererSpitter.java:24: error: cannot find symbol
+    public void render(EntitySpitter entityIn, float entityYaw, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn) {
+                                                                                                             ^
+  symbol:   class MultiBufferSource
+  location: class RendererSpitter
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererSunfish.java:14: error: wrong number of type arguments; required 3
+public class RendererSunfish extends MobRenderer<EntitySunfish, EntityModel<EntitySunfish>> {
+                                                ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererTarantula.java:14: error: wrong number of type arguments; required 3
+public class RendererTarantula extends MobRenderer<EntityTarantula, ModelTarantula> {
+                                                  ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererTortoise.java:14: error: wrong number of type arguments; required 3
+public class RendererTortoise extends MobRenderer<EntityTortoise, EntityModel<EntityTortoise>> {
+                                                 ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererTrevally.java:14: error: wrong number of type arguments; required 3
+public class RendererTrevally extends MobRenderer<EntityTrevally, EntityModel<EntityTrevally>> {
+                                                 ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererTriggerfish.java:14: error: wrong number of type arguments; required 3
+public class RendererTriggerfish extends MobRenderer<EntityTriggerfish, EntityModel<EntityTriggerfish>> {
+                                                    ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererWhaleShark.java:12: error: wrong number of type arguments; required 3
+public class RendererWhaleShark extends MobRenderer<EntityWhaleShark, EntityModel<EntityWhaleShark>> {
+                                                   ^
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\config\ConfigBase.java:9: error: cannot find symbol
+@Mod.EventBusSubscriber(modid = UntamedWilds.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
+    ^
+  symbol:   class EventBusSubscriber
+  location: @interface Mod
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\ai\GotoSleepGoal.java:3: error: cannot find symbol
+import com.mojang.math.Vector3f;
+                      ^
+  symbol:   class Vector3f
+  location: package com.mojang.math
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\ai\GotoSleepGoal.java:20: error: cannot find symbol
+    protected Vector3f target;
+              ^
+  symbol:   class Vector3f
+  location: class GotoSleepGoal
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\ai\RaidCropsGoal.java:9: error: cannot find symbol
+import net.minecraft.world.level.block.FarmBlock;
+                                      ^
+  symbol:   class FarmBlock
+  location: package net.minecraft.world.level.block
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\ai\SmartMateGoal.java:5: error: cannot find symbol
+import net.minecraft.world.level.GameRules;
+                                ^
+  symbol:   class GameRules
+  location: package net.minecraft.world.level
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\ai\target\DontThreadOnMeTarget.java:5: error: cannot find symbol
+import net.minecraft.world.entity.MobType;
+                                 ^
+  symbol:   class MobType
+  location: package net.minecraft.world.entity
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\ai\target\HuntMobTarget.java:5: error: cannot find symbol
+import net.minecraft.world.entity.MobType;
+                                 ^
+  symbol:   class MobType
+  location: package net.minecraft.world.entity
+C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\ai\target\HuntWeakerTarget.java:4: error: cannot find symbol
+import net.minecraft.world.entity.MobType;
+                                 ^
+  symbol:   class MobType
+  location: package net.minecraft.world.entity
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+Note: Some messages have been simplified; recompile with -Xdiags:verbose to get full output
+100 errors
+
+[Incubating] Problems report is available at: file:///C:/Users/YANGJIANPING/Desktop/Project/untamedwilds-26.2neoforge/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileJava'.
+> Compilation failed; see the compiler output below.
+  Note: Recompile with -Xlint:deprecation for details.
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererAardvark.java:13: error: wrong number of type arguments; required 3
+  public class RendererAardvark extends MobRenderer<EntityAardvark, EntityModel<EntityAardvark>> {
+                                                   ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererAnaconda.java:12: error: wrong number of type arguments; required 3
+  public class RendererAnaconda extends MobRenderer<EntityAnaconda, EntityModel<EntityAnaconda>> {
+                                                   ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererArowana.java:12: error: wrong number of type arguments; required 3
+  public class RendererArowana extends MobRenderer<EntityArowana, EntityModel<EntityArowana>> {
+                                                  ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererBaleenWhale.java:12: error: wrong number of type arguments; required 3
+  public class RendererBaleenWhale extends MobRenderer<EntityBaleenWhale, EntityModel<EntityBaleenWhale>> {
+                                                      ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererBear.java:14: error: wrong number of type arguments; required 3
+  public class RendererBear extends MobRenderer<EntityBear, EntityModel<EntityBear>> {
+                                               ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererBigCat.java:14: error: wrong number of type arguments; required 3
+  public class RendererBigCat extends MobRenderer<EntityBigCat, EntityModel<EntityBigCat>> {
+                                                 ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererBison.java:16: error: wrong number of type arguments; required 3
+  public class RendererBison extends MobRenderer<EntityBison, EntityModel<EntityBison>> {
+                                                ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererBoar.java:15: error: wrong number of type arguments; required 3
+  public class RendererBoar extends MobRenderer<EntityBoar, EntityModel<EntityBoar>> {
+                                               ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererCamel.java:14: error: wrong number of type arguments; required 3
+  public class RendererCamel extends MobRenderer<EntityCamel, EntityModel<EntityCamel>> {
+                                                ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererCatfish.java:12: error: wrong number of type arguments; required 3
+  public class RendererCatfish extends MobRenderer<EntityCatfish, EntityModel<EntityCatfish>> {
+                                                  ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererFootballFish.java:15: error: wrong number of type arguments; required 3
+  public class RendererFootballFish extends MobRenderer<EntityFootballFish, EntityModel<EntityFootballFish>> {
+                                                       ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererGiantClam.java:15: error: wrong number of type arguments; required 3
+  public class RendererGiantClam extends MobRenderer<EntityGiantClam, EntityModel<EntityGiantClam>> {
+                                                    ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererGiantSalamander.java:14: error: wrong number of type arguments; required 3
+  public class RendererGiantSalamander extends MobRenderer<EntityGiantSalamander, EntityModel<EntityGiantSalamander>> {
+                                                          ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererHippo.java:16: error: wrong number of type arguments; required 3
+  public class RendererHippo extends MobRenderer<EntityHippo, EntityModel<EntityHippo>> {
+                                                ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererHyena.java:15: error: wrong number of type arguments; required 3
+  public class RendererHyena extends MobRenderer<EntityHyena, EntityModel<EntityHyena>> {
+                                                ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererKingCrab.java:11: error: wrong number of type arguments; required 3
+  public class RendererKingCrab extends MobRenderer<EntityKingCrab, ModelKingCrab> {
+                                                   ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererManatee.java:13: error: wrong number of type arguments; required 3
+  public class RendererManatee extends MobRenderer<EntityManatee, EntityModel<EntityManatee>> {
+                                                  ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererMonitor.java:12: error: wrong number of type arguments; required 3
+  public class RendererMonitor extends MobRenderer<EntityMonitor, EntityModel<EntityMonitor>> {
+                                                  ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererNewt.java:14: error: wrong number of type arguments; required 3
+  public class RendererNewt extends MobRenderer<EntityNewt, EntityModel<EntityNewt>> {
+                                               ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererOpossum.java:13: error: wrong number of type arguments; required 3
+  public class RendererOpossum extends MobRenderer<EntityOpossum, EntityModel<EntityOpossum>> {
+                                                  ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererProjectileSpit.java:21: error: wrong number of type arguments; required 2
+  public class RendererProjectileSpit extends EntityRenderer<ProjectileSpit> {
+                                                            ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererRhino.java:16: error: wrong number of type arguments; required 3
+  public class RendererRhino extends MobRenderer<EntityRhino, EntityModel<EntityRhino>> {
+                                                ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererShark.java:14: error: wrong number of type arguments; required 3
+  public class RendererShark extends MobRenderer<EntityShark, EntityModel<EntityShark>> {
+                                                ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererSnake.java:14: error: wrong number of type arguments; required 3
+  public class RendererSnake extends MobRenderer<EntitySnake, EntityModel<EntitySnake>> {
+                                                ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererSoftshellTurtle.java:14: error: wrong number of type arguments; required 3
+  public class RendererSoftshellTurtle extends MobRenderer<EntitySoftshellTurtle, EntityModel<EntitySoftshellTurtle>> {
+                                                          ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererSpadefish.java:12: error: wrong number of type arguments; required 3
+  public class RendererSpadefish extends MobRenderer<EntitySpadefish, EntityModel<EntitySpadefish>> {
+                                                    ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererSpitter.java:14: error: wrong number of type arguments; required 3
+  public class RendererSpitter extends MobRenderer<EntitySpitter, EntityModel<EntitySpitter>> {
+                                                  ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererSunfish.java:14: error: wrong number of type arguments; required 3
+  public class RendererSunfish extends MobRenderer<EntitySunfish, EntityModel<EntitySunfish>> {
+                                                  ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererTarantula.java:14: error: wrong number of type arguments; required 3
+  public class RendererTarantula extends MobRenderer<EntityTarantula, ModelTarantula> {
+                                                    ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererTortoise.java:14: error: wrong number of type arguments; required 3
+  public class RendererTortoise extends MobRenderer<EntityTortoise, EntityModel<EntityTortoise>> {
+                                                   ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererTrevally.java:14: error: wrong number of type arguments; required 3
+  public class RendererTrevally extends MobRenderer<EntityTrevally, EntityModel<EntityTrevally>> {
+                                                   ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererTriggerfish.java:14: error: wrong number of type arguments; required 3
+  public class RendererTriggerfish extends MobRenderer<EntityTriggerfish, EntityModel<EntityTriggerfish>> {
+                                                      ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererWhaleShark.java:12: error: wrong number of type arguments; required 3
+  public class RendererWhaleShark extends MobRenderer<EntityWhaleShark, EntityModel<EntityWhaleShark>> {
+                                                     ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\AnemoneBlock.java:10: error: cannot find symbol
+  import net.minecraft.world.entity.animal.TropicalFish;
+                                          ^
+    symbol:   class TropicalFish
+    location: package net.minecraft.world.entity.animal
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\CageBlock.java:5: error: cannot find symbol
+  import net.minecraft.core.BlockSource;
+                           ^
+    symbol:   class BlockSource
+    location: package net.minecraft.core
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\CageBlock.java:219: error: cannot find symbol
+          public ItemStack dispense(BlockSource source, ItemStack stack) {
+                                    ^
+    symbol:   class BlockSource
+    location: class DispenserBehaviorTrapCage
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\CageBlock.java:230: error: cannot find symbol
+          protected void playDispenseSound(BlockSource source) {
+                                           ^
+    symbol:   class BlockSource
+    location: class DispenserBehaviorTrapCage
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\EpyphitePlantBlock.java:14: error: cannot find symbol
+  import net.minecraft.world.level.block.state.properties.DirectionProperty;
+                                                         ^
+    symbol:   class DirectionProperty
+    location: package net.minecraft.world.level.block.state.properties
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\EpyphitePlantBlock.java:23: error: cannot find symbol
+      public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+                          ^
+    symbol:   class DirectionProperty
+    location: class EpyphitePlantBlock
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\FloatingPlantBlock.java:10: error: cannot find symbol
+  import net.minecraft.world.entity.animal.WaterAnimal;
+                                          ^
+    symbol:   class WaterAnimal
+    location: package net.minecraft.world.entity.animal
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\FloatingPlantBlock.java:22: error: cannot find symbol
+  import net.minecraft.world.level.material.Material;
+                                           ^
+    symbol:   class Material
+    location: package net.minecraft.world.level.material
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\ReedBlock.java:11: error: cannot find symbol
+  import net.minecraft.world.entity.animal.WaterAnimal;
+                                          ^
+    symbol:   class WaterAnimal
+    location: package net.minecraft.world.entity.animal
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\ReedBlock.java:13: error: cannot find symbol
+  import net.minecraft.world.item.SwordItem;
+                                 ^
+    symbol:   class SwordItem
+    location: package net.minecraft.world.item
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\TallPlantBlock.java:10: error: cannot find symbol
+  import net.minecraft.world.item.SwordItem;
+                                 ^
+    symbol:   class SwordItem
+    location: package net.minecraft.world.item
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\TitanArumBlock.java:3: error: cannot find symbol
+  import com.mojang.math.Vector3f;
+                        ^
+    symbol:   class Vector3f
+    location: package com.mojang.math
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\layer\LayerFootballFishLure.java:4: error: cannot find symbol
+  import net.minecraft.client.renderer.RenderType;
+                                      ^
+    symbol:   class RenderType
+    location: package net.minecraft.client.renderer
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\layer\LayerFootballFishLure.java:16: error: cannot find symbol
+      private final RenderType TEXTURE = RenderType.eyes(Identifier.fromNamespaceAndPath(UntamedWilds.MOD_ID, "textures/entity/football_fish/glint.png"));
+                    ^
+    symbol:   class RenderType
+    location: class LayerFootballFishLure<T,M>
+    where T,M are type-variables:
+      T extends Entity declared in class LayerFootballFishLure
+      M extends EntityModel<T> declared in class LayerFootballFishLure
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\layer\LayerFootballFishLure.java:22: error: cannot find symbol
+      public RenderType renderType() {
+             ^
+    symbol:   class RenderType
+    location: class LayerFootballFishLure<T,M>
+    where T,M are type-variables:
+      T extends Entity declared in class LayerFootballFishLure
+      M extends EntityModel<T> declared in class LayerFootballFishLure
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\build\generated\sources\citadelCompat\java\com\github\alexthe666\citadel\client\model\basic\BasicEntityModel.java:6: error: cannot find symbol
+  import net.minecraft.client.renderer.RenderType;
+                                      ^
+    symbol:   class RenderType
+    location: package net.minecraft.client.renderer
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\build\generated\sources\citadelCompat\java\com\github\alexthe666\citadel\client\model\basic\BasicEntityModel.java:7: error: cannot find symbol
+  import net.minecraft.resources.ResourceLocation;
+                                ^
+    symbol:   class ResourceLocation
+    location: package net.minecraft.resources
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\ComplexMob.java:3: error: cannot find symbol
+  import net.minecraft.Util;
+                      ^
+    symbol:   class Util
+    location: package net.minecraft
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\ComplexMob.java:7: error: cannot find symbol
+  import net.minecraft.network.chat.contents.LiteralContents;
+                                            ^
+    symbol:   class LiteralContents
+    location: package net.minecraft.network.chat.contents
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\ComplexMob.java:22: error: cannot find symbol
+  import net.minecraft.world.damagesource.EntityDamageSource;
+                                         ^
+    symbol:   class EntityDamageSource
+    location: package net.minecraft.world.damagesource
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\build\generated\sources\citadelCompat\java\com\github\alexthe666\citadel\client\model\basic\BasicEntityModel.java:20: error: cannot find symbol
+      protected BasicEntityModel(Function<ResourceLocation, RenderType> p_102613_) {
+                                          ^
+    symbol:   class ResourceLocation
+    location: class BasicEntityModel<T>
+    where T is a type-variable:
+      T extends Entity declared in class BasicEntityModel
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\build\generated\sources\citadelCompat\java\com\github\alexthe666\citadel\client\model\basic\BasicEntityModel.java:20: error: cannot find symbol
+      protected BasicEntityModel(Function<ResourceLocation, RenderType> p_102613_) {
+                                                            ^
+    symbol:   class RenderType
+    location: class BasicEntityModel<T>
+    where T is a type-variable:
+      T extends Entity declared in class BasicEntityModel
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\ComplexMobAquatic.java:47: error: cannot find symbol
+      public MobType getMobType() {
+             ^
+    symbol:   class MobType
+    location: class ComplexMobAquatic
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\arthropod\EntityKingCrab.java:17: error: cannot find symbol
+  import net.minecraft.world.entity.MobType;
+                                   ^
+    symbol:   class MobType
+    location: package net.minecraft.world.entity
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\arthropod\EntityKingCrab.java:59: error: cannot find symbol
+      public MobType getMobType() {
+             ^
+    symbol:   class MobType
+    location: class EntityKingCrab
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\model\ModelProjectileSpit.java:3: error: cannot find symbol
+  import net.minecraft.client.model.HierarchicalModel;
+                                   ^
+    symbol:   class HierarchicalModel
+    location: package net.minecraft.client.model
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\arthropod\EntityTarantula.java:22: error: cannot find symbol
+  import net.minecraft.world.entity.monster.Spider;
+                                           ^
+    symbol:   class Spider
+    location: package net.minecraft.world.entity.monster
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\arthropod\EntityTarantula.java:58: error: cannot find symbol
+      public MobType getMobType() {
+             ^
+    symbol:   class MobType
+    location: class EntityTarantula
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\fish\EntityTriggerfish.java:20: error: cannot find symbol
+  import net.minecraft.world.entity.animal.TropicalFish;
+                                          ^
+    symbol:   class TropicalFish
+    location: package net.minecraft.world.entity.animal
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererAardvark.java:5: error: cannot find symbol
+  import net.minecraft.client.renderer.MultiBufferSource;
+                                      ^
+    symbol:   class MultiBufferSource
+    location: package net.minecraft.client.renderer
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererAardvark.java:22: error: cannot find symbol
+      public void render(EntityAardvark entityIn, float entityYaw, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn) {
+                                                                                                                ^
+    symbol:   class MultiBufferSource
+    location: class RendererAardvark
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererBear.java:4: error: cannot find symbol
+  import net.minecraft.client.renderer.MultiBufferSource;
+                                      ^
+    symbol:   class MultiBufferSource
+    location: package net.minecraft.client.renderer
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererBear.java:24: error: cannot find symbol
+      public void render(EntityBear entityIn, float entityYaw, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn) {
+                                                                                                            ^
+    symbol:   class MultiBufferSource
+    location: class RendererBear
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererBigCat.java:4: error: cannot find symbol
+  import net.minecraft.client.renderer.MultiBufferSource;
+                                      ^
+    symbol:   class MultiBufferSource
+    location: package net.minecraft.client.renderer
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererBigCat.java:24: error: cannot find symbol
+      public void render(EntityBigCat entityIn, float entityYaw, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn) {
+                                                                                                              ^
+    symbol:   class MultiBufferSource
+    location: class RendererBigCat
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererBison.java:4: error: cannot find symbol
+  import net.minecraft.client.renderer.MultiBufferSource;
+                                      ^
+    symbol:   class MultiBufferSource
+    location: package net.minecraft.client.renderer
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererBison.java:26: error: cannot find symbol
+      public void render(EntityBison entityIn, float entityYaw, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn) {
+                                                                                                             ^
+    symbol:   class MultiBufferSource
+    location: class RendererBison
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererBoar.java:5: error: cannot find symbol
+  import net.minecraft.client.renderer.MultiBufferSource;
+                                      ^
+    symbol:   class MultiBufferSource
+    location: package net.minecraft.client.renderer
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererBoar.java:26: error: cannot find symbol
+      public void render(EntityBoar entityIn, float entityYaw, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn) {
+                                                                                                            ^
+    symbol:   class MultiBufferSource
+    location: class RendererBoar
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererCamel.java:5: error: cannot find symbol
+  import net.minecraft.client.renderer.MultiBufferSource;
+                                      ^
+    symbol:   class MultiBufferSource
+    location: package net.minecraft.client.renderer
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererCamel.java:24: error: cannot find symbol
+      public void render(EntityCamel entityIn, float entityYaw, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn) {
+                                                                                                             ^
+    symbol:   class MultiBufferSource
+    location: class RendererCamel
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererHippo.java:4: error: cannot find symbol
+  import net.minecraft.client.renderer.MultiBufferSource;
+                                      ^
+    symbol:   class MultiBufferSource
+    location: package net.minecraft.client.renderer
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererHippo.java:26: error: cannot find symbol
+      public void render(EntityHippo entityIn, float entityYaw, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn) {
+                                                                                                             ^
+    symbol:   class MultiBufferSource
+    location: class RendererHippo
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererManatee.java:5: error: cannot find symbol
+  import net.minecraft.client.renderer.MultiBufferSource;
+                                      ^
+    symbol:   class MultiBufferSource
+    location: package net.minecraft.client.renderer
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererOpossum.java:5: error: cannot find symbol
+  import net.minecraft.client.renderer.MultiBufferSource;
+                                      ^
+    symbol:   class MultiBufferSource
+    location: package net.minecraft.client.renderer
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererOpossum.java:22: error: cannot find symbol
+      public void render(EntityOpossum entityIn, float entityYaw, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn) {
+                                                                                                               ^
+    symbol:   class MultiBufferSource
+    location: class RendererOpossum
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererProjectileSpit.java:5: error: cannot find symbol
+  import com.mojang.math.Vector3f;
+                        ^
+    symbol:   class Vector3f
+    location: package com.mojang.math
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererProjectileSpit.java:6: error: cannot find symbol
+  import net.minecraft.client.model.LlamaSpitModel;
+                                   ^
+    symbol:   class LlamaSpitModel
+    location: package net.minecraft.client.model
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererProjectileSpit.java:8: error: cannot find symbol
+  import net.minecraft.client.renderer.MultiBufferSource;
+                                      ^
+    symbol:   class MultiBufferSource
+    location: package net.minecraft.client.renderer
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererProjectileSpit.java:30: error: cannot find symbol
+      public void render(ProjectileSpit p_115373_, float p_115374_, float p_115375_, PoseStack p_115376_, MultiBufferSource p_115377_, int p_115378_) {
+                                                                                                          ^
+    symbol:   class MultiBufferSource
+    location: class RendererProjectileSpit
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererRhino.java:4: error: cannot find symbol
+  import net.minecraft.client.renderer.MultiBufferSource;
+                                      ^
+    symbol:   class MultiBufferSource
+    location: package net.minecraft.client.renderer
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererRhino.java:26: error: cannot find symbol
+      public void render(EntityRhino entityIn, float entityYaw, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn) {
+                                                                                                             ^
+    symbol:   class MultiBufferSource
+    location: class RendererRhino
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererSpitter.java:5: error: cannot find symbol
+  import net.minecraft.client.renderer.MultiBufferSource;
+                                      ^
+    symbol:   class MultiBufferSource
+    location: package net.minecraft.client.renderer
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\render\RendererSpitter.java:24: error: cannot find symbol
+      public void render(EntitySpitter entityIn, float entityYaw, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn) {
+                                                                                                               ^
+    symbol:   class MultiBufferSource
+    location: class RendererSpitter
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\config\ConfigBase.java:9: error: cannot find symbol
+  @Mod.EventBusSubscriber(modid = UntamedWilds.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
+      ^
+    symbol:   class EventBusSubscriber
+    location: @interface Mod
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\ai\GotoSleepGoal.java:3: error: cannot find symbol
+  import com.mojang.math.Vector3f;
+                        ^
+    symbol:   class Vector3f
+    location: package com.mojang.math
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\ai\GotoSleepGoal.java:20: error: cannot find symbol
+      protected Vector3f target;
+                ^
+    symbol:   class Vector3f
+    location: class GotoSleepGoal
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\ai\RaidCropsGoal.java:9: error: cannot find symbol
+  import net.minecraft.world.level.block.FarmBlock;
+                                        ^
+    symbol:   class FarmBlock
+    location: package net.minecraft.world.level.block
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\ai\SmartMateGoal.java:5: error: cannot find symbol
+  import net.minecraft.world.level.GameRules;
+                                  ^
+    symbol:   class GameRules
+    location: package net.minecraft.world.level
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\ai\target\DontThreadOnMeTarget.java:5: error: cannot find symbol
+  import net.minecraft.world.entity.MobType;
+                                   ^
+    symbol:   class MobType
+    location: package net.minecraft.world.entity
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\ai\target\HuntMobTarget.java:5: error: cannot find symbol
+  import net.minecraft.world.entity.MobType;
+                                   ^
+    symbol:   class MobType
+    location: package net.minecraft.world.entity
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\ai\target\HuntWeakerTarget.java:4: error: cannot find symbol
+  import net.minecraft.world.entity.MobType;
+                                   ^
+    symbol:   class MobType
+    location: package net.minecraft.world.entity
+  Note: Recompile with -Xlint:unchecked for details.
+  Note: Some input files use or override a deprecated API.
+  Note: Some messages have been simplified; recompile with -Xdiags:verbose to get full output
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\client\model\ModelProjectileSpit.java:15: error: cannot find symbol
+  public class ModelProjectileSpit<T extends Entity> extends HierarchicalModel<T> {
+                                                             ^
+    symbol: class HierarchicalModel
+  Note: Some input files use unchecked or unsafe operations.
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\AlgaeBlock.java:22: error: package net.minecraftforge.common does not exist
+  public class AlgaeBlock extends BushBlock implements BonemealableBlock, LiquidBlockContainer, net.minecraftforge.common.IForgeShearable {
+                                                                                                                         ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\UndergrowthBlock.java:24: error: package net.minecraftforge.common does not exist
+  public class UndergrowthBlock extends BushBlock implements BonemealableBlock, net.minecraftforge.common.IForgeShearable {
+                                                                                                         ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\block\UndergrowthPoisonousBlock.java:31: error: package net.minecraftforge.common does not exist
+  public class UndergrowthPoisonousBlock extends UndergrowthBlock implements BonemealableBlock, IPostGenUpdate, net.minecraftforge.common.IForgeShearable {
+                                                                                                                                         ^
+  C:\Users\YANGJIANPING\Desktop\Project\untamedwilds-26.2neoforge\src\main\java\untamedwilds\entity\arthropod\EntityTarantula.java:21: error: package net.minecraft.world.entity.animal.horse does not exist
+  import net.minecraft.world.entity.animal.horse.AbstractHorse;
+                                                ^
+  100 errors
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to generate a Build Scan (powered by Develocity).
+
+BUILD FAILED in 1s
+3 actionable tasks: 1 executed, 2 up-to-date

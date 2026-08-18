@@ -16,6 +16,8 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import untamedwilds.config.ConfigGamerules;
 import untamedwilds.entity.*;
 import untamedwilds.entity.ai.MeleeAttackCircle;
@@ -42,8 +44,13 @@ public class EntityShark extends ComplexMobAquatic implements ISpecies, IAnimate
     public EntityShark(EntityType<? extends ComplexMob> type, Level worldIn) {
         super(type, worldIn);
         ATTACK_THRASH = Animation.create(15);
-        this.entityData.define(SHORT_FINS, false);
         this.turn_speed = 0.3F;
+    }
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(SHORT_FINS, false);
     }
 
     public static AttributeSupplier.Builder registerAttributes() {
@@ -68,14 +75,14 @@ public class EntityShark extends ComplexMobAquatic implements ISpecies, IAnimate
     public void aiStep() {
         super.aiStep();
         AnimationHandler.INSTANCE.updateAnimations(this);
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide()) {
             this.setAngry(this.getTarget() != null);
             if (this.tickCount % 1000 == 0) {
                 if (this.wantsToBreed() && !this.isMale()) {
                     this.setAge(this.getPregnancyTime());
                 }
             }
-            if (this.level.getGameTime() % 4000 == 0) {
+            if (this.level().getGameTime() % 4000 == 0) {
                 this.heal(1.0F);
             }
         }
@@ -118,7 +125,7 @@ public class EntityShark extends ComplexMobAquatic implements ISpecies, IAnimate
      * A nearby Shark of different gender */
     public boolean wantsToBreed() {
         if (ConfigGamerules.naturalBreeding.get() && this.getAge() == 0 && EntityUtils.hasFullHealth(this)) {
-            List<EntityShark> list = this.level.getEntitiesOfClass(EntityShark.class, this.getBoundingBox().inflate(12.0D, 8.0D, 12.0D));
+            List<EntityShark> list = this.level().getEntitiesOfClass(EntityShark.class, this.getBoundingBox().inflate(12.0D, 8.0D, 12.0D));
             list.removeIf(input -> EntityUtils.isInvalidPartner(this, input, false));
             if (list.size() >= 1) {
                 this.setAge(this.getPregnancyTime());
@@ -132,7 +139,7 @@ public class EntityShark extends ComplexMobAquatic implements ISpecies, IAnimate
     @Nullable
     @Override
     public AgeableMob getBreedOffspring(ServerLevel serverWorld, AgeableMob ageableEntity) {
-        return create_offspring(new EntityShark(ModEntity.SHARK.get(), this.level));
+        return create_offspring(new EntityShark(ModEntity.SHARK.get(), this.level()));
     }
 
     @Override
@@ -140,8 +147,9 @@ public class EntityShark extends ComplexMobAquatic implements ISpecies, IAnimate
         return SoundEvents.COD_FLOP;
     }
 
-    public boolean doHurtTarget(Entity entityIn) {
-        boolean flag = super.doHurtTarget(entityIn);
+    @Override
+    public boolean doHurtTarget(ServerLevel level, Entity entityIn) {
+        boolean flag = super.doHurtTarget(level, entityIn);
         if (flag && this.getAnimation() == NO_ANIMATION && !this.isBaby()) {
             this.setAnimation(ATTACK_THRASH);
         }
@@ -168,13 +176,13 @@ public class EntityShark extends ComplexMobAquatic implements ISpecies, IAnimate
     public boolean hasShortFins(){ return (this.entityData.get(SHORT_FINS)); }
     private void setShortFins(boolean short_fins){ this.entityData.set(SHORT_FINS, short_fins); }
 
-    public void addAdditionalSaveData(CompoundTag compound){
+    public void addAdditionalSaveData(ValueOutput compound){
         super.addAdditionalSaveData(compound);
         compound.putBoolean("hasShortFins", this.hasShortFins());
     }
 
-    public void readAdditionalSaveData(CompoundTag compound){
+    public void readAdditionalSaveData(ValueInput compound){
         super.readAdditionalSaveData(compound);
-        this.setShortFins(compound.getBoolean("hasShortFins"));
+        this.setShortFins(compound.getBooleanOr("hasShortFins", false));
     }
 }

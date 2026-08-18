@@ -85,7 +85,7 @@ public class EntityNewt extends ComplexMobAmphibious implements ISpecies, INewSk
     public void aiStep() {
         super.aiStep();
 
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide()) {
             if (this.isInWater()) {
                 this.setDeltaMovement(this.getDeltaMovement().add(0.0D, -0.003D, 0.0D));
             }
@@ -94,7 +94,7 @@ public class EntityNewt extends ComplexMobAmphibious implements ISpecies, INewSk
                     this.breed();
                 }
             }
-            if (this.level.getGameTime() % 4000 == 0) {
+            if (this.level().getGameTime() % 4000 == 0) {
                 this.heal(1.0F);
             }
         }
@@ -102,9 +102,9 @@ public class EntityNewt extends ComplexMobAmphibious implements ISpecies, INewSk
             if (Math.abs(this.getYRot() - this.yRotO) > 0.005) {
                 this.offset = Mth.rotLerp(0.05F, this.offset, (this.getYRot() - this.yRotO));
             }
-            if (this.isInWater() && !this.isOnGround() && this.swimProgress < 20) {
+            if (this.isInWater() && !this.onGround() && this.swimProgress < 20) {
                 this.swimProgress++;
-            } else if ((!this.isInWater() || this.isOnGround()) && this.swimProgress > 0) {
+            } else if ((!this.isInWater() || this.onGround()) && this.swimProgress > 0) {
                 this.swimProgress--;
             }
         }
@@ -115,7 +115,7 @@ public class EntityNewt extends ComplexMobAmphibious implements ISpecies, INewSk
     public boolean wantsToBreed() {
         if (super.wantsToBreed()) {
             if (!this.isSleeping() && this.getAge() == 0 && EntityUtils.hasFullHealth(this)) {
-                List<EntityNewt> list = this.level.getEntitiesOfClass(EntityNewt.class, this.getBoundingBox().inflate(6.0D, 4.0D, 6.0D));
+                List<EntityNewt> list = this.level().getEntitiesOfClass(EntityNewt.class, this.getBoundingBox().inflate(6.0D, 4.0D, 6.0D));
                 list.removeIf(input -> EntityUtils.isInvalidPartner(this, input, false));
                 if (list.size() >= 1) {
                     this.setAge(this.getPregnancyTime());
@@ -140,7 +140,7 @@ public class EntityNewt extends ComplexMobAmphibious implements ISpecies, INewSk
         if (hand == InteractionHand.MAIN_HAND) {
             if (itemstack.getItem().equals(Items.WATER_BUCKET) && this.isAlive()) {
                 EntityUtils.mutateEntityIntoItem(this, player, hand, "bucket_newt", itemstack);
-                return InteractionResult.sidedSuccess(this.level.isClientSide);
+                return InteractionResult.CONSUME;
             }
         }
         return super.mobInteract(player, hand);

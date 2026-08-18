@@ -271,7 +271,7 @@ public class ModelBison extends AdvancedEntityModel<EntityBison> {
         // Pitch/Yaw handler
         if (bison.isInWater()) {
             this.setRotateAngle(head_main, -0.18203784098300857F, 0.0F, 0.0F);
-            if (!bison.isOnGround()) {
+              if (!bison.onGround()) {
                 f = ageInTicks / 6;
                 limbSwingAmount = 0.5f;
                 float pitch = Mth.clamp(bison.getXRot() - 10, -25F, 25.0F);

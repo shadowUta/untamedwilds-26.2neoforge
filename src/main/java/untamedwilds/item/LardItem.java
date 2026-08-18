@@ -1,39 +1,17 @@
 package untamedwilds.item;
 
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ItemUseAnimation;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemUtils;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.item.component.Consumable;
 
 public class LardItem extends Item {
     public LardItem(Item.Properties builder) {
-        super(builder);
-    }
-
-    public int getUseDuration(ItemStack stack) {
-        return 40;
-    }
-
-    public ItemUseAnimation getUseAnimation(ItemStack p_41358_) {
-        return ItemUseAnimation.EAT;
-    }
-
-    public SoundEvent getDrinkingSound() {
-        return SoundEvents.HONEY_DRINK;
-    }
-
-    public SoundEvent getEatingSound() {
-        return SoundEvents.HONEY_DRINK;
-    }
-
-    public InteractionResult use(Level p_41352_, Player p_41353_, InteractionHand p_41354_) {
-        ItemUtils.startUsingInstantly(p_41352_, p_41353_, p_41354_);
-        return InteractionResult.CONSUME;
+        super(builder.component(DataComponents.CONSUMABLE, Consumable.builder()
+                .consumeSeconds(2.0F)
+                .animation(ItemUseAnimation.EAT)
+                .sound(SoundEvents.HONEY_DRINK)
+                .build()));
     }
 }

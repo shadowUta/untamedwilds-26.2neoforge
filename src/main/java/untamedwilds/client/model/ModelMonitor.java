@@ -207,7 +207,7 @@ public class ModelMonitor extends AdvancedEntityModel<EntityMonitor> {
         }
 
         // Pitch/Yaw handler
-        if (monitor.isInWater() && !monitor.isOnGround()) {
+        if (monitor.isInWater() && !monitor.onGround()) {
             this.setRotateAngle(main_body, monitor.getXRot() * ((float) Math.PI / 180F), 0, 0);
         }
         this.main_body.rotateAngleY = Mth.rotLerp((float) 0.05, this.main_body.rotateAngleY, monitor.offset);

@@ -8,6 +8,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AgeableMob;
@@ -43,12 +44,11 @@ public class EntityCamel extends ComplexMobTerrestrial implements INewSkins, ISp
         super(type, worldIn);
         IDLE_TALK = Animation.create(20);
         ATTACK_SPIT = Animation.create(20);
-        this.maxUpStep = 1F;
         this.turn_speed = 0.2F;
     }
 
-    protected void defineSynchedData() {
-        super.defineSynchedData();
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
     }
 
     public void registerGoals() {
@@ -65,7 +65,6 @@ public class EntityCamel extends ComplexMobTerrestrial implements INewSkins, ISp
         this.targetSelector.addGoal(3, new BeAnAssTarget<>(this, LivingEntity.class, true, input -> !(input instanceof EntityCamel) && (getEcoLevel(input) < getEcoLevel(this)/2 || input instanceof Player)));
     }
 
-    @Override
     protected void reassessTameGoals() {
         if (this.isTame()) {
             if (UntamedWilds.DEBUG) {
@@ -97,14 +96,14 @@ public class EntityCamel extends ComplexMobTerrestrial implements INewSkins, ISp
 
     @Override
     public void aiStep() {
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide()) {
             if (this.herd == null) {
                 IPackEntity.initPack(this);
             }
             else {
                 this.herd.tick();
             }
-            if (this.level.getGameTime() % 1000 == 0) {
+            if (this.level().getGameTime() % 1000 == 0) {
                 this.addHunger(-10);
                 if (!this.isStarving()) {
                     this.heal(1.0F);
@@ -128,8 +127,8 @@ public class EntityCamel extends ComplexMobTerrestrial implements INewSkins, ISp
         super.aiStep();
     }
 
-    public boolean doHurtTarget(Entity entityIn) {
-        boolean flag = super.doHurtTarget(entityIn);
+    public boolean doHurtTarget(ServerLevel level, Entity entityIn) {
+        boolean flag = super.doHurtTarget(level, entityIn);
         if (flag && this.getAnimation() == NO_ANIMATION && !this.isBaby()) {
             Animation anim = chooseAttackAnimation();
             this.setAnimation(anim);
@@ -137,11 +136,11 @@ public class EntityCamel extends ComplexMobTerrestrial implements INewSkins, ISp
         return flag;
     }
 
-    public boolean hurt(DamageSource p_19946_, float p_19947_) {
-        if (p_19946_.equals(DamageSource.CACTUS)) {
+    public boolean hurtServer(ServerLevel level, DamageSource damageSource, float amount) {
+        if (damageSource.is(DamageTypes.CACTUS)) {
             return false;
         }
-        return super.hurt(p_19946_, p_19947_);
+        return super.hurtServer(level, damageSource, amount);
     }
 
     private Animation chooseAttackAnimation() {
@@ -154,20 +153,20 @@ public class EntityCamel extends ComplexMobTerrestrial implements INewSkins, ISp
 
     @Nullable
     public EntityCamel getBreedOffspring(ServerLevel serverWorld, AgeableMob ageable) {
-        return create_offspring(new EntityCamel(ModEntity.CAMEL.get(), this.level));
+        return create_offspring(new EntityCamel(ModEntity.CAMEL.get(), this.level()));
     }
 
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack itemstack = player.getItemInHand(InteractionHand.MAIN_HAND);
 
-        if (hand == InteractionHand.MAIN_HAND && !this.level.isClientSide()) {
+        if (hand == InteractionHand.MAIN_HAND && !this.level().isClientSide()) {
             if (!this.isTame() && this.isBaby() && EntityUtils.hasFullHealth(this) && this.isFood(itemstack)) {
                 this.playSound(SoundEvents.HORSE_EAT, 1.5F, 0.8F);
                 if (this.getRandom().nextInt(3) == 0) {
                     this.tame(player);
-                    EntityUtils.spawnParticlesOnEntity(this.level, this, ParticleTypes.HEART, 3, 6);
+                    EntityUtils.spawnParticlesOnEntity(this.level(), this, ParticleTypes.HEART, 3, 6);
                 } else {
-                    EntityUtils.spawnParticlesOnEntity(this.level, this, ParticleTypes.SMOKE, 3, 3);
+                    EntityUtils.spawnParticlesOnEntity(this.level(), this, ParticleTypes.SMOKE, 3, 3);
                 }
             }
         }
@@ -183,7 +182,7 @@ public class EntityCamel extends ComplexMobTerrestrial implements INewSkins, ISp
     public Animation getAnimationEat() { return NO_ANIMATION; }
 
     public void performRangedAttack(LivingEntity entityIn, float p_33318_) {
-        ProjectileSpit camel_spit = new ProjectileSpit(this.level, this, new MobEffectInstance(MobEffects.CONFUSION, 200, 0));
+        ProjectileSpit camel_spit = new ProjectileSpit(this.level(), this, new MobEffectInstance(MobEffects.NAUSEA, 200, 0));
         if (this.getAnimation() == NO_ANIMATION)
             this.setAnimation(ATTACK_SPIT);
         double d0 = entityIn.getX() - this.getX();
@@ -192,8 +191,8 @@ public class EntityCamel extends ComplexMobTerrestrial implements INewSkins, ISp
         double d3 = Math.sqrt(d0 * d0 + d2 * d2) * (double)0.2F;
         camel_spit.shoot(d0, d1 + d3, d2, 1.5F, 10.0F);
         if (!this.isSilent()) {
-            this.level.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.LLAMA_SPIT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
+            this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.LLAMA_SPIT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
         }
-        this.level.addFreshEntity(camel_spit);
+        this.level().addFreshEntity(camel_spit);
     }
 }

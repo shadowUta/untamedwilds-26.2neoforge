@@ -263,7 +263,7 @@ public class ModelHippo extends AdvancedEntityModel<EntityHippo> {
             this.eye_right.setRotationPoint(-2F, -2.0F, -4.0F);
             this.eye_left.setRotationPoint(2F, -2.0F, -4.0F);
         }
-        if (hippo.isInWater() && !hippo.isOnGround()) {
+        if (hippo.isInWater() && !hippo.onGround()) {
             float pitch = Mth.clamp(hippo.getXRot() - 10, -25F, 25.0F);
             this.setRotateAngle(body_main, (float) (pitch * Math.PI / 180F), 0, 0);
         }

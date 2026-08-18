@@ -271,7 +271,7 @@ public class ModelHyena extends AdvancedEntityModel<EntityHyena> {
         }
 
         // Pitch/Yaw handler
-        if (hyena.isInWater() && !hyena.isOnGround()) {
+        if (hyena.isInWater() && !hyena.onGround()) {
             limbSwing = ageInTicks / 3;
             limbSwingAmount = 0.5f;
             this.body_main.rotationPointY += 4; // Model offset to make the Big Cat "sink" in water (while not drowning)

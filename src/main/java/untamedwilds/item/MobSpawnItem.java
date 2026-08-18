@@ -1,12 +1,11 @@
 package untamedwilds.item;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -16,11 +15,12 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.CustomModelData;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import untamedwilds.UntamedWilds;
 import untamedwilds.entity.ComplexMob;
 import untamedwilds.entity.INeedsPostUpdate;
@@ -31,6 +31,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
+import java.util.function.Consumer;
 
 public class MobSpawnItem extends Item {
     private final Supplier<? extends EntityType<?>> entity;
@@ -41,13 +42,15 @@ public class MobSpawnItem extends Item {
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public void appendHoverText(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip, TooltipFlag flagIn) {
-        EntityUtils.buildTooltipData(stack, tooltip, this.entity.get(), EntityUtils.getVariantName(this.entity.get(), this.getSpecies(stack)));
+    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
+        List<Component> lines = new java.util.ArrayList<>();
+        EntityUtils.buildTooltipData(stack, lines, this.entity.get(), EntityUtils.getVariantName(this.entity.get(), this.getSpecies(stack)));
+        lines.forEach(tooltip);
     }
 
+    @Override
     public Component getName(ItemStack stack) {
-        return MutableComponent.create(new TranslatableContents("entity.untamedwilds." + this.entity.get().builtInRegistryHolder().key().location().getPath() + "_" + EntityUtils.getVariantName(this.entity.get(), this.getSpecies(stack))));
+        return Component.translatable("entity.untamedwilds." + this.entity.get().builtInRegistryHolder().key().identifier().getPath() + "_" + EntityUtils.getVariantName(this.entity.get(), this.getSpecies(stack)));
         //return new TranslatableComponent("entity.untamedwilds." + this.entity.getRegistryName().getPath() + "_" + ComplexMob.getEntityData(this.entity).getSpeciesData().get(this.getSpecies(stack)).getName()).getString();
     }
 
@@ -64,7 +67,7 @@ public class MobSpawnItem extends Item {
             BlockState blockState = worldIn.getBlockState(pos);
             BlockPos spawnPos = blockState.getCollisionShape(worldIn, pos).isEmpty() ? pos : pos.relative(facing);
 
-            EntityType<?> entity = EntityUtils.getEntityTypeFromTag(itemStack.getTag(), this.entity.get());
+            EntityType<?> entity = EntityUtils.getEntityTypeFromTag(this.getComponentData(itemStack), this.entity.get());
             boolean doVerticalOffset = !Objects.equals(pos, spawnPos) && facing == Direction.UP;
             EntityUtils.createMobFromItem((ServerLevel) worldIn, itemStack, entity, this.getSpecies(itemStack), spawnPos, useContext.getPlayer(), doVerticalOffset);
 
@@ -78,21 +81,32 @@ public class MobSpawnItem extends Item {
     }
 
     private int getSpecies(ItemStack itemIn) {
-        if (itemIn.getTag() != null && itemIn.getTag().contains("CustomModelData")) {
-            return itemIn.getTag().getInt("CustomModelData");
+        CompoundTag data = this.getComponentData(itemIn);
+        if (data != null && (data.contains("variant") || data.contains("CustomModelData") || data.contains("custom_model_data"))) {
+            return data.getIntOr("variant", data.getIntOr("CustomModelData", data.getIntOr("custom_model_data", 0)));
+        }
+        CustomModelData modelData = itemIn.get(DataComponents.CUSTOM_MODEL_DATA);
+        if (modelData != null && !modelData.floats().isEmpty()) {
+            return modelData.floats().getFirst().intValue();
         }
         UntamedWilds.LOGGER.error("No variant found in this itemstack NBT data");
         return 0;
     }
 
+    private CompoundTag getComponentData(ItemStack stack) {
+        CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+        return data == null ? null : data.copyTag();
+    }
+
     public void fillItemCategory(CreativeModeTab group, NonNullList<ItemStack> items) {
-        if (group == ModCreativeModeTab.untamedwilds_items) {
+        if (group == ModCreativeModeTab.untamedwilds_items.value()) {
             for(int i = 0; i < EntityUtils.getNumberOfSpecies(this.entity.get()); i++) {
                 CompoundTag baseTag = new CompoundTag();
                 ItemStack item = new ItemStack(this);
                 baseTag.putInt("variant", i);
-                baseTag.putInt("CustomModelData", i);
-                item.setTag(baseTag);
+                baseTag.putInt("custom_model_data", i);
+                item.set(DataComponents.CUSTOM_DATA, CustomData.of(baseTag));
+                item.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(List.of((float)i), List.of(), List.of(), List.of()));
                 items.add(item);
             }
         }

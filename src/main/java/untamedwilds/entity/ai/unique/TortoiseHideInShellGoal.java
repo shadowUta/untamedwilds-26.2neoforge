@@ -3,6 +3,7 @@ package untamedwilds.entity.ai.unique;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
+import net.minecraft.server.level.ServerLevel;
 import untamedwilds.entity.ComplexMob;
 
 import java.util.EnumSet;
@@ -21,8 +22,19 @@ public class TortoiseHideInShellGoal<T extends LivingEntity> extends Goal {
         this.taskOwner = entityIn;
         this.classToAvoid = classToAvoidIn;
         this.avoidDistance = avoidDistanceIn;
-        this.builtTargetSelector = TargetingConditions.forCombat().range(avoidDistanceIn).selector(targetSelector);
+        this.builtTargetSelector = TargetingConditions.forCombat().range(avoidDistanceIn)
+                .selector((candidate, level) -> targetSelector == null || targetSelector.test(candidate));
         this.setFlags(EnumSet.of(Flag.MOVE));
+    }
+
+    private List<T> findNearbyThreats() {
+        if (!(this.taskOwner.level() instanceof ServerLevel serverLevel)) {
+            return List.of();
+        }
+        return serverLevel.getEntitiesOfClass(this.classToAvoid,
+                this.taskOwner.getBoundingBox().inflate(this.avoidDistance, 4.0D, this.avoidDistance),
+                candidate -> candidate != this.taskOwner
+                        && this.builtTargetSelector.test(serverLevel, this.taskOwner, candidate));
     }
 
     @Override
@@ -34,7 +46,7 @@ public class TortoiseHideInShellGoal<T extends LivingEntity> extends Goal {
             return false;
         }
 
-        List<T> list = this.taskOwner.level.getNearbyEntities(classToAvoid, this.builtTargetSelector, this.taskOwner, this.taskOwner.getBoundingBox().inflate(avoidDistance, 4f, avoidDistance));
+        List<T> list = this.findNearbyThreats();
         if (list.isEmpty()) {
             this.taskOwner.setSitting(false);
             return false;
@@ -55,7 +67,7 @@ public class TortoiseHideInShellGoal<T extends LivingEntity> extends Goal {
 
     public void tick() {
         if (this.taskOwner.getRandom().nextInt(40) == 0) {
-            List<T> list = this.taskOwner.level.getNearbyEntities(classToAvoid, this.builtTargetSelector, this.taskOwner, this.taskOwner.getBoundingBox().inflate(avoidDistance, 4f, avoidDistance));
+            List<T> list = this.findNearbyThreats();
             if (list.isEmpty()) {
                 this.taskOwner.setSitting(false);
             }

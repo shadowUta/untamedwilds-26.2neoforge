@@ -469,7 +469,7 @@ public class ModelBigCat extends AdvancedEntityModel<EntityBigCat> {
         }
 
         // Pitch/Yaw handler
-        if (big_cat.isInWater() && !big_cat.isOnGround()) {
+        if (big_cat.isInWater() && !big_cat.onGround()) {
             limbSwing = ageInTicks / 3;
             limbSwingAmount = 0.5f;
             this.body_main.rotationPointY += 4; // Model offset to make the Big Cat "sink" in water (while not drowning)

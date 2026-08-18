@@ -322,7 +322,7 @@ public class ModelCamel extends AdvancedEntityModel<EntityCamel> {
         }
 
         // Pitch/Yaw handler
-        if (camel.isInWater() && !camel.isOnGround()) {
+        if (camel.isInWater() && !camel.onGround()) {
             float pitch = Mth.clamp(camel.getXRot(), -20F, 20.0F) - 10;
             this.setRotateAngle(body_main, (float) (pitch * Math.PI / 180F), 0, 0);
         }

@@ -48,20 +48,20 @@ public class EntityArowana extends ComplexMobAquatic implements ISpecies, INewSk
     }
 
     public void aiStep() {
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide()) {
             if (this.tickCount % 1000 == 0) {
                 if (this.wantsToBreed() && !this.isMale()) {
                     this.breed();
                 }
             }
-            if (this.level.getGameTime() % 4000 == 0) {
+            if (this.level().getGameTime() % 4000 == 0) {
                 this.heal(1.0F);
             }
         }
 
         // Coerces the Arowana to stay at the surface
         if (this.getTarget() == null && this.isInWater() && this.tickCount % 10 == 0) {
-            if (level.isWaterAt(this.blockPosition().above(2))) {
+            if (this.level().isWaterAt(this.blockPosition().above(2))) {
                 this.setDeltaMovement(this.getDeltaMovement().add(0, 0.1F, 0));
             }
         }
@@ -73,7 +73,7 @@ public class EntityArowana extends ComplexMobAquatic implements ISpecies, INewSk
         if (hand == InteractionHand.MAIN_HAND) {
             if (itemstack.getItem().equals(Items.WATER_BUCKET) && this.isAlive()) {
                 EntityUtils.mutateEntityIntoItem(this, player, hand, "bucket_arowana", itemstack);
-                return InteractionResult.sidedSuccess(this.level.isClientSide);
+                return InteractionResult.SUCCESS;
             }
         }
         return super.mobInteract(player, hand);
@@ -83,7 +83,7 @@ public class EntityArowana extends ComplexMobAquatic implements ISpecies, INewSk
      * A nearby Arowana of different gender */
     public boolean wantsToBreed() {
         if (ConfigGamerules.naturalBreeding.get() && this.getAge() == 0 && EntityUtils.hasFullHealth(this)) {
-            List<EntityArowana> list = this.level.getEntitiesOfClass(EntityArowana.class, this.getBoundingBox().inflate(12.0D, 8.0D, 12.0D));
+            List<EntityArowana> list = this.level().getEntitiesOfClass(EntityArowana.class, this.getBoundingBox().inflate(12.0D, 8.0D, 12.0D));
             list.removeIf(input -> EntityUtils.isInvalidPartner(this, input, false));
             if (list.size() >= 1) {
                 this.setAge(this.getPregnancyTime());

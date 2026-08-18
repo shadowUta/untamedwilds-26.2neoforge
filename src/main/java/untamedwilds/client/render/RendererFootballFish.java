@@ -12,7 +12,7 @@ import untamedwilds.entity.fish.EntityFootballFish;
 
 import javax.annotation.Nonnull;
 
-public class RendererFootballFish extends MobRenderer<EntityFootballFish, EntityModel<EntityFootballFish>> {
+public class RendererFootballFish extends UntamedMobRenderer<EntityFootballFish> {
 
     private static final ModelFootballFish FOOTBALL_FISH_MODEL = new ModelFootballFish();
 

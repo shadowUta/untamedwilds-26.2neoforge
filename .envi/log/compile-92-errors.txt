@@ -1,0 +1,204 @@
+﻿ntamedwilds\client\model\ModelProjectileSpit.java:3: error: cannot find symbol
+ntamedwilds\client\model\ModelProjectileSpit.java:15: error: cannot find symbol
+public class ModelProjectileSpit<T extends Entity> extends HierarchicalModel<T>
+ntamedwilds\client\render\RendererAardvark.java:5: error: cannot find symbol
+ntamedwilds\client\render\RendererAardvark.java:13: error: wrong number of type
+ntamedwilds\client\render\RendererAardvark.java:22: error: cannot find symbol
+ntamedwilds\client\render\RendererAnaconda.java:12: error: wrong number of type
+ntamedwilds\client\render\RendererArowana.java:12: error: wrong number of type 
+ntamedwilds\client\render\RendererBaleenWhale.java:12: error: wrong number of t
+ntamedwilds\client\render\RendererBear.java:4: error: cannot find symbol
+ntamedwilds\client\render\RendererBear.java:14: error: wrong number of type arg
+ntamedwilds\client\render\RendererBear.java:24: error: cannot find symbol
+ntamedwilds\client\render\RendererBigCat.java:4: error: cannot find symbol
+ntamedwilds\client\render\RendererBigCat.java:14: error: wrong number of type a
+ntamedwilds\client\render\RendererBigCat.java:24: error: cannot find symbol
+ntamedwilds\client\render\RendererBison.java:4: error: cannot find symbol
+ntamedwilds\client\render\RendererBison.java:16: error: wrong number of type ar
+ntamedwilds\client\render\RendererBison.java:26: error: cannot find symbol
+ntamedwilds\client\render\RendererBoar.java:5: error: cannot find symbol
+ntamedwilds\client\render\RendererBoar.java:15: error: wrong number of type arg
+ntamedwilds\client\render\RendererBoar.java:26: error: cannot find symbol
+ntamedwilds\client\render\RendererCamel.java:5: error: cannot find symbol
+ntamedwilds\client\render\RendererCamel.java:14: error: wrong number of type ar
+ntamedwilds\client\render\RendererCamel.java:24: error: cannot find symbol
+ntamedwilds\client\render\RendererCatfish.java:12: error: wrong number of type 
+ntamedwilds\client\render\RendererFootballFish.java:15: error: wrong number of 
+ntamedwilds\client\render\RendererGiantClam.java:15: error: wrong number of typ
+ntamedwilds\client\render\RendererGiantSalamander.java:14: error: wrong number 
+ntamedwilds\client\render\RendererHippo.java:4: error: cannot find symbol
+ntamedwilds\client\render\RendererHippo.java:16: error: wrong number of type ar
+ntamedwilds\client\render\RendererHippo.java:26: error: cannot find symbol
+ntamedwilds\client\render\RendererHyena.java:15: error: wrong number of type ar
+ntamedwilds\client\render\RendererKingCrab.java:11: error: wrong number of type
+ntamedwilds\client\render\RendererManatee.java:5: error: cannot find symbol
+ntamedwilds\client\render\RendererManatee.java:13: error: wrong number of type 
+ntamedwilds\client\render\RendererMonitor.java:12: error: wrong number of type 
+ntamedwilds\client\render\RendererNewt.java:14: error: wrong number of type arg
+ntamedwilds\client\render\RendererOpossum.java:5: error: cannot find symbol
+ntamedwilds\client\render\RendererOpossum.java:13: error: wrong number of type 
+ntamedwilds\client\render\RendererOpossum.java:22: error: cannot find symbol
+ntamedwilds\client\render\RendererProjectileSpit.java:5: error: cannot find sym
+ntamedwilds\client\render\RendererProjectileSpit.java:6: error: cannot find sym
+ntamedwilds\client\render\RendererProjectileSpit.java:8: error: cannot find sym
+ntamedwilds\client\render\RendererProjectileSpit.java:21: error: wrong number o
+ntamedwilds\client\render\RendererProjectileSpit.java:30: error: cannot find sy
+ntamedwilds\client\render\RendererRhino.java:4: error: cannot find symbol
+ntamedwilds\client\render\RendererRhino.java:16: error: wrong number of type ar
+ntamedwilds\client\render\RendererRhino.java:26: error: cannot find symbol
+ntamedwilds\client\render\RendererShark.java:14: error: wrong number of type ar
+ntamedwilds\client\render\RendererSnake.java:14: error: wrong number of type ar
+ntamedwilds\client\render\RendererSoftshellTurtle.java:14: error: wrong number 
+ntamedwilds\client\render\RendererSpadefish.java:12: error: wrong number of typ
+ntamedwilds\client\render\RendererSpitter.java:5: error: cannot find symbol
+ntamedwilds\client\render\RendererSpitter.java:14: error: wrong number of type 
+ntamedwilds\client\render\RendererSpitter.java:24: error: cannot find symbol
+ntamedwilds\client\render\RendererSunfish.java:14: error: wrong number of type 
+ntamedwilds\client\render\RendererTarantula.java:14: error: wrong number of typ
+ntamedwilds\client\render\RendererTortoise.java:14: error: wrong number of type
+ntamedwilds\client\render\RendererTrevally.java:14: error: wrong number of type
+ntamedwilds\client\render\RendererTriggerfish.java:14: error: wrong number of t
+ntamedwilds\client\render\RendererWhaleShark.java:12: error: wrong number of ty
+ntamedwilds\client\layer\LayerFootballFishLure.java:14: error: type argument T#
+ntamedwilds\client\layer\LayerFootballFishLure.java:14: error: type argument T 
+ntamedwilds\client\layer\LayerFootballFishLure.java:16: error: cannot find symb
+ntamedwilds\client\layer\LayerFootballFishLure.java:18: error: type argument T 
+ntamedwilds\client\model\ModelAardvark.java:255: error: cannot find symbol
+ntamedwilds\client\model\ModelAnaconda.java:145: error: cannot find symbol
+ntamedwilds\client\model\ModelAnaconda.java:186: error: reference to ClipContex
+ntamedwilds\client\model\ModelAnaconda.java:186: error: level has private acces
+ntamedwilds\client\model\ModelBear.java:453: error: cannot find symbol
+ntamedwilds\client\model\ModelBigCat.java:472: error: cannot find symbol
+ntamedwilds\client\model\ModelBison.java:274: error: cannot find symbol
+ntamedwilds\client\model\ModelBoar.java:271: error: cannot find symbol
+ntamedwilds\client\model\ModelCamel.java:325: error: cannot find symbol
+ntamedwilds\client\model\ModelGiantSalamander.java:137: error: cannot find symb
+ntamedwilds\client\model\ModelGiantSalamander.java:147: error: cannot find symb
+ntamedwilds\client\model\ModelHippo.java:266: error: cannot find symbol
+ntamedwilds\client\model\ModelHyena.java:274: error: cannot find symbol
+ntamedwilds\client\model\ModelMonitor.java:210: error: cannot find symbol
+ntamedwilds\client\model\ModelNewt.java:141: error: cannot find symbol
+ntamedwilds\client\model\ModelNewt.java:152: error: cannot find symbol
+ntamedwilds\client\model\ModelOpossum.java:285: error: cannot find symbol
+ntamedwilds\client\model\ModelSnake.java:162: error: cannot find symbol
+ntamedwilds\client\model\ModelTurtleSoftshell.java:119: error: cannot find symb
+ntamedwilds\client\model\ModelTurtleSoftshell.java:137: error: cannot find symb
+ntamedwilds\client\model\ModelWarthog.java:278: error: cannot find symbol
+ntamedwilds\client\model\MonsterSpitter.java:343: error: cannot find symbol
+ntamedwilds\client\model\MonsterSpitterLarva.java:135: error: cannot find symbo
+ntamedwilds\client\render\RendererAardvark.java:21: error: method does not over
+ntamedwilds\client\render\RendererAardvark.java:23: error: cannot find symbol
+ntamedwilds\client\render\RendererAardvark.java:24: error: cannot find symbol
+ntamedwilds\client\render\RendererAardvark.java:31: error: cannot find symbol
+ntamedwilds\client\render\RendererArowana.java:20: error: method does not overr
+ntamedwilds\client\render\RendererArowana.java:25: error: cannot find symbol
+ntamedwilds\client\render\RendererBaleenWhale.java:19: error: method does not o
+ntamedwilds\client\render\RendererBaleenWhale.java:24: error: cannot find symbo
+ntamedwilds\client\render\RendererBear.java:23: error: method does not override
+ntamedwilds\client\render\RendererBear.java:26: error: cannot find symbol
+ntamedwilds\client\render\RendererBear.java:28: error: cannot find symbol
+ntamedwilds\client\render\RendererBear.java:30: error: cannot find symbol
+ntamedwilds\client\render\RendererBear.java:33: error: method does not override
+FAILURE: Build failed with an exception.
+\untamedwilds\client\model\ModelAnaconda.java:186: error: reference to ClipCont
+\untamedwilds\client\render\RendererAardvark.java:13: error: wrong number of ty
+\untamedwilds\client\render\RendererAnaconda.java:12: error: wrong number of ty
+\untamedwilds\client\render\RendererArowana.java:12: error: wrong number of typ
+\untamedwilds\client\render\RendererBaleenWhale.java:12: error: wrong number of
+\untamedwilds\client\render\RendererBear.java:14: error: wrong number of type a
+\untamedwilds\client\render\RendererBigCat.java:14: error: wrong number of type
+\untamedwilds\client\render\RendererBison.java:16: error: wrong number of type 
+\untamedwilds\client\render\RendererBoar.java:15: error: wrong number of type a
+\untamedwilds\client\render\RendererCamel.java:14: error: wrong number of type 
+\untamedwilds\client\render\RendererCatfish.java:12: error: wrong number of typ
+\untamedwilds\client\render\RendererFootballFish.java:15: error: wrong number o
+\untamedwilds\client\render\RendererGiantClam.java:15: error: wrong number of t
+\untamedwilds\client\render\RendererGiantSalamander.java:14: error: wrong numbe
+\untamedwilds\client\render\RendererHippo.java:16: error: wrong number of type 
+\untamedwilds\client\render\RendererHyena.java:15: error: wrong number of type 
+\untamedwilds\client\render\RendererKingCrab.java:11: error: wrong number of ty
+\untamedwilds\client\render\RendererManatee.java:13: error: wrong number of typ
+\untamedwilds\client\render\RendererMonitor.java:12: error: wrong number of typ
+\untamedwilds\client\render\RendererNewt.java:14: error: wrong number of type a
+\untamedwilds\client\render\RendererOpossum.java:13: error: wrong number of typ
+\untamedwilds\client\render\RendererProjectileSpit.java:21: error: wrong number
+\untamedwilds\client\render\RendererRhino.java:16: error: wrong number of type 
+\untamedwilds\client\render\RendererShark.java:14: error: wrong number of type 
+\untamedwilds\client\render\RendererSnake.java:14: error: wrong number of type 
+\untamedwilds\client\render\RendererSoftshellTurtle.java:14: error: wrong numbe
+\untamedwilds\client\render\RendererSpadefish.java:12: error: wrong number of t
+\untamedwilds\client\render\RendererSpitter.java:14: error: wrong number of typ
+\untamedwilds\client\render\RendererSunfish.java:14: error: wrong number of typ
+\untamedwilds\client\render\RendererTarantula.java:14: error: wrong number of t
+\untamedwilds\client\render\RendererTortoise.java:14: error: wrong number of ty
+\untamedwilds\client\render\RendererTrevally.java:14: error: wrong number of ty
+\untamedwilds\client\render\RendererTriggerfish.java:14: error: wrong number of
+\untamedwilds\client\render\RendererWhaleShark.java:12: error: wrong number of 
+\untamedwilds\client\model\ModelProjectileSpit.java:3: error: cannot find symbo
+\untamedwilds\client\render\RendererAardvark.java:5: error: cannot find symbol
+\untamedwilds\client\render\RendererAardvark.java:22: error: cannot find symbol
+\untamedwilds\client\render\RendererBear.java:4: error: cannot find symbol
+\untamedwilds\client\render\RendererBear.java:24: error: cannot find symbol
+\untamedwilds\client\render\RendererBigCat.java:4: error: cannot find symbol
+\untamedwilds\client\render\RendererBigCat.java:24: error: cannot find symbol
+\untamedwilds\client\render\RendererBison.java:4: error: cannot find symbol
+\untamedwilds\client\render\RendererBison.java:26: error: cannot find symbol
+\untamedwilds\client\render\RendererBoar.java:5: error: cannot find symbol
+\untamedwilds\client\render\RendererBoar.java:26: error: cannot find symbol
+\untamedwilds\client\render\RendererCamel.java:5: error: cannot find symbol
+\untamedwilds\client\render\RendererCamel.java:24: error: cannot find symbol
+\untamedwilds\client\render\RendererHippo.java:4: error: cannot find symbol
+\untamedwilds\client\render\RendererHippo.java:26: error: cannot find symbol
+\untamedwilds\client\render\RendererManatee.java:5: error: cannot find symbol
+\untamedwilds\client\render\RendererOpossum.java:5: error: cannot find symbol
+\untamedwilds\client\render\RendererOpossum.java:22: error: cannot find symbol
+\untamedwilds\client\render\RendererProjectileSpit.java:5: error: cannot find s
+\untamedwilds\client\render\RendererProjectileSpit.java:6: error: cannot find s
+\untamedwilds\client\render\RendererProjectileSpit.java:8: error: cannot find s
+\untamedwilds\client\render\RendererProjectileSpit.java:30: error: cannot find 
+\untamedwilds\client\render\RendererRhino.java:4: error: cannot find symbol
+\untamedwilds\client\render\RendererRhino.java:26: error: cannot find symbol
+\untamedwilds\client\render\RendererSpitter.java:5: error: cannot find symbol
+\untamedwilds\client\render\RendererSpitter.java:24: error: cannot find symbol
+\untamedwilds\client\render\RendererAardvark.java:23: error: cannot find symbol
+\untamedwilds\client\render\RendererAardvark.java:24: error: cannot find symbol
+\untamedwilds\client\render\RendererBear.java:26: error: cannot find symbol
+\untamedwilds\client\render\RendererBear.java:28: error: cannot find symbol
+\untamedwilds\client\render\RendererBear.java:30: error: cannot find symbol
+\untamedwilds\client\model\ModelAnaconda.java:186: error: level has private acc
+\untamedwilds\client\render\RendererAardvark.java:21: error: method does not ov
+\untamedwilds\client\render\RendererArowana.java:20: error: method does not ove
+\untamedwilds\client\render\RendererBaleenWhale.java:19: error: method does not
+\untamedwilds\client\render\RendererBear.java:23: error: method does not overri
+\untamedwilds\client\render\RendererBear.java:33: error: method does not overri
+\untamedwilds\client\layer\LayerFootballFishLure.java:14: error: type argument 
+\untamedwilds\client\layer\LayerFootballFishLure.java:14: error: type argument 
+\untamedwilds\client\layer\LayerFootballFishLure.java:18: error: type argument 
+\untamedwilds\client\model\ModelProjectileSpit.java:15: error: cannot find symb
+  public class ModelProjectileSpit<T extends Entity> extends HierarchicalModel<
+\untamedwilds\client\render\RendererAardvark.java:31: error: cannot find symbol
+\untamedwilds\client\render\RendererArowana.java:25: error: cannot find symbol
+\untamedwilds\client\render\RendererBaleenWhale.java:24: error: cannot find sym
+\untamedwilds\client\layer\LayerFootballFishLure.java:16: error: cannot find sy
+\untamedwilds\client\model\ModelAardvark.java:255: error: cannot find symbol
+\untamedwilds\client\model\ModelAnaconda.java:145: error: cannot find symbol
+\untamedwilds\client\model\ModelBear.java:453: error: cannot find symbol
+\untamedwilds\client\model\ModelBigCat.java:472: error: cannot find symbol
+\untamedwilds\client\model\ModelBison.java:274: error: cannot find symbol
+\untamedwilds\client\model\ModelBoar.java:271: error: cannot find symbol
+\untamedwilds\client\model\ModelCamel.java:325: error: cannot find symbol
+\untamedwilds\client\model\ModelGiantSalamander.java:137: error: cannot find sy
+\untamedwilds\client\model\ModelGiantSalamander.java:147: error: cannot find sy
+\untamedwilds\client\model\ModelHippo.java:266: error: cannot find symbol
+\untamedwilds\client\model\ModelHyena.java:274: error: cannot find symbol
+\untamedwilds\client\model\ModelMonitor.java:210: error: cannot find symbol
+\untamedwilds\client\model\ModelNewt.java:141: error: cannot find symbol
+\untamedwilds\client\model\ModelNewt.java:152: error: cannot find symbol
+\untamedwilds\client\model\ModelOpossum.java:285: error: cannot find symbol
+\untamedwilds\client\model\ModelSnake.java:162: error: cannot find symbol
+\untamedwilds\client\model\ModelTurtleSoftshell.java:119: error: cannot find sy
+\untamedwilds\client\model\ModelTurtleSoftshell.java:137: error: cannot find sy
+\untamedwilds\client\model\ModelWarthog.java:278: error: cannot find symbol
+\untamedwilds\client\model\MonsterSpitter.java:343: error: cannot find symbol
+\untamedwilds\client\model\MonsterSpitterLarva.java:135: error: cannot find sym
+BUILD FAILED in 976ms

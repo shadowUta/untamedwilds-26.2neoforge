@@ -24,9 +24,9 @@ public class WhaleSwimmingGoal extends RandomSwimmingGoal {
         //for(int i = 0; vector3d != null && !this.taskOwner.level.getBlockState(new BlockPos(vector3d)).isPathfindable(this.taskOwner.level, new BlockPos(vector3d), PathComputationType.WATER) && i++ < 10; vector3d = BehaviorUtils.getRandomSwimmablePos(this.taskOwner, 10, 7)) {
         //}
         if (vector3d != null) {
-            if (this.taskOwner.level.canSeeSky(this.taskOwner.blockPosition())) {
+            if (this.taskOwner.level().canSeeSky(this.taskOwner.blockPosition())) {
                 //this.taskOwner.level.setBlock(new BlockPos(vector3d.x(), this.taskOwner.level.getHeight(Heightmap.Types.WORLD_SURFACE, (int)vector3d.x(), (int)vector3d.z()) - offset, vector3d.z()), Blocks.SEAGRASS.defaultBlockState(), 1);
-                return new Vec3(vector3d.x(), this.taskOwner.level.getHeight(Heightmap.Types.WORLD_SURFACE, (int)vector3d.x(), (int)vector3d.z()) - offset, vector3d.z());
+                return new Vec3(vector3d.x(), this.taskOwner.level().getHeight(Heightmap.Types.WORLD_SURFACE, (int)vector3d.x(), (int)vector3d.z()) - offset, vector3d.z());
             }
             //this.taskOwner.level.setBlock(new BlockPos(vector3d.x(), this.taskOwner.level.getHeight(Heightmap.Types.WORLD_SURFACE, (int)vector3d.x(), (int)vector3d.z()) - offset, vector3d.z()), Blocks.SEAGRASS.defaultBlockState(), 1);
             return vector3d.add(0, -offset, 0);

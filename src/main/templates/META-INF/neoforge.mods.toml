@@ -30,9 +30,3 @@ versionRange="${minecraft_version_range}"
 ordering="NONE"
 side="BOTH"
 
-[[dependencies.${mod_id}]]
-modId="citadel"
-type="required"
-versionRange="[2,)"
-ordering="AFTER"
-side="BOTH"

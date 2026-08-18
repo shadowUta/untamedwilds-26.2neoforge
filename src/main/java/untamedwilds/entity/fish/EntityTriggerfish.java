@@ -63,13 +63,13 @@ public class EntityTriggerfish extends ComplexMobAquatic implements ISpecies, IN
 
     public void aiStep() {
         super.aiStep();
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide()) {
             if (this.tickCount % 1000 == 0) {
                 if (this.wantsToBreed() && !this.isMale()) {
                     this.breed();
                 }
             }
-            if (this.level.getGameTime() % 4000 == 0) {
+            if (this.level().getGameTime() % 4000 == 0) {
                 this.heal(1.0F);
             }
             this.setAngry(this.getTarget() != null);
@@ -80,7 +80,7 @@ public class EntityTriggerfish extends ComplexMobAquatic implements ISpecies, IN
      * A nearby Triggerfish of different gender */
     public boolean wantsToBreed() {
         if (ConfigGamerules.naturalBreeding.get() && this.getAge() == 0 && EntityUtils.hasFullHealth(this)) {
-            List<EntityTriggerfish> list = this.level.getEntitiesOfClass(EntityTriggerfish.class, this.getBoundingBox().inflate(12.0D, 8.0D, 12.0D));
+            List<EntityTriggerfish> list = this.level().getEntitiesOfClass(EntityTriggerfish.class, this.getBoundingBox().inflate(12.0D, 8.0D, 12.0D));
             list.removeIf(input -> EntityUtils.isInvalidPartner(this, input, false));
             if (list.size() >= 1) {
                 this.setAge(this.getPregnancyTime());
@@ -164,8 +164,10 @@ public class EntityTriggerfish extends ComplexMobAquatic implements ISpecies, IN
                     Direction direction = this.taskOwner.getMotionDirection();
                     this.taskOwner.setDeltaMovement(this.taskOwner.getDeltaMovement().add((double)direction.getStepX() * -0.1D, 0.1D, (double)direction.getStepZ() * -0.1D));
                     this.taskOwner.getNavigation().stop();
-                    Level worldIn = this.taskOwner.getLevel();
-                    ((ServerLevel)worldIn).sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, worldIn.getBlockState(this.blockPos)), this.blockPos.getX() + 0.5, this.blockPos.above().getY(), this.blockPos.getZ() + 0.5, 50, 0.0D, 0.0D, 0.0D, 0.15F);
+                    Level worldIn = this.taskOwner.level();
+                    if (worldIn instanceof ServerLevel serverLevel) {
+                        serverLevel.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, worldIn.getBlockState(this.blockPos)), this.blockPos.getX() + 0.5, this.blockPos.above().getY(), this.blockPos.getZ() + 0.5, 50, 0.0D, 0.0D, 0.0D, 0.15F);
+                    }
                     this.taskComplete = true;
                 }
             }
@@ -174,7 +176,7 @@ public class EntityTriggerfish extends ComplexMobAquatic implements ISpecies, IN
         @Override
         protected boolean isValidTarget(LevelReader p_25619_, BlockPos blockpos) {
             // TODO: Option to blow items out of the sand?
-            if (this.taskOwner.level.getBlockState(blockpos).is(BlockTags.SAND) && this.taskOwner.level.getFluidState(blockpos.above()).is(Fluids.WATER) && random.nextInt(2) == 0) {
+            if (this.taskOwner.level().getBlockState(blockpos).is(BlockTags.SAND) && this.taskOwner.level().getFluidState(blockpos.above()).is(Fluids.WATER) && random.nextInt(2) == 0) {
                 Path path = this.mob.getNavigation().createPath(blockpos, 1);
                 return path != null && path.canReach();
             }

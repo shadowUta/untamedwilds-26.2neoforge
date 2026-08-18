@@ -1,0 +1,21 @@
+package com.github.alexthe666.citadel.mixin;
+
+import com.github.alexthe666.citadel.server.generation.SurfaceRulesManager;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+
+import net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator;
+import net.minecraft.world.level.levelgen.SurfaceRules;
+
+@Mixin(NoiseBasedChunkGenerator.class)
+public class NoiseBasedChunkGeneratorMixin {
+
+    @ModifyExpressionValue(
+            method = {"buildSurface(Lnet/minecraft/world/level/chunk/ChunkAccess;Lnet/minecraft/world/level/levelgen/WorldGenerationContext;Lnet/minecraft/world/level/levelgen/RandomState;Lnet/minecraft/world/level/StructureManager;Lnet/minecraft/world/level/biome/BiomeManager;Lnet/minecraft/core/Registry;Lnet/minecraft/world/level/levelgen/blending/Blender;)V",
+                    "applyCarvers"},
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/levelgen/NoiseGeneratorSettings;surfaceRule()Lnet/minecraft/world/level/levelgen/SurfaceRules$RuleSource;"))
+    private SurfaceRules.RuleSource citadel$mergeSurfaceRules(SurfaceRules.RuleSource original) {
+        return SurfaceRulesManager.mergeOverworldRules(original);
+    }
+}

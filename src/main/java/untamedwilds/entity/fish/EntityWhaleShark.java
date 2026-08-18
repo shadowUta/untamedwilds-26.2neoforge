@@ -1,7 +1,7 @@
 package untamedwilds.entity.fish;
 
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -16,6 +16,8 @@ import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.entity.PartEntity;
 import untamedwilds.entity.*;
@@ -79,8 +81,8 @@ public class EntityWhaleShark extends ComplexMobAquatic implements ISpecies, INe
 
     public void aiStep() {
         super.aiStep();
-        if (!this.level.isClientSide) {
-            if (this.level.getGameTime() % 4000 == 0) {
+        if (!this.level().isClientSide()) {
+            if (this.level().getGameTime() % 4000 == 0) {
                 this.heal(1.0F);
             }
         }
@@ -162,7 +164,7 @@ public class EntityWhaleShark extends ComplexMobAquatic implements ISpecies, INe
     public boolean wantsToBreed() {
         if (super.wantsToBreed()) {
             if (!this.isSleeping() && this.getAge() == 0 && EntityUtils.hasFullHealth(this)) {
-                List<EntityWhaleShark> list = this.level.getEntitiesOfClass(EntityWhaleShark.class, this.getBoundingBox().inflate(6.0D, 4.0D, 6.0D));
+                List<EntityWhaleShark> list = this.level().getEntitiesOfClass(EntityWhaleShark.class, this.getBoundingBox().inflate(6.0D, 4.0D, 6.0D));
                 list.removeIf(input -> EntityUtils.isInvalidPartner(this, input, false));
                 if (list.size() >= 1) {
                     this.setAge(this.getPregnancyTime());
@@ -177,11 +179,11 @@ public class EntityWhaleShark extends ComplexMobAquatic implements ISpecies, INe
     @Nullable
     @Override
     public AgeableMob getBreedOffspring(ServerLevel serverWorld, AgeableMob ageableEntity) {
-        return create_offspring(new EntityWhaleShark(ModEntity.WHALE_SHARK.get(), this.level));
+        return create_offspring(new EntityWhaleShark(ModEntity.WHALE_SHARK.get(), this.level()));
     }
 
-    public boolean attackEntityPartFrom(EntityWhaleSharkPart whale_shark_part, DamageSource source, float amount) {
-        return this.hurt(source, amount);
+    public boolean attackEntityPartFrom(ServerLevel level, EntityWhaleSharkPart whale_shark_part, DamageSource source, float amount) {
+        return this.hurtServer(level, source, amount);
     }
 
     // Flags Parameters
@@ -203,7 +205,7 @@ public class EntityWhaleShark extends ComplexMobAquatic implements ISpecies, INe
         }
 
         protected void collideWithNearbyEntities() {
-            List<Entity> entities = this.level.getEntities(this, this.getBoundingBox().inflate(0.20000000298023224D, 0.0D, 0.20000000298023224D));
+            List<Entity> entities = this.level().getEntities(this, this.getBoundingBox().inflate(0.20000000298023224D, 0.0D, 0.20000000298023224D));
             Entity parent = this.getParent();
             if (parent != null) {
                 entities.stream().filter(entity -> entity != parent && !(entity instanceof EntityWhaleSharkPart && ((EntityWhaleSharkPart) entity).getParent() == parent) && entity.isPushable()).forEach(entity -> entity.push(parent));
@@ -222,29 +224,27 @@ public class EntityWhaleShark extends ComplexMobAquatic implements ISpecies, INe
             return true;
         }
 
-        public boolean hurt(DamageSource source, float amount) {
-            return !this.isInvulnerableTo(source) && this.getParent().attackEntityPartFrom(this, source, amount);
+        @Override
+        public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
+            return this.getParent() != null && this.getParent().attackEntityPartFrom(level, this, source, amount);
         }
 
         @Override
-        protected void defineSynchedData() { }
+        protected void defineSynchedData(SynchedEntityData.Builder builder) { }
 
         @Override
-        protected void readAdditionalSaveData(CompoundTag compound) { }
+        protected void readAdditionalSaveData(ValueInput input) { }
 
         @Override
-        protected void addAdditionalSaveData(CompoundTag compound) { }
+        protected void addAdditionalSaveData(ValueOutput output) { }
 
 
         public boolean is(Entity entityIn) {
             return this == entityIn || this.getParent() == entityIn;
         }
 
-        public Packet<?> getAddEntityPacket() {
-            throw new UnsupportedOperationException();
-        }
-
-        public EntityDimensions getSize(Pose poseIn) {
+        @Override
+        public EntityDimensions getDimensions(Pose poseIn) {
             return this.size.scale(scale);
         }
     }

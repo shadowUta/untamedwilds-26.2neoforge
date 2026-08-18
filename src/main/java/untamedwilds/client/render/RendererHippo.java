@@ -1,7 +1,6 @@
 package untamedwilds.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.client.model.EntityModel;
@@ -13,23 +12,13 @@ import untamedwilds.entity.mammal.EntityHippo;
 
 import javax.annotation.Nonnull;
 
-public class RendererHippo extends MobRenderer<EntityHippo, EntityModel<EntityHippo>> {
+public class RendererHippo extends UntamedMobRenderer<EntityHippo> {
 
     private static final ModelHippo HIPPO_MODEL = new ModelHippo();
     private static final ModelHippoCalf HIPPO_MODEL_CALF = new ModelHippoCalf();
 
     public RendererHippo(EntityRendererProvider.Context renderManager) {
         super(renderManager, HIPPO_MODEL, 1F);
-    }
-
-    @Override
-    public void render(EntityHippo entityIn, float entityYaw, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int packedLightIn) {
-        if (entityIn.isBaby()) {
-            model = HIPPO_MODEL_CALF;
-        } else {
-            model = HIPPO_MODEL;
-        }
-        super.render(entityIn, entityYaw, partialTicks, matrixStackIn, bufferIn, packedLightIn);
     }
 
     protected void scale(EntityHippo entity, PoseStack matrixStackIn, float partialTickTime) {

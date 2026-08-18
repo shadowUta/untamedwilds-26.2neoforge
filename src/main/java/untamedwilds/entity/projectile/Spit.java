@@ -2,38 +2,35 @@ package untamedwilds.entity.projectile;
 
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.util.Mth;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.equine.Llama;
-import net.minecraft.world.entity.projectile.LlamaSpit;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
+import net.neoforged.neoforge.common.NeoForge;
 
 public class Spit extends Projectile {
-    public Spit(EntityType<? extends LlamaSpit> p_37224_, Level p_37225_) {
+    public Spit(EntityType<? extends Spit> p_37224_, Level p_37225_) {
         super(p_37224_, p_37225_);
-    }
-
-    public Spit(Level p_37235_, Llama p_37236_) {
-        this(EntityType.LLAMA_SPIT, p_37235_);
-        this.setOwner(p_37236_);
-        this.setPos(p_37236_.getX() - (double)(p_37236_.getBbWidth() + 1.0F) * 0.5D * (double) Mth.sin(p_37236_.yBodyRot * ((float)Math.PI / 180F)), p_37236_.getEyeY() - (double)0.1F, p_37236_.getZ() + (double)(p_37236_.getBbWidth() + 1.0F) * 0.5D * (double)Mth.cos(p_37236_.yBodyRot * ((float)Math.PI / 180F)));
     }
 
     public void tick() {
         super.tick();
         Vec3 vec3 = this.getDeltaMovement();
-        HitResult hitresult = ProjectileUtil.getHitResult(this, this::canHitEntity);
-        if (hitresult.getType() != HitResult.Type.MISS && !net.minecraftforge.event.ForgeEventFactory.onProjectileImpact(this, hitresult))
+        HitResult hitresult = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
+        if (hitresult.getType() != HitResult.Type.MISS && !NeoForge.EVENT_BUS.post(new ProjectileImpactEvent(this, hitresult)).isCanceled())
             this.onHit(hitresult);
         double d0 = this.getX() + vec3.x;
         double d1 = this.getY() + vec3.y;
@@ -41,9 +38,9 @@ public class Spit extends Projectile {
         this.updateRotation();
         float f = 0.99F;
         float f1 = 0.06F;
-        if (this.level.getBlockStates(this.getBoundingBox()).noneMatch(BlockBehaviour.BlockStateBase::isAir)) {
+        if (this.level().getBlockStates(this.getBoundingBox()).noneMatch(BlockBehaviour.BlockStateBase::isAir)) {
             this.discard();
-        } else if (this.isInWaterOrBubble()) {
+        } else if (this.isInWater()) {
             this.discard();
         } else {
             this.setDeltaMovement(vec3.scale(0.99F));
@@ -59,31 +56,42 @@ public class Spit extends Projectile {
         super.onHitEntity(p_37241_);
         Entity entity = this.getOwner();
         if (entity instanceof LivingEntity) {
-            p_37241_.getEntity().hurt(DamageSource.indirectMobAttack(this, (LivingEntity)entity).setProjectile(), 1.0F);
+            if (this.level() instanceof ServerLevel serverLevel) {
+                p_37241_.getEntity().hurtServer(serverLevel, serverLevel.damageSources().spit(this, (LivingEntity) entity), 1.0F);
+            }
         }
 
     }
 
     protected void onHitBlock(BlockHitResult p_37239_) {
         super.onHitBlock(p_37239_);
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide()) {
             this.discard();
         }
 
     }
 
-    protected void defineSynchedData() {
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+    }
+
+    @Override
+    protected void readAdditionalSaveData(ValueInput input) {
+    }
+
+    @Override
+    protected void addAdditionalSaveData(ValueOutput output) {
     }
 
     public void recreateFromPacket(ClientboundAddEntityPacket p_150162_) {
         super.recreateFromPacket(p_150162_);
-        double d0 = p_150162_.getXa();
-        double d1 = p_150162_.getYa();
-        double d2 = p_150162_.getZa();
+        Vec3 movement = p_150162_.getMovement();
+        double d0 = movement.x;
+        double d1 = movement.y;
+        double d2 = movement.z;
 
         for(int i = 0; i < 7; ++i) {
             double d3 = 0.4D + 0.1D * (double)i;
-            this.level.addParticle(ParticleTypes.SPIT, this.getX(), this.getY(), this.getZ(), d0 * d3, d1, d2 * d3);
+            this.level().addParticle(ParticleTypes.SPIT, this.getX(), this.getY(), this.getZ(), d0 * d3, d1, d2 * d3);
         }
 
         this.setDeltaMovement(d0, d1, d2);

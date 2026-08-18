@@ -28,6 +28,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import oshi.util.tuples.Pair;
 import untamedwilds.entity.*;
@@ -64,9 +66,9 @@ public class EntityMonitor extends ComplexMobAmphibious implements ISpecies, INe
         this.ticksToSit = 20;
     }
 
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(HAS_EGG, false);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(HAS_EGG, false);
     }
 
     public static AttributeSupplier.Builder registerAttributes() {
@@ -105,20 +107,20 @@ public class EntityMonitor extends ComplexMobAmphibious implements ISpecies, INe
     public void aiStep() {
         super.aiStep();
 
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide()) {
             if (this.isInWater()) {
                 this.setDeltaMovement(this.getDeltaMovement().add(0.0D, -0.003D, 0.0D));
                 if (!this.isNotMoving() && this.random.nextInt(5) == 0 && this.getDeltaMovement().horizontalDistance() > 0.08) {
                     Vec3 testpos = this.position().add(Math.cos(Math.toRadians(this.getYRot()+ 90)) * -0.8, 0, Math.sin(Math.toRadians(this.getYRot() + 90)) * -0.8);
-                    BlockPos testblockpos = new BlockPos(testpos);
-                    if (level.getBlockState(new BlockPos(testblockpos.below())).is(BlockTags.MINEABLE_WITH_SHOVEL))
-                        ((ServerLevel)this.level).sendParticles(new BlockParticleOption(ParticleTypes.FALLING_DUST, this.level.getBlockState(testblockpos.below())), testpos.x, testpos.y + 0.2, testpos.z, 2, random.nextFloat() * 0.2, random.nextFloat() * 0.2, random.nextFloat() * 0.2, 0);
+                    BlockPos testblockpos = BlockPos.containing(testpos);
+                    if (this.level().getBlockState(testblockpos.below()).is(BlockTags.MINEABLE_WITH_SHOVEL))
+                        ((ServerLevel)this.level()).sendParticles(new BlockParticleOption(ParticleTypes.FALLING_DUST, this.level().getBlockState(testblockpos.below())), testpos.x, testpos.y + 0.2, testpos.z, 2, random.nextFloat() * 0.2, random.nextFloat() * 0.2, random.nextFloat() * 0.2, 0);
                     else
-                        ((ServerLevel)this.level).sendParticles(ParticleTypes.UNDERWATER, testpos.x, testpos.y + 0.2, testpos.z, 2, random.nextFloat() * 0.2, random.nextFloat() * 0.2, random.nextFloat() * 0.2, 0);
+                        ((ServerLevel)this.level()).sendParticles(ParticleTypes.UNDERWATER, testpos.x, testpos.y + 0.2, testpos.z, 2, random.nextFloat() * 0.2, random.nextFloat() * 0.2, random.nextFloat() * 0.2, 0);
                 }
             }
 
-            if (this.level.getGameTime() % 4000 == 0) {
+            if (this.level().getGameTime() % 4000 == 0) {
                 this.heal(1.0F);
             }
             if (this.getAnimation() == NO_ANIMATION && this.getTarget() == null && !this.isSleeping()) {
@@ -133,7 +135,7 @@ public class EntityMonitor extends ComplexMobAmphibious implements ISpecies, INe
                 else if (i > 2900) {
                     if (this.isVehicle() && this.getFirstPassenger() != null) {
                         this.setAnimation(ATTACK_THRASH);
-                        doHurtTarget(this.getFirstPassenger());
+                        doHurtTarget((ServerLevel) this.level(), this.getFirstPassenger());
                     }
                     else {
                         this.setAnimation(IDLE_TONGUE);
@@ -166,7 +168,7 @@ public class EntityMonitor extends ComplexMobAmphibious implements ISpecies, INe
     public boolean wantsToBreed() {
         if (super.wantsToBreed()) {
             if (!this.isSleeping() && this.getAge() == 0 && EntityUtils.hasFullHealth(this)) {
-                List<EntityMonitor> list = this.level.getEntitiesOfClass(EntityMonitor.class, this.getBoundingBox().inflate(6.0D, 4.0D, 6.0D));
+                List<EntityMonitor> list = this.level().getEntitiesOfClass(EntityMonitor.class, this.getBoundingBox().inflate(6.0D, 4.0D, 6.0D));
                 list.removeIf(input -> EntityUtils.isInvalidPartner(this, input, false));
                 if (list.size() >= 1) {
                     this.setAge(this.getPregnancyTime());
@@ -178,8 +180,8 @@ public class EntityMonitor extends ComplexMobAmphibious implements ISpecies, INe
         return false;
     }
 
-    public boolean doHurtTarget(Entity entityIn) {
-        boolean flag = super.doHurtTarget(entityIn);
+    public boolean doHurtTarget(ServerLevel level, Entity entityIn) {
+        boolean flag = super.doHurtTarget(level, entityIn);
         if (flag && this.getAnimation() == NO_ANIMATION && !this.isBaby()) {
             this.setAnimation(ATTACK_THRASH);
             this.setAnimationTick(0);
@@ -199,16 +201,15 @@ public class EntityMonitor extends ComplexMobAmphibious implements ISpecies, INe
     }
 
     @Override
-    public void positionRider(Entity p_20312_) {
-        //super.positionRider(p_20312_);
-        this.positionPreyInJaw(p_20312_, Entity::setPos);
+    protected void positionRider(Entity p_20312_, Entity.MoveFunction moveFunction) {
+        this.positionPreyInJaw(p_20312_, moveFunction);
     }
 
     private void positionPreyInJaw(Entity p_19957_, Entity.MoveFunction p_19958_) {
         if (this.hasPassenger(p_19957_)) {
             int rev = this.getAnimationTick() % 12 >= 6 ? -1 : 1;
             int factor = rev * (this.getAnimationTick() % 12);
-            double d0 = this.getY() + this.getPassengersRidingOffset() + p_19957_.getMyRidingOffset();
+            double d0 = this.getY() + this.getPassengersRidingOffset();
             p_19958_.accept(p_19957_, this.getX() + Math.cos(Math.toRadians(this.getYRot() + 90 + (factor * 4))) * 1, d0, this.getZ() + Math.sin(Math.toRadians(this.getYRot() + 90 + (factor * 4))) * 1);
         }
     }
@@ -219,7 +220,7 @@ public class EntityMonitor extends ComplexMobAmphibious implements ISpecies, INe
 
         if (itemstack.isEmpty() && this.isAlive() && hand.equals(InteractionHand.MAIN_HAND)) {
             this.setAnimation(ATTACK_THRASH);
-            return InteractionResult.sidedSuccess(this.level.isClientSide);
+            return this.level().isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
         }
         return super.mobInteract(player, hand);
     }
@@ -236,10 +237,10 @@ public class EntityMonitor extends ComplexMobAmphibious implements ISpecies, INe
         this.playSound(soundevent, 0.15F, 1.0F);
     }
 
-    public boolean hurt(DamageSource damageSource, float amount) {
+    public boolean hurtServer(ServerLevel level, DamageSource damageSource, float amount) {
         // Retaliate I: Mob will strike back when attacked by its current target
         performRetaliation(damageSource, this.getHealth(), amount, true);
-        return super.hurt(damageSource, amount);
+        return super.hurtServer(level, damageSource, amount);
     }
 
     public Animation[] getAnimations() { return new Animation[]{NO_ANIMATION, IDLE_TONGUE, ATTACK_THRASH}; }
@@ -268,16 +269,16 @@ public class EntityMonitor extends ComplexMobAmphibious implements ISpecies, INe
 
     @Override
     public boolean isValidNestBlock(BlockPos pos) {
-        return this.level.isEmptyBlock(pos) && this.level.getBlockState(pos.below()).is(ModTags.ModBlockTags.VALID_REPTILE_NEST) && this.getNestType().defaultBlockState().canSurvive(this.level, pos);
+        return this.level().isEmptyBlock(pos) && this.level().getBlockState(pos.below()).is(ModTags.ModBlockTags.VALID_REPTILE_NEST) && this.getNestType().defaultBlockState().canSurvive(this.level(), pos);
     }
 
-    public void addAdditionalSaveData(CompoundTag compound){
-        super.addAdditionalSaveData(compound);
-        compound.putBoolean("has_egg", this.wantsToLayEggs());
+    public void addAdditionalSaveData(ValueOutput output){
+        super.addAdditionalSaveData(output);
+        output.putBoolean("has_egg", this.wantsToLayEggs());
     }
 
-    public void readAdditionalSaveData(CompoundTag compound){
-        super.readAdditionalSaveData(compound);
-        this.setEggStatus(compound.getBoolean("has_egg"));
+    public void readAdditionalSaveData(ValueInput input){
+        super.readAdditionalSaveData(input);
+        this.setEggStatus(input.getBooleanOr("has_egg", false));
     }
 }

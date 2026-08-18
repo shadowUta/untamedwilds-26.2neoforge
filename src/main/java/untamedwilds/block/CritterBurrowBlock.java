@@ -4,6 +4,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -15,6 +16,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
@@ -69,15 +71,14 @@ public class CritterBurrowBlock extends Block implements SimpleWaterloggedBlock,
         return !state.getCollisionShape(worldIn, pos).getFaceShape(Direction.UP).isEmpty();
     }
 
-    public BlockState updateShape(BlockState stateIn, Direction facing, BlockState facingState, LevelAccessor worldIn, BlockPos currentPos, BlockPos facingPos) {
+    protected BlockState updateShape(BlockState stateIn, LevelReader worldIn, ScheduledTickAccess ticks, BlockPos currentPos, Direction facing, BlockPos facingPos, BlockState facingState, RandomSource random) {
         if (stateIn.getValue(WATERLOGGED)) {
-            worldIn.scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickDelay(worldIn));
+            ticks.scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickDelay(worldIn));
         }
         if (!canSurvive(stateIn, worldIn, currentPos)) {
-            worldIn.destroyBlock(currentPos, false);
+            return net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
         }
-
-        return super.updateShape(stateIn, facing, facingState, worldIn, currentPos, facingPos);
+        return super.updateShape(stateIn, worldIn, ticks, currentPos, facing, facingPos, facingState, random);
     }
 
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
@@ -85,8 +86,8 @@ public class CritterBurrowBlock extends Block implements SimpleWaterloggedBlock,
     }
 
     @Override
-    public int getExpDrop(BlockState state, LevelReader level, RandomSource randomSource, BlockPos pos, int fortuneLevel, int silkTouchLevel) {
-        return 10 + randomSource.nextInt(10);
+    public int getExpDrop(BlockState state, LevelAccessor level, BlockPos pos, BlockEntity blockEntity, net.minecraft.world.entity.Entity breaker, net.minecraft.world.item.ItemStack tool) {
+        return 10 + level.getRandom().nextInt(10);
     }
 
 
@@ -94,31 +95,33 @@ public class CritterBurrowBlock extends Block implements SimpleWaterloggedBlock,
         return true;
     }
 
-    public void randomTick(BlockState state, ServerLevel worldIn, BlockPos pos, Random random) {
+    protected void randomTick(BlockState state, ServerLevel worldIn, BlockPos pos, RandomSource random) {
         if (worldIn.getBlockEntity(pos) instanceof CritterBurrowBlockEntity burrow) {
             burrow.releaseOrCreateMob(worldIn);
         }
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player playerIn, InteractionHand hand, BlockHitResult hit) {
-        if (worldIn.isClientSide || hand.equals(InteractionHand.OFF_HAND)) {
+    protected InteractionResult useWithoutItem(BlockState state, Level worldIn, BlockPos pos, Player playerIn, BlockHitResult hit) {
+        if (worldIn.isClientSide()) {
             return InteractionResult.FAIL;
         }
         else {
-            CritterBurrowBlockEntity te = (CritterBurrowBlockEntity) worldIn.getBlockEntity(pos);
-            if (playerIn.isCreative() && te != null) {
+            if (!(worldIn.getBlockEntity(pos) instanceof CritterBurrowBlockEntity te)) {
+                return InteractionResult.PASS;
+            }
+            if (playerIn.isCreative()) {
 
                 if (playerIn.isSteppingCarefully())
                     te.releaseOrCreateMob((ServerLevel) worldIn);
                 else {
-                    playerIn.sendSystemMessage(MutableComponent.create(new TranslatableContents("This burrow contains " + te.getEntityType().getDescriptionId())).withStyle(ChatFormatting.ITALIC));
-                    playerIn.sendSystemMessage(MutableComponent.create(new TranslatableContents("The variant is " + te.getVariant())).withStyle(ChatFormatting.ITALIC));
-                    playerIn.sendSystemMessage(MutableComponent.create(new TranslatableContents("There are " + (te.getInhabitants().size() + te.getCount()) + " mobs inside the burrow (" + te.getInhabitants().size() + " stored, and " + te.getCount() + " to be spawned)")).withStyle(ChatFormatting.ITALIC));
+                    playerIn.sendSystemMessage(Component.literal("This burrow contains " + te.getEntityType().getDescriptionId()).withStyle(ChatFormatting.ITALIC));
+                    playerIn.sendSystemMessage(Component.literal("The variant is " + te.getVariant()).withStyle(ChatFormatting.ITALIC));
+                    playerIn.sendSystemMessage(Component.literal("There are " + (te.getInhabitants().size() + te.getCount()) + " mobs inside the burrow (" + te.getInhabitants().size() + " stored, and " + te.getCount() + " to be spawned)").withStyle(ChatFormatting.ITALIC));
                 }
             }
             else {
-                playerIn.sendSystemMessage(MutableComponent.create(new TranslatableContents("block.burrow.state", te.getEntityType().getDescription().getString())));
+                playerIn.sendSystemMessage(Component.translatable("block.burrow.state", te.getEntityType().getDescription().getString()));
             }
             return InteractionResult.SUCCESS;
         }

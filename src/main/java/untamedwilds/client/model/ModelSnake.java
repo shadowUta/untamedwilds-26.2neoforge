@@ -159,7 +159,7 @@ public class ModelSnake extends AdvancedEntityModel<EntitySnake> {
         limbSwingAmount = 0.5F;
 
         // Pitch/Yaw handler
-        if (snake.isInWater() && !snake.isOnGround()) {
+        if (snake.isInWater() && !snake.onGround()) {
             this.setRotateAngle(body_5, (float) (snake.getDeltaMovement().get(Direction.Axis.Y) * -30 * Math.PI / 180F), 0, 0);
         }
         this.body_1.rotateAngleY = Mth.rotLerp((float) 0.05, this.body_4.rotateAngleY, snake.offset);

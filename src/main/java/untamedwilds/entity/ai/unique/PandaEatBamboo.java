@@ -4,6 +4,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.AABB;
 import untamedwilds.entity.ComplexMobTerrestrial;
 
@@ -34,8 +35,8 @@ public class PandaEatBamboo extends Goal {
         if (this.taskOwner.getRandom().nextInt(this.executionChance) != 0) {
             return false;
         }
-        List<ItemEntity> list = this.taskOwner.level.getEntitiesOfClass(ItemEntity.class, this.getTargetableArea(distance));
-        list.removeIf((ItemEntity item) -> item.getItem().getItem().equals("bamboo")); // Stupid way to do this
+        List<ItemEntity> list = this.taskOwner.level().getEntitiesOfClass(ItemEntity.class, this.getTargetableArea(distance));
+        list.removeIf((ItemEntity item) -> !item.getItem().is(Items.BAMBOO));
 
         if (list.isEmpty()) {
             return false;

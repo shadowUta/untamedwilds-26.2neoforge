@@ -3,7 +3,7 @@ package untamedwilds.entity.ai.unique;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.food.FoodProperties;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.phys.AABB;
 import untamedwilds.entity.fish.EntityCatfish;
 
@@ -38,9 +38,9 @@ public class CatfishGarbageBinGoal extends Goal {
         if (this.taskOwner.getRandom().nextInt(this.executionChance) != 0) {
             return false;
         }
-        List<ItemEntity> list = this.taskOwner.level.getEntitiesOfClass(ItemEntity.class, this.getTargettableArea(distance));
+        List<ItemEntity> list = this.taskOwner.level().getEntitiesOfClass(ItemEntity.class, this.getTargettableArea(distance));
 
-        list.removeIf((ItemEntity item) -> !item.getItem().isEdible());
+        list.removeIf((ItemEntity item) -> item.getItem().get(DataComponents.FOOD) == null);
         if (!list.isEmpty()) {
             list.sort(this.sorter);
             this.targetItem = list.get(0);

@@ -11,7 +11,7 @@ import untamedwilds.entity.reptile.EntitySnake;
 
 import javax.annotation.Nonnull;
 
-public class RendererSnake extends MobRenderer<EntitySnake, EntityModel<EntitySnake>> {
+public class RendererSnake extends UntamedMobRenderer<EntitySnake> {
 
     private static final ModelSnake SNAKE_MODEL = new ModelSnake();
 

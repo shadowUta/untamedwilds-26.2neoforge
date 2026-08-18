@@ -37,7 +37,7 @@ public class SpitterAttackGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        long i = this.attacker.level.getGameTime();
+        long i = this.attacker.level().getGameTime();
         if (i - this.field_220720_k < 20L) {
             return false;
         } else {
@@ -70,10 +70,9 @@ public class SpitterAttackGoal extends Goal {
             return false;
         } else if (!this.longMemory) {
             return !this.attacker.getNavigation().isDone();
-        } else if (!this.attacker.isWithinRestriction(livingentity.blockPosition())) {
+        } else if (!this.attacker.isWithinHome(livingentity.blockPosition())) {
             return false;
-        }
-        else {
+        } else {
             return !(livingentity instanceof Player) || !livingentity.isSpectator() && !((Player)livingentity).isCreative();
         }
     }
@@ -84,7 +83,7 @@ public class SpitterAttackGoal extends Goal {
         this.attacker.setAggressive(true);
         this.delayCounter = 0;
 
-        List<? extends EntitySpitter> list = this.attacker.level.getEntitiesOfClass(EntitySpitter.class, this.attacker.getBoundingBox().inflate(12.0D, 8.0D, 12.0D));
+        List<? extends EntitySpitter> list = this.attacker.level().getEntitiesOfClass(EntitySpitter.class, this.attacker.getBoundingBox().inflate(12.0D, 8.0D, 12.0D));
 
         for (EntitySpitter entityanimal1 : list) {
             if (entityanimal1.getVariant() == this.attacker.getVariant()) {
@@ -157,7 +156,9 @@ public class SpitterAttackGoal extends Goal {
         double d0 = this.getAttackReachSqr(enemy);
         if (this.attacker.hasLineOfSight(enemy) && distToEnemySqr <= d0 && (this.attackTick <= 0 || (this.attackTick <= 10 && this.attacker.getAnimation() == IAnimatedEntity.NO_ANIMATION))) {
             this.attackTick = 20;
-            this.attacker.doHurtTarget(enemy);
+            if (this.attacker.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+                this.attacker.doHurtTarget(serverLevel, enemy);
+            }
         }
 
     }

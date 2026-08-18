@@ -5,14 +5,15 @@ import com.mojang.datafixers.util.Pair;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.contents.PlainTextContents.LiteralContents;
-import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -23,14 +24,21 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.vehicle.boat.Boat;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.item.component.Consumable;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.util.ProblemReporter;
+import net.minecraft.util.context.ContextKeySet;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.entity.PartEntity;
 import untamedwilds.UntamedWilds;
@@ -49,11 +57,11 @@ public abstract class EntityUtils {
     public static void destroyBoat(Level worldIn, LivingEntity entityIn) {
         if (entityIn.getVehicle() != null && entityIn.getVehicle() instanceof Boat boat) {
             boat.remove(Entity.RemovalReason.KILLED);
-            if (worldIn.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
+            if (worldIn instanceof ServerLevel serverLevel && serverLevel.getGameRules().get(GameRules.MOB_DROPS)) {
                 for (int j = 0; j < 3; ++j)
-                    boat.spawnAtLocation(boat.getBoatType().getPlanks());
+                    boat.spawnAtLocation((ServerLevel) worldIn, Items.OAK_PLANKS);
                 for (int k = 0; k < 2; ++k)
-                    boat.spawnAtLocation(Items.STICK);
+                    boat.spawnAtLocation((ServerLevel) worldIn, Items.STICK);
             }
         }
     }
@@ -86,15 +94,16 @@ public abstract class EntityUtils {
      * @param yOffset  Offset in the Y axis
      */
     public static BlockPos getRelativeBlockPos(Entity entityIn, float xzOffset, float yOffset) {
-        return entityIn.blockPosition().offset(Math.cos(Math.toRadians(entityIn.getYRot() + 90)) * xzOffset, yOffset, Math.sin(Math.toRadians(entityIn.getYRot() + 90)) * xzOffset);
+        return entityIn.blockPosition().offset(Mth.floor(Math.cos(Math.toRadians(entityIn.getYRot() + 90)) * xzOffset), Mth.floor(yOffset), Mth.floor(Math.sin(Math.toRadians(entityIn.getYRot() + 90)) * xzOffset));
     }
 
     // Self-explanatory
     public static EntityType<?> getEntityTypeFromTag(CompoundTag nbt, @Nullable EntityType<?> alt) {
-        if (nbt != null && nbt.contains("EntityTag", 10)) {
-            CompoundTag entityNBT = nbt.getCompound("EntityTag");
-            if (entityNBT.contains("id", 8)) {
-                return EntityType.byString(entityNBT.getString("id")).orElse(alt);
+        if (nbt != null && nbt.contains("EntityTag")) {
+            CompoundTag entityNBT = nbt.getCompound("EntityTag").orElse(new CompoundTag());
+            if (entityNBT.contains("id")) {
+                var found = BuiltInRegistries.ENTITY_TYPE.get(Identifier.parse(entityNBT.getString("id").orElse("")));
+                return found.isPresent() ? (EntityType<?>) found.get().value() : alt;
             }
         }
         return alt;
@@ -102,27 +111,28 @@ public abstract class EntityUtils {
 
     // This function builds a full tooltip containing Custom Name, EntityType, Gender and Scientific name (if available)
     public static void buildTooltipData(ItemStack stack, List<Component> tooltip, EntityType<?> entity, String path) {
-        if (stack.getTag() != null && stack.getTag().contains("EntityTag")) {
-            CompoundTag compound = stack.getTagElement("EntityTag");
+        CompoundTag stackData = getCustomData(stack);
+        if (stackData != null && stackData.contains("EntityTag")) {
+            CompoundTag compound = stackData.getCompound("EntityTag").orElse(new CompoundTag());
             //String component = "mobspawn.tooltip." + (compound.contains("Gender") ? (compound.getInt("Gender") == 0 ? "male" : "female") : "unknown");
             //tooltip.add(new TranslatableComponent(component).mergeStyle(TextFormatting.GRAY));
-            String gender = compound.contains("Gender") ? MutableComponent.create(new TranslatableContents("mobspawn.tooltip." + (compound.getInt("Gender") == 0 ? "male" : "female"))).getString() + " " : "";
+            String gender = compound.contains("Gender") ? Component.translatable("mobspawn.tooltip." + (compound.getInt("Gender").orElse(0) == 0 ? "male" : "female")).getString() + " " : "";
             String type;
             if (path.isEmpty())
-                type = MutableComponent.create(new TranslatableContents(entity.getDescriptionId())).getString();
+                type = Component.translatable(entity.getDescriptionId()).getString();
             else
-                type = MutableComponent.create(new TranslatableContents(entity.getDescriptionId() + "_" + path)).getString();
-            if (stack.getTag().getCompound("EntityTag").contains("CustomName")) {
-                String customName = stack.getTag().getCompound("EntityTag").getString("CustomName");
+                type = Component.translatable(entity.getDescriptionId() + "_" + path).getString();
+            if (compound.contains("CustomName")) {
+                String customName = compound.getString("CustomName").orElse("");
                 // Entity uses ITextComponent.Serializer.getComponentFromJson(s) instead of substrings
-                tooltip.add(MutableComponent.create(new LiteralContents(customName.substring(9, customName.length() - 2) + " (" + gender + type + ")")).withStyle(ChatFormatting.GRAY));
+                tooltip.add(Component.literal(customName.substring(9, customName.length() - 2) + " (" + gender + type + ")").withStyle(ChatFormatting.GRAY));
             } else {
-                tooltip.add(MutableComponent.create(new LiteralContents(gender + type)).withStyle(ChatFormatting.GRAY));
+                tooltip.add(Component.literal(gender + type).withStyle(ChatFormatting.GRAY));
             }
         }
         if (ConfigGamerules.scientificNames.get()) {
             String scipath = path.isEmpty() ? "" : "_" + path;
-            MutableComponent tooltipText = MutableComponent.create(new TranslatableContents(entity.getDescriptionId() + scipath + ".sciname"));
+            MutableComponent tooltipText = Component.translatable(entity.getDescriptionId() + scipath + ".sciname");
             if (!tooltipText.getString().contains(".")) {
                 tooltip.add(tooltipText.withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY));
             }
@@ -136,21 +146,24 @@ public abstract class EntityUtils {
     // This function creates a new mob from the NBT Tag stored in an ItemStack. Uses default EntityType and Species data to allow creating new entities from zero
     public static void createMobFromItem(ServerLevel worldIn, ItemStack itemstack, EntityType<?> entity, @Nullable Integer species, BlockPos spawnPos, @Nullable Player player, boolean offset, boolean skipNBTCheck) {
         Entity spawn;
-        if (itemstack.getTag() != null) {
+        CompoundTag itemData = getCustomData(itemstack);
+        if (itemData != null) {
             //UntamedWilds.LOGGER.info(itemstack.getTag().toString());
-            if (itemstack.getTag().contains("EntityTag") && !skipNBTCheck) {
-                if (itemstack.getTagElement("EntityTag").contains("UUID")) {
-                    if (worldIn.getEntity(itemstack.getTagElement("EntityTag").getUUID("UUID")) != null) {
-                        itemstack.getTagElement("EntityTag").putUUID("UUID", Mth.createInsecureUUID(worldIn.random));
+            if (itemData.contains("EntityTag") && !skipNBTCheck) {
+                CompoundTag entityData = itemData.getCompound("EntityTag").orElse(new CompoundTag());
+                if (entityData.contains("UUID")) {
+                    if (entityData.contains("UUID") && entityData.getIntArray("UUID").isPresent() && worldIn.getEntity(uuidFromIntArray(entityData.getIntArray("UUID").get())) != null) {
+                        java.util.UUID uuid = Mth.createInsecureUUID(worldIn.getRandom());
+                        entityData.putIntArray("UUID", new int[]{(int) (uuid.getMostSignificantBits() >> 32), (int) uuid.getMostSignificantBits(), (int) (uuid.getLeastSignificantBits() >> 32), (int) uuid.getLeastSignificantBits()});
                     }
                 }
                 spawn = entity.spawn(worldIn, itemstack, player, spawnPos, EntitySpawnReason.BUCKET, true, offset);
-                if (spawn != null && itemstack.hasCustomHoverName()) {
+                if (spawn != null && itemstack.get(DataComponents.CUSTOM_NAME) != null) {
                     spawn.setCustomName(itemstack.getHoverName());
                 }
             } else {
                 // If no NBT data is assigned to the entity (eg. Item taken from the Creative menu), create a new, random mob
-                spawn = entity.create(worldIn, null, null, player, spawnPos, EntitySpawnReason.SPAWN_EGG, true, offset);
+                spawn = entity.create(worldIn, null, spawnPos, EntitySpawnReason.SPAWN_ITEM_USE, true, offset);
                 if (spawn instanceof ComplexMob entitySpawn) {
                     int true_species = species != null ? species : entitySpawn.getRandom().nextInt(ComplexMob.getEntityData(entitySpawn.getType()).getSpeciesData().size());
                     entitySpawn.setVariant(true_species);
@@ -161,7 +174,7 @@ public abstract class EntityUtils {
                         ((INeedsPostUpdate) spawn).updateAttributes();
                 }
                 if (spawn != null) {
-                    if (itemstack.hasCustomHoverName()) {
+                    if (itemstack.get(DataComponents.CUSTOM_NAME) != null) {
                         spawn.setCustomName(itemstack.getHoverName());
                     }
                     worldIn.addFreshEntityWithPassengers(spawn);
@@ -177,8 +190,8 @@ public abstract class EntityUtils {
             ItemStack item = new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.parse(UntamedWilds.MOD_ID + ":" + item_name.toLowerCase())));
             baseTag.putInt("variant", entity.getVariant());
             baseTag.putInt("custom_model_data", entity.getVariant());
-            item.setTag(baseTag);
-            ItemEntity entityitem = entity.spawnAtLocation(item, 0.2F);
+            item.set(DataComponents.CUSTOM_DATA, CustomData.of(baseTag));
+            ItemEntity entityitem = entity.level() instanceof ServerLevel serverLevel ? entity.spawnAtLocation(serverLevel, item, 0.2F) : null;
             if (entityitem != null) {
                 entityitem.getItem().setCount(1 + entity.getRandom().nextInt(number - 1));
             }
@@ -188,13 +201,13 @@ public abstract class EntityUtils {
     // This function turns the entity into an item with item_name registry name, and removes the entity from the world
     public static void turnEntityIntoItem(LivingEntity entity, String item_name) {
         if (ConfigGamerules.easyMobCapturing.get() || ((Mob) entity).getTarget() == null) {
-            ItemEntity entityitem = entity.spawnAtLocation(new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.parse(UntamedWilds.MOD_ID + ":" + item_name.toLowerCase()))), 0.2F);
+            ItemEntity entityitem = entity.level() instanceof ServerLevel serverLevel ? entity.spawnAtLocation(serverLevel, new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.parse(UntamedWilds.MOD_ID + ":" + item_name.toLowerCase()))), 0.2F) : null;
             RandomSource rand = entity.getRandom();
             if (entityitem != null) {
                 entityitem.setDeltaMovement((rand.nextFloat() - rand.nextFloat()) * 0.1F, rand.nextFloat() * 0.05F, (rand.nextFloat() - rand.nextFloat()) * 0.1F);
-                entityitem.getItem().setTag(writeEntityToNBT(entity, false, true));
+                entityitem.getItem().set(DataComponents.CUSTOM_DATA, CustomData.of(writeEntityToNBT(entity, false, true)));
                 if (entity.hasCustomName()) {
-                    entityitem.getItem().setHoverName(entity.getCustomName());
+                    entityitem.getItem().set(DataComponents.CUSTOM_NAME, entity.getCustomName());
                 }
                 entity.discard();
             }
@@ -207,11 +220,11 @@ public abstract class EntityUtils {
             entity.playSound(SoundEvents.BUCKET_FILL_FISH, 1.0F, 1.0F);
             itemstack.shrink(1);
             ItemStack newitem = new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.parse(UntamedWilds.MOD_ID + ":" + item_name.toLowerCase())));
-            newitem.setTag(writeEntityToNBT(entity, false, true));
+            newitem.set(DataComponents.CUSTOM_DATA, CustomData.of(writeEntityToNBT(entity, false, true)));
             if (entity.hasCustomName()) {
-                newitem.setHoverName(entity.getCustomName());
+                newitem.set(DataComponents.CUSTOM_NAME, entity.getCustomName());
             }
-            if (!entity.getLevel().isClientSide()) {
+            if (!entity.level().isClientSide()) {
                 player.awardStat(net.minecraft.stats.Stats.ITEM_PICKED_UP.get(newitem.getItem()));
             }
             if (itemstack.isEmpty()) {
@@ -225,9 +238,9 @@ public abstract class EntityUtils {
 
     // This function pulls X items from the defined LootTable
     public static List<ItemStack> getItemFromLootTable(Identifier lootTableIn, Level worldIn) {
-        LootContext.Builder lootcontext$builder = new LootContext.Builder((ServerLevel) worldIn);
-        if (worldIn.getServer() != null) {
-            return worldIn.getServer().getLootTables().get(lootTableIn).getRandomItems(lootcontext$builder.create(new LootContextParamSet.Builder().build()));
+        if (worldIn instanceof ServerLevel serverLevel && worldIn.getServer() != null) {
+            var key = ResourceKey.create(Registries.LOOT_TABLE, lootTableIn);
+            return worldIn.getServer().registryAccess().lookupOrThrow(Registries.LOOT_TABLE).getOrThrow(key).value().getRandomItems(new LootParams.Builder(serverLevel).create(ContextKeySet.EMPTY));
         }
         return Lists.newArrayList();
     }
@@ -244,7 +257,9 @@ public abstract class EntityUtils {
     public static CompoundTag writeEntityToNBT(LivingEntity entity, boolean keepHomeData, boolean attachModelData) {
         CompoundTag baseTag = new CompoundTag();
         CompoundTag entityTag = new CompoundTag();
-        entity.saveAsPassenger(entityTag);
+        TagValueOutput output = TagValueOutput.createWithoutContext(ProblemReporter.DISCARDING);
+        entity.saveAsPassenger(output);
+        entityTag = output.buildResult();
         entityTag.remove("Pos"); // Remove the Position from the NBT data, as it would fuck things up later on
         entityTag.remove("Motion");
         if (entityTag.contains("BoundingBox")) {
@@ -369,7 +384,7 @@ public abstract class EntityUtils {
         if (ComplexMob.ENTITY_DATA_HASH.containsKey(typeIn)) {
             SoundEvent location = ComplexMob.ENTITY_DATA_HASH.get(typeIn).getSounds(variantIn, sound_type);
             if (location != null) {
-                return BuiltInRegistries.SOUND_EVENT.getValue(location.getLocation());
+                    return location;
             }
         }
         /*else if (ComplexMob.CLIENT_DATA_HASH.containsKey(typeIn)) {
@@ -392,8 +407,8 @@ public abstract class EntityUtils {
 
     // Takes the skin from the TEXTURES_COMMON or TEXTURES_RARE array
     public static Identifier getSkinFromEntity(ComplexMob entityIn) {
-        if (entityIn.getType().builtInRegistryHolder().key().location() != null) {
-            String name = entityIn.getType().builtInRegistryHolder().key().location().getPath();
+            if (entityIn.getType().builtInRegistryHolder().key().identifier() != null) {
+            String name = entityIn.getType().builtInRegistryHolder().key().identifier().getPath();
             if (entityIn.getSkin() > 99 && ComplexMob.TEXTURES_RARE.get(name).containsKey(entityIn.getVariant())) {
                 return ComplexMob.TEXTURES_RARE.get(name).get(entityIn.getVariant()).get(Math.min(entityIn.getSkin() - 100, ComplexMob.TEXTURES_RARE.get(name).get(entityIn.getVariant()).size() - 1));
             }
@@ -406,29 +421,26 @@ public abstract class EntityUtils {
 
     // Tests an ItemStack and consumes it if found to be a Food. Also applies it's effects
     public static void consumeItemStack(TamableAnimal entityIn, ItemStack itemstack) {
-        if (itemstack.isEdible()) {
-            FoodProperties itemFood = itemstack.getItem().getFoodProperties();
+        FoodProperties itemFood = itemstack.get(DataComponents.FOOD);
+        if (itemFood != null) {
             if (itemFood != null) {
-                entityIn.playSound(SoundEvents.GENERIC_EAT, 1, 1);
+                entityIn.playSound(SoundEvents.GENERIC_EAT.value(), 1, 1);
                 if (entityIn instanceof ComplexMobTerrestrial)
-                    ((ComplexMobTerrestrial) entityIn).addHunger(itemFood.getNutrition() * 10);
+                    ((ComplexMobTerrestrial) entityIn).addHunger(itemFood.nutrition() * 10);
                 else
-                    entityIn.heal(itemFood.getNutrition());
+                    entityIn.heal(itemFood.nutrition());
 
-                for (Pair<MobEffectInstance, Float> pair : itemFood.getEffects()) {
-                    if (pair.getFirst() != null && entityIn.level.random.nextFloat() < pair.getSecond()) {
-                        entityIn.addEffect(new MobEffectInstance(pair.getFirst()));
-                    }
-                }
+                Consumable consumable = itemstack.get(DataComponents.CONSUMABLE);
+                if (consumable != null) for (var effect : consumable.onConsumeEffects()) effect.apply(entityIn.level(), itemstack, entityIn);
             }
         } else if (itemstack.is(Items.POTION) && !itemstack.isEmpty()) {
-            entityIn.playSound(SoundEvents.GENERIC_DRINK, 1, 1);
+            entityIn.playSound(SoundEvents.GENERIC_DRINK.value(), 1, 1);
             if (entityIn instanceof ComplexMobTerrestrial)
                 ((ComplexMobTerrestrial) entityIn).addHunger(10);
 
             for (MobEffectInstance effectinstance : itemstack.getOrDefault(net.minecraft.core.component.DataComponents.POTION_CONTENTS, net.minecraft.world.item.alchemy.PotionContents.EMPTY).getAllEffects()) {
-                if (effectinstance.getEffect().isInstantenous())
-                    effectinstance.getEffect().applyInstantenousEffect(entityIn.getOwner(), entityIn.getOwner(), entityIn, effectinstance.getAmplifier(), 1.0D);
+                if (effectinstance.getEffect().value().isInstantaneous() && entityIn.level() instanceof ServerLevel serverLevel)
+                    effectinstance.getEffect().value().applyInstantaneousEffect(serverLevel, entityIn.getOwner(), entityIn.getOwner(), entityIn, effectinstance.getAmplifier(), 1.0D);
                 else
                     entityIn.addEffect(new MobEffectInstance(effectinstance));
             }
@@ -451,5 +463,15 @@ public abstract class EntityUtils {
             return true;
         }
         return (ConfigGamerules.genderedBreeding.get() && (partnerIn.getGender() == entityIn.getGender() || isHermaphrodite)) || (partnerIn.getVariant() != entityIn.getVariant()) || partnerIn.getAge() != 0;
+    }
+
+    @Nullable
+    private static CompoundTag getCustomData(ItemStack stack) {
+        CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+        return data == null ? null : data.copyTag();
+    }
+
+    private static java.util.UUID uuidFromIntArray(int[] value) {
+        return new java.util.UUID(((long) value[0] << 32) | (value[1] & 0xffffffffL), ((long) value[2] << 32) | (value[3] & 0xffffffffL));
     }
 }

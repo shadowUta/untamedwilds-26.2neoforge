@@ -37,8 +37,12 @@ public class EntityHyena extends ComplexMobTerrestrial implements INewSkins, ISp
         IDLE_TALK = Animation.create(20);
         ATTACK_POUNCE = Animation.create(42);
         ATTACK_BITE = Animation.create(15);
-        this.maxUpStep = 1F;
         this.turn_speed = 0.1F;
+    }
+
+    @Override
+    public float maxUpStep() {
+        return 1F;
     }
 
     public void registerGoals() {
@@ -57,7 +61,6 @@ public class EntityHyena extends ComplexMobTerrestrial implements INewSkins, ISp
         this.targetSelector.addGoal(4, new AngrySleeperTarget<>(this, LivingEntity.class, true));
     }
 
-    @Override
     protected void reassessTameGoals() {
         if (this.isTame()) {
             if (UntamedWilds.DEBUG) {
@@ -88,14 +91,14 @@ public class EntityHyena extends ComplexMobTerrestrial implements INewSkins, ISp
 
     @Override
     public void aiStep() {
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide()) {
             if (this.herd == null) {
                 IPackEntity.initPack(this);
             }
             else {
                 this.herd.tick();
             }
-            if (this.level.getGameTime() % 1000 == 0) {
+            if (this.level().getGameTime() % 1000 == 0) {
                 this.addHunger(-10);
                 if (!this.isStarving()) {
                     this.heal(1.0F);
@@ -131,14 +134,14 @@ public class EntityHyena extends ComplexMobTerrestrial implements INewSkins, ISp
         }
         if (this.getAnimation() != NO_ANIMATION) {
             if (this.getAnimation() == ATTACK_BITE && this.getAnimationTick() == 6) {
-                this.playSound(ModSounds.ENTITY_ATTACK_BITE, 1.5F, 0.8F);
+                this.playSound(ModSounds.ENTITY_ATTACK_BITE.value(), 1.5F, 0.8F);
             }
         }
         super.aiStep();
     }
 
-    public boolean doHurtTarget(Entity entityIn) {
-        boolean flag = super.doHurtTarget(entityIn);
+    public boolean doHurtTarget(ServerLevel level, Entity entityIn) {
+        boolean flag = super.doHurtTarget(level, entityIn);
         if (flag && this.getAnimation() == NO_ANIMATION && !this.isBaby()) {
             Animation anim = chooseAttackAnimation();
             this.setAnimation(anim);
@@ -147,7 +150,7 @@ public class EntityHyena extends ComplexMobTerrestrial implements INewSkins, ISp
     }
 
     protected void playStepSound(BlockPos pos, BlockState blockIn) {
-        this.playSound(SoundEvents.WOLF_STEP, 0.15F, 1.0F);
+        this.playSound(SoundEvents.WOLF_STEP.value(), 0.15F, 1.0F);
     }
 
     private Animation chooseAttackAnimation() {
@@ -160,20 +163,20 @@ public class EntityHyena extends ComplexMobTerrestrial implements INewSkins, ISp
 
     @Nullable
     public EntityHyena getBreedOffspring(ServerLevel serverWorld, AgeableMob ageable) {
-        return create_offspring(new EntityHyena(ModEntity.HYENA.get(), this.level));
+        return create_offspring(new EntityHyena(ModEntity.HYENA.get(), serverWorld));
     }
 
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack itemstack = player.getItemInHand(InteractionHand.MAIN_HAND);
-        if (hand == InteractionHand.MAIN_HAND && !this.level.isClientSide()) {
+        if (hand == InteractionHand.MAIN_HAND && !this.level().isClientSide()) {
 
             if (!this.isTame() && this.isBaby() && EntityUtils.hasFullHealth(this) && this.isFood(itemstack)) {
                 this.playSound(SoundEvents.HORSE_EAT, 1.5F, 0.8F);
                 if (this.getRandom().nextInt(3) == 0) {
                     this.tame(player);
-                    EntityUtils.spawnParticlesOnEntity(this.level, this, ParticleTypes.HEART, 3, 6);
+                    EntityUtils.spawnParticlesOnEntity(this.level(), this, ParticleTypes.HEART, 3, 6);
                 } else {
-                    EntityUtils.spawnParticlesOnEntity(this.level, this, ParticleTypes.SMOKE, 3, 3);
+                    EntityUtils.spawnParticlesOnEntity(this.level(), this, ParticleTypes.SMOKE, 3, 3);
                 }
             }
         }

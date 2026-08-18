@@ -37,7 +37,7 @@ public class SpitterTerritorialityGoal<T extends LivingEntity> extends HuntMobTa
         if (this.mob.isBaby() || this.mob.getRandom().nextInt(this.executionChance) != 0) {
             return false;
         }
-        List<T> list = this.mob.level.getEntitiesOfClass(this.targetClass, this.mob.getBoundingBox().inflate(this.getFollowDistance(), 12.0D, this.getFollowDistance()), this.targetEntitySelector);
+        List<T> list = this.mob.level().getEntitiesOfClass(this.targetClass, this.mob.getBoundingBox().inflate(this.getFollowDistance(), 12.0D, this.getFollowDistance()), this.targetEntitySelector);
         if (list.isEmpty())
             return false;
 

@@ -7,6 +7,7 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
@@ -22,6 +23,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import untamedwilds.block.blockentity.EggBlockEntity;
 
 import java.util.Random;
+import net.minecraft.util.RandomSource;
 
 public class StrangeEggBlock extends Block implements SimpleWaterloggedBlock, EntityBlock {
 
@@ -60,15 +62,14 @@ public class StrangeEggBlock extends Block implements SimpleWaterloggedBlock, En
         return !state.getCollisionShape(worldIn, pos).getFaceShape(Direction.UP).isEmpty();
     }
 
-    public BlockState updateShape(BlockState stateIn, Direction facing, BlockState facingState, LevelAccessor worldIn, BlockPos currentPos, BlockPos facingPos) {
+    protected BlockState updateShape(BlockState stateIn, LevelReader worldIn, ScheduledTickAccess ticks, BlockPos currentPos, Direction facing, BlockPos facingPos, BlockState facingState, RandomSource random) {
         if (stateIn.getValue(WATERLOGGED)) {
-            worldIn.scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickDelay(worldIn));
+            ticks.scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickDelay(worldIn));
         }
         if (!canSurvive(stateIn, worldIn, currentPos)) {
-            worldIn.destroyBlock(currentPos, false);
+            return net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
         }
-
-        return super.updateShape(stateIn, facing, facingState, worldIn, currentPos, facingPos);
+        return super.updateShape(stateIn, worldIn, ticks, currentPos, facing, facingPos, facingState, random);
     }
 
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
@@ -79,7 +80,7 @@ public class StrangeEggBlock extends Block implements SimpleWaterloggedBlock, En
         return true;
     }
 
-    public void randomTick(BlockState state, ServerLevel worldIn, BlockPos pos, Random random) {
+    protected void randomTick(BlockState state, ServerLevel worldIn, BlockPos pos, RandomSource random) {
         boolean canHatch = worldIn.isWaterAt(pos);
         if (worldIn.getBlockEntity(pos) instanceof EggBlockEntity egg) {
             egg.setCanSpawn(this.canHatch(state, worldIn, pos, random));
@@ -87,7 +88,7 @@ public class StrangeEggBlock extends Block implements SimpleWaterloggedBlock, En
         }
     }
 
-    public boolean canHatch(BlockState state, ServerLevel worldIn, BlockPos pos, Random random) {
+    public boolean canHatch(BlockState state, ServerLevel worldIn, BlockPos pos, RandomSource random) {
         return true;
     }
 }

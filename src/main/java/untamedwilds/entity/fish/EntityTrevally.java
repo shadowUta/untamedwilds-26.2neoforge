@@ -47,7 +47,7 @@ public class EntityTrevally extends ComplexMobAquatic implements ISpecies, IPack
     }
 
     public void aiStep() {
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide()) {
             if (this.herd == null) {
                 IPackEntity.initPack(this);
             }
@@ -59,7 +59,7 @@ public class EntityTrevally extends ComplexMobAquatic implements ISpecies, IPack
                     this.breed();
                 }
             }
-            if (this.level.getGameTime() % 4000 == 0) {
+            if (this.level().getGameTime() % 4000 == 0) {
                 this.heal(1.0F);
             }
         }
@@ -71,7 +71,7 @@ public class EntityTrevally extends ComplexMobAquatic implements ISpecies, IPack
         if (hand == InteractionHand.MAIN_HAND) {
             if (itemstack.getItem().equals(Items.WATER_BUCKET) && this.isAlive()) {
                 EntityUtils.mutateEntityIntoItem(this, player, hand, "bucket_trevally", itemstack);
-                return InteractionResult.sidedSuccess(this.level.isClientSide);
+                return InteractionResult.SUCCESS;
             }
         }
         return super.mobInteract(player, hand);
@@ -81,7 +81,7 @@ public class EntityTrevally extends ComplexMobAquatic implements ISpecies, IPack
      * A nearby Trevally of different gender */
     public boolean wantsToBreed() {
         if (ConfigGamerules.naturalBreeding.get() && this.getAge() == 0 && EntityUtils.hasFullHealth(this)) {
-            List<EntityTrevally> list = this.level.getEntitiesOfClass(EntityTrevally.class, this.getBoundingBox().inflate(12.0D, 8.0D, 12.0D));
+            List<EntityTrevally> list = this.level().getEntitiesOfClass(EntityTrevally.class, this.getBoundingBox().inflate(12.0D, 8.0D, 12.0D));
             list.removeIf(input -> EntityUtils.isInvalidPartner(this, input, false));
             if (list.size() >= 1) {
                 this.setAge(this.getPregnancyTime());

@@ -275,7 +275,7 @@ public class ModelWarthog extends AdvancedEntityModel<EntityBoar> {
         }
 
         // Pitch/Yaw handler
-        if (boar.isInWater() && !boar.isOnGround()) {
+        if (boar.isInWater() && !boar.onGround()) {
             float pitch = Mth.clamp(boar.getXRot(), -20F, 20.0F) - 10;
             this.setRotateAngle(main_body, (float) (pitch * Math.PI / 180F), 0, 0);
         }

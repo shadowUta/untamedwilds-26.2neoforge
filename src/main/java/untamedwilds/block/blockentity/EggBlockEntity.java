@@ -1,10 +1,11 @@
 package untamedwilds.block.blockentity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -15,16 +16,16 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import untamedwilds.config.ConfigGamerules;
 import untamedwilds.config.ConfigMobControl;
 import untamedwilds.entity.ComplexMob;
 import untamedwilds.entity.INeedsPostUpdate;
-import untamedwilds.init.ModBlock;
 import untamedwilds.init.ModEntity;
 import untamedwilds.util.EntityUtils;
-
-import java.util.Random;
 
 public class EggBlockEntity extends BlockEntity {
 
@@ -33,7 +34,12 @@ public class EggBlockEntity extends BlockEntity {
     private boolean canSpawn = true;
 
     public EggBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlock.TILE_ENTITY_EGG.get(), pos, state);
+        super(getBlockEntityType(), pos, state);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static BlockEntityType<EggBlockEntity> getBlockEntityType() {
+        return (BlockEntityType<EggBlockEntity>) BuiltInRegistries.BLOCK_ENTITY_TYPE.getValue(Identifier.parse("untamedwilds:strange_egg"));
     }
 
     public void releaseOrCreateMob(ServerLevel worldIn) {
@@ -43,11 +49,11 @@ public class EggBlockEntity extends BlockEntity {
                 if (this.getEntityType() != null) {
                     // Turns out that calling EntityType.create(...) will fucking crash the game if it pulls an invalid variant
                     //Entity spawn = this.getEntityType().create(worldIn, null, null, null, blockpos, EntitySpawnReason.CHUNK_GENERATION, true, false);
-                    Entity spawn = this.getEntityType().create(worldIn);
+                    Entity spawn = this.getEntityType().create(worldIn, EntitySpawnReason.BREEDING);
                     if (spawn != null) {
-                        spawn.moveTo(blockpos.getX() + 0.5D, blockpos.getY(), blockpos.getZ() + 0.5D, Mth.wrapDegrees(worldIn.random.nextFloat() * 360.0F), 0.0F);
+                        spawn.snapTo(blockpos.getX() + 0.5D, blockpos.getY(), blockpos.getZ() + 0.5D, Mth.wrapDegrees(worldIn.getRandom().nextFloat() * 360.0F), 0.0F);
                         if (spawn instanceof Mob mobSpawn) {
-                            mobSpawn.finalizeSpawn(worldIn, worldIn.getCurrentDifficultyAt(blockpos), EntitySpawnReason.BREEDING, null, null);
+                            mobSpawn.finalizeSpawn(worldIn, worldIn.getCurrentDifficultyAt(blockpos), EntitySpawnReason.BREEDING, null);
                         }
                         if (spawn instanceof ComplexMob entitySpawn) {
                             entitySpawn.setVariant(EntityUtils.getClampedNumberOfSpecies(this.variant, this.entityType));
@@ -94,21 +100,24 @@ public class EggBlockEntity extends BlockEntity {
         ((ServerLevel)worldIn).sendParticles(particle, x, y, z, 15, d3, d1, d2, 0.12F);
     }
 
-    public void load(CompoundTag compound) {
-        super.load(compound);
-        this.setVariant(compound.getInt("Variant"));
-        this.setCanSpawn(compound.getBoolean("CanSpawn"));
-        if (compound.contains("entityType")) {
-            this.setEntityType(EntityType.byString(compound.getString("entityType")).orElse(null));
-        }
+    @Override
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        this.setVariant(input.getIntOr("Variant", 0));
+        this.setCanSpawn(input.getBooleanOr("CanSpawn", true));
+        input.getString("entityType").map(Identifier::tryParse).map(BuiltInRegistries.ENTITY_TYPE::getValue).ifPresent(this::setEntityType);
     }
 
-    public void saveAdditional(CompoundTag compound) {
-        super.saveAdditional(compound);
-        compound.putBoolean("CanSpawn", this.getCanSpawn());
-        compound.putInt("Variant", this.getVariant());
+    @Override
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        output.putBoolean("CanSpawn", this.getCanSpawn());
+        output.putInt("Variant", this.getVariant());
         if (this.getEntityType() != null) {
-            compound.putString("entityType", this.getEntityType().builtInRegistryHolder().key().location().toString());
+            Identifier id = BuiltInRegistries.ENTITY_TYPE.getKey(this.getEntityType());
+            if (id != null) {
+                output.putString("entityType", id.toString());
+            }
         }
     }
 }

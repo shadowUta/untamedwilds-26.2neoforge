@@ -2,7 +2,6 @@ package untamedwilds.entity.fish;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -25,6 +24,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import untamedwilds.config.ConfigGamerules;
 import untamedwilds.entity.*;
 import untamedwilds.entity.ai.SmartMeleeAttackGoal;
@@ -41,9 +42,9 @@ public class EntityFootballFish extends ComplexMobAquatic implements ISpecies, I
         super(type, worldIn);
     }
 
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(HAS_MALE, false);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(HAS_MALE, false);
     }
 
     public static AttributeSupplier.Builder registerAttributes() {
@@ -68,7 +69,7 @@ public class EntityFootballFish extends ComplexMobAquatic implements ISpecies, I
 
     public void aiStep() {
         super.aiStep();
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide()) {
             if (this.tickCount % 1000 == 0) {
                 if (this.wantsToBreed() && !this.isMale()) {
                     this.breed();
@@ -77,11 +78,11 @@ public class EntityFootballFish extends ComplexMobAquatic implements ISpecies, I
                     this.setAttachedMale(true);
                 }
             }
-            if (this.level.getGameTime() % 4000 == 0) {
+            if (this.level().getGameTime() % 4000 == 0) {
                 this.heal(1.0F);
             }
             if (this.random.nextInt(18) == 0)
-                ((ServerLevel)this.level).sendParticles(ParticleTypes.GLOW, this.getX(), this.getY() + 0.4, this.getZ(), 1, 0F, 0F, 0F, 0D);
+                ((ServerLevel)this.level()).sendParticles(ParticleTypes.GLOW, this.getX(), this.getY() + 0.4, this.getZ(), 1, 0F, 0F, 0F, 0D);
         }
     }
 
@@ -91,7 +92,7 @@ public class EntityFootballFish extends ComplexMobAquatic implements ISpecies, I
         if (ConfigGamerules.naturalBreeding.get() && this.hasAttachedMale() && this.getAge() == 0 && EntityUtils.hasFullHealth(this)) {
             BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos();
             for (int i = 0; i <= 16; i++) {
-                BlockState state = level.getBlockState(blockPos.set(this.getX(), this.getY() + i, this.getZ()));
+                BlockState state = this.level().getBlockState(blockPos.set(this.getX(), this.getY() + i, this.getZ()));
                 if (!state.getFluidState().is(FluidTags.WATER)) {
                     return false;
                 }
@@ -104,12 +105,12 @@ public class EntityFootballFish extends ComplexMobAquatic implements ISpecies, I
 
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack itemstack = player.getItemInHand(InteractionHand.MAIN_HAND);
-        if (hand == InteractionHand.MAIN_HAND && !this.level.isClientSide()) {
+        if (hand == InteractionHand.MAIN_HAND && !this.level().isClientSide()) {
 
             if (this.hasAttachedMale() && itemstack.getItem() == Items.SHEARS) {
                 this.playSound(SoundEvents.SHEEP_SHEAR, 1.5F, 0.8F);
                 this.setAttachedMale(false);
-                this.hurt(DamageSource.mobAttack(player), 1);
+                this.hurt(this.level().damageSources().playerAttack(player), 1);
             }
         }
 
@@ -142,13 +143,13 @@ public class EntityFootballFish extends ComplexMobAquatic implements ISpecies, I
     public boolean hasAttachedMale(){ return (this.entityData.get(HAS_MALE)); }
     private void setAttachedMale(boolean attachedMale){ this.entityData.set(HAS_MALE, attachedMale); }
 
-    public void addAdditionalSaveData(CompoundTag compound){
+    public void addAdditionalSaveData(ValueOutput compound){
         super.addAdditionalSaveData(compound);
         compound.putBoolean("hasMale", this.hasAttachedMale());
     }
 
-    public void readAdditionalSaveData(CompoundTag compound){
+    public void readAdditionalSaveData(ValueInput compound){
         super.readAdditionalSaveData(compound);
-        this.setAttachedMale(compound.getBoolean("hasMale"));
+        this.setAttachedMale(compound.getBooleanOr("hasMale", false));
     }
 }

@@ -134,7 +134,7 @@ public class ModelGiantSalamander extends AdvancedEntityModel<EntityGiantSalaman
         }
 
         // Pitch/Yaw handler
-        if (salamander.isInWater() && !salamander.isOnGround()) {
+        if (salamander.isInWater() && !salamander.onGround()) {
             this.setRotateAngle(body_main, salamander.getXRot() * ((float) Math.PI / 180F), 0, 0);
         }
         this.body_torso.rotateAngleY = Mth.rotLerp((float) 0.05, this.body_torso.rotateAngleY, salamander.offset);
@@ -144,7 +144,7 @@ public class ModelGiantSalamander extends AdvancedEntityModel<EntityGiantSalaman
         // Movement Animation
         AdvancedModelBox[] bodyParts = new AdvancedModelBox[]{head_main, body_torso, body_main, tail_1, tail_2};
         chainSwing(bodyParts, globalSpeed * 1.4F, globalDegree * 1.2F, -4, limbSwing, limbSwingAmount * 0.3F);
-        float onGround = Math.min(0.8F, limbSwingAmount * (salamander.isOnGround() ? 2 : 1));
+        float onGround = Math.min(0.8F, limbSwingAmount * (salamander.onGround() ? 2 : 1));
         if (salamander.isInWater()) {
             flap(arm_left_1, globalSpeed, globalDegree, false, 0.8F, 1f, limbSwing, limbSwingAmount);
             flap(leg_left_1, globalSpeed, globalDegree * 0.8f, false, 1.6F, 1f, limbSwing, limbSwingAmount);

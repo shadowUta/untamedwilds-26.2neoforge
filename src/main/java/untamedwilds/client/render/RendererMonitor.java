@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import untamedwilds.client.model.ModelMonitor;
 import untamedwilds.entity.reptile.EntityMonitor;
 
-public class RendererMonitor extends MobRenderer<EntityMonitor, EntityModel<EntityMonitor>> {
+public class RendererMonitor extends UntamedMobRenderer<EntityMonitor> {
 
     private static final ModelMonitor MODEL_MONITOR = new ModelMonitor();
 

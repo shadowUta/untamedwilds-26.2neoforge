@@ -11,7 +11,7 @@ import untamedwilds.entity.fish.EntityTriggerfish;
 
 import javax.annotation.Nonnull;
 
-public class RendererTriggerfish extends MobRenderer<EntityTriggerfish, EntityModel<EntityTriggerfish>> {
+public class RendererTriggerfish extends UntamedMobRenderer<EntityTriggerfish> {
 
     private static final ModelTriggerfish TRIGGERFISH_MODEL = new ModelTriggerfish();
 

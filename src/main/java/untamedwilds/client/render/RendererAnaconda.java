@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import untamedwilds.client.model.ModelAnaconda;
 import untamedwilds.entity.reptile.EntityAnaconda;
 
-public class RendererAnaconda extends MobRenderer<EntityAnaconda, EntityModel<EntityAnaconda>> {
+public class RendererAnaconda extends UntamedMobRenderer<EntityAnaconda> {
 
     private static final ModelAnaconda SNAKE_MODEL = new ModelAnaconda();
 

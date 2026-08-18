@@ -11,7 +11,7 @@ import untamedwilds.entity.reptile.EntityTortoise;
 
 import javax.annotation.Nonnull;
 
-public class RendererTortoise extends MobRenderer<EntityTortoise, EntityModel<EntityTortoise>> {
+public class RendererTortoise extends UntamedMobRenderer<EntityTortoise> {
 
     private static final ModelTortoise SOFTSHELL_TURTLE_MODEL = new ModelTortoise();
 
