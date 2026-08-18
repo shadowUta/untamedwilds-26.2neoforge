@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import untamedwilds.UntamedWilds;
@@ -29,6 +30,7 @@ public class LayerFootballFishLure<T extends EntityFootballFish> implements Unta
         BasicEntityModel<T> model = renderer.getUntamedModel(entity);
         collector.submitCustomGeometry(pose, renderType(),
             (currentPose, vertexConsumer) -> model.renderToBuffer(
-                UntamedMobRenderer.poseStack(currentPose), vertexConsumer, state.lightCoords, 0, -1));
+                UntamedMobRenderer.poseStack(currentPose), vertexConsumer, state.lightCoords,
+                OverlayTexture.NO_OVERLAY, -1));
     }
 }

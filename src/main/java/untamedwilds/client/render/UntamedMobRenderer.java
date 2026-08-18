@@ -2,12 +2,15 @@ package untamedwilds.client.render;
 
 import com.github.alexthe666.citadel.client.model.basic.BasicEntityModel;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Mob;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +42,17 @@ public abstract class UntamedMobRenderer<T extends Mob> extends EntityRenderer<T
         super.extractRenderState(entity, state, partialTick);
         state.entity = entity;
         state.partialTick = partialTick;
+        state.bodyRot = Mth.rotLerp(partialTick, entity.yBodyRotO, entity.yBodyRot);
+        float headRot = Mth.rotLerp(partialTick, entity.yHeadRotO, entity.yHeadRot);
+        state.yRot = Mth.wrapDegrees(headRot - state.bodyRot);
+        state.xRot = entity.getXRot(partialTick);
+        if (!entity.isPassenger() && entity.isAlive()) {
+            state.walkAnimationPos = entity.walkAnimation.position(partialTick);
+            state.walkAnimationSpeed = entity.walkAnimation.speed(partialTick);
+        } else {
+            state.walkAnimationPos = 0.0F;
+            state.walkAnimationSpeed = 0.0F;
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -59,6 +73,7 @@ public abstract class UntamedMobRenderer<T extends Mob> extends EntityRenderer<T
         BasicEntityModel<T> model = getUntamedModel(entity);
         pose.pushPose();
         pose.scale(state.scale, state.scale, state.scale);
+        pose.mulPose(Axis.YP.rotationDegrees(180.0F - state.bodyRot));
         pose.scale(-1.0F, -1.0F, 1.0F);
         scale(entity, pose, state.partialTick);
         pose.translate(0.0F, -1.501F, 0.0F);
@@ -66,7 +81,8 @@ public abstract class UntamedMobRenderer<T extends Mob> extends EntityRenderer<T
             state.yRot, state.xRot);
         Identifier texture = texture(entity);
         collector.submitCustomGeometry(pose, RenderTypes.entityCutout(texture), (currentPose, vertexConsumer) ->
-            model.renderToBuffer(poseStack(currentPose), vertexConsumer, state.lightCoords, Overlay.NO_OVERLAY, -1));
+            model.renderToBuffer(poseStack(currentPose), vertexConsumer, state.lightCoords,
+                OverlayTexture.NO_OVERLAY, -1));
         for (UntamedLayer<T> layer : untamedLayers) {
             layer.submit(this, entity, state, pose, collector);
         }
@@ -96,8 +112,4 @@ public abstract class UntamedMobRenderer<T extends Mob> extends EntityRenderer<T
     }
 
     public Identifier getTextureLocation(T entity) { return texture(entity); }
-
-    private static final class Overlay {
-        private static final int NO_OVERLAY = 0;
-    }
 }
