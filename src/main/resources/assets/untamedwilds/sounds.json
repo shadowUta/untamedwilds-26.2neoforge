@@ -146,35 +146,35 @@
 	"entity.hyena.growl": {
 		"category": "neutral",
 		"sounds": [
-			"mob/wolf/growl1",
-			"mob/wolf/growl2",
-			"mob/wolf/growl3"
+			"untamedwilds:hyena/laughing_1",
+			"untamedwilds:hyena/laughing_2",
+			"untamedwilds:hyena/laughing_3"
 		],
 		"subtitle": "untamedwilds.subtitles.hyena.growl"
 	},
 	"entity.hyena.ambient": {
 		"category": "neutral",
 		"sounds": [
-			"mob/wolf/bark1",
-			"mob/wolf/bark2",
-			"mob/wolf/bark3",
-			"mob/wolf/panting"
+			"untamedwilds:hyena/laughing_1",
+			"untamedwilds:hyena/laughing_2",
+			"untamedwilds:hyena/laughing_3",
+			"untamedwilds:hyena/laughing_4"
 		],
 		"subtitle": "untamedwilds.subtitles.hyena.ambient"
 	},
 	"entity.hyena.hurt": {
 		"category": "neutral",
 		"sounds": [
-			"mob/wolf/hurt1",
-			"mob/wolf/hurt2",
-			"mob/wolf/hurt3"
+			"untamedwilds:hyena/laughing_1",
+			"untamedwilds:hyena/laughing_2",
+			"untamedwilds:hyena/laughing_3"
 		],
 		"subtitle": "untamedwilds.subtitles.hyena.hurt"
 	},
 	"entity.hyena.death": {
 		"category": "neutral",
 		"sounds": [
-			"mob/wolf/death"
+			"untamedwilds:hyena/laughing_4"
 		],
 		"subtitle": "untamedwilds.subtitles.hyena.death"
 	},
@@ -275,7 +275,7 @@
 	},
 	"entity.opossum.death": {
 		"sounds": [
-			"mob/rabbit/death"
+			"untamedwilds:opossum/hiss"
 		],
 		"subtitle": "untamedwilds.subtitles.opossum.death"
 	},

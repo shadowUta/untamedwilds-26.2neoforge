@@ -5,6 +5,9 @@
 		"0": "untamedwilds:block/trap_cage",
 		"1": "untamedwilds:block/trap_cage_inside",
 		"2": "untamedwilds:block/trap_cage_top",
+		"side": "untamedwilds:block/trap_cage",
+		"bottom": "untamedwilds:block/trap_cage",
+		"top": "untamedwilds:block/trap_cage_top",
 		"particle": "untamedwilds:block/trap_cage"
 	},
 	"elements": [
