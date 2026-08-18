@@ -28,6 +28,12 @@ sourceSets.main.resources {
 def citadelSourceRoot = file('.envi/Citadel-1.21/Citadel-1.21/src/main/java')
 def generatedCitadelSource = layout.buildDirectory.dir('generated/sources/citadelCompat/java')
 def syncCitadelCompat = tasks.register('syncCitadelCompat', Sync) {
+    onlyIf {
+        if (!citadelSourceRoot.exists()) {
+            logger.lifecycle('Skipping local Citadel compatibility source sync; reference source is not present in .envi.')
+        }
+        citadelSourceRoot.exists()
+    }
     from citadelSourceRoot
     into generatedCitadelSource
     // Animation contracts used by entities. AnimationHandler is supplied by
