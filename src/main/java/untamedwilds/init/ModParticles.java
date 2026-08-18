@@ -4,7 +4,6 @@ import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.Registries;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -20,11 +19,9 @@ public class ModParticles {
 
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> CHUM_DISPERSE = PARTICLES.register("chum", () -> new SimpleParticleType(false));
 
-    @OnlyIn(Dist.CLIENT)
     @EventBusSubscriber(modid = UntamedWilds.MOD_ID, value = Dist.CLIENT)
     public static class RegisterParticleFactories {
 
-        @OnlyIn(Dist.CLIENT)
         @SubscribeEvent
         public static void registerParticleTypes(RegisterParticleProvidersEvent event) {
             event.registerSpriteSet(CHUM_DISPERSE.get(), ChumParticle.Provider::new);

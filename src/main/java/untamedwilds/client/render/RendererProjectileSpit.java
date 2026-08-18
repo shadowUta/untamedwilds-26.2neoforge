@@ -9,12 +9,9 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import untamedwilds.client.model.ModelProjectileSpit;
 import untamedwilds.entity.ProjectileSpit;
 
-@OnlyIn(Dist.CLIENT)
 public class RendererProjectileSpit extends EntityRenderer<ProjectileSpit, ProjectileSpitRenderState> {
     private static final Identifier LLAMA_SPIT_LOCATION = Identifier.withDefaultNamespace("textures/entity/llama/spit.png");
     private final ModelProjectileSpit model;

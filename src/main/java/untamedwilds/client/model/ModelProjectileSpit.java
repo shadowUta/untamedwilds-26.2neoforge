@@ -8,11 +8,8 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.world.entity.Entity;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import untamedwilds.client.render.ProjectileSpitRenderState;
 
-@OnlyIn(Dist.CLIENT)
 public class ModelProjectileSpit extends Model<ProjectileSpitRenderState> {
     private static final String MAIN = "main";
     private final ModelPart root;

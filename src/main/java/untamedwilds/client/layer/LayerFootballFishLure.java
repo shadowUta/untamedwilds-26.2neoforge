@@ -7,14 +7,11 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import untamedwilds.UntamedWilds;
 import untamedwilds.client.render.UntamedLayer;
 import untamedwilds.client.render.UntamedMobRenderer;
 import untamedwilds.entity.fish.EntityFootballFish;
 
-@OnlyIn(Dist.CLIENT)
 public class LayerFootballFishLure<T extends EntityFootballFish> implements UntamedLayer<T> {
 
     private final RenderType TEXTURE = net.minecraft.client.renderer.rendertype.RenderTypes.eyes(Identifier.fromNamespaceAndPath(UntamedWilds.MOD_ID, "textures/entity/football_fish/glint.png"));

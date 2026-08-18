@@ -51,8 +51,6 @@ import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import untamedwilds.block.blockentity.CageBlockEntity;
 import untamedwilds.init.ModBlock;
 import untamedwilds.util.EntityUtils;
@@ -201,7 +199,6 @@ public class CageBlock extends Block implements SimpleWaterloggedBlock, EntityBl
         }
     }
 
-    @OnlyIn(Dist.CLIENT)
     public void appendHoverText(ItemStack stack, @Nullable BlockGetter worldIn, List<Component> tooltip, TooltipFlag flagIn) {
         CompoundTag tag = stack.get(DataComponents.CUSTOM_DATA) == null ? null : stack.get(DataComponents.CUSTOM_DATA).copyTag();
         if (tag != null) {
